@@ -1,0 +1,55 @@
+{
+  "platform": "android",
+  "statusBar": {
+    "time": "14:32",
+    "date": "2026-05-09",
+    "battery": "17"
+  },
+  "meta": {},
+  "header": {
+    "subtitle": "••• печатает",
+    "backBadge": "16549"
+  },
+  "pinned": {
+    "text": "Локация: Беларусь (Минск) IP-адрес бо…"
+  },
+  "participants": [
+    {
+      "id": "bank",
+      "name": "Поддержка банка",
+      "side": "left",
+      "avatar": null
+    },
+    {
+      "id": "me",
+      "name": "Вы",
+      "side": "right",
+      "avatar": null
+    }
+  ],
+  "items": [
+    {
+      "type": "date",
+      "label": "9 мая"
+    },
+    {
+      "type": "text",
+      "from": "bank",
+      "time": "14:28",
+      "text": "Здравствуйте! Чем могу помочь?"
+    },
+    {
+      "type": "text",
+      "from": "me",
+      "time": "14:29",
+      "text": "Добрый день. Приложите скан чека."
+    },
+    {
+      "type": "image",
+      "from": "me",
+      "time": "14:30",
+      "src": null,
+      "caption": "Чек об оплате"
+    }
+  ]
+}

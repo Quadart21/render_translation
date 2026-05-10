@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Отрисовка переписок</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="layout layout-wide">
+    <header class="header">
+      <h1 class="title">Переписка для макета</h1>
+      <p class="subtitle">Соберите диалог: сообщения оппонента и свои, опционально закреп (макет iPhone).</p>
+    </header>
+
+    <main class="main">
+      <section id="panel-login" class="card hidden" aria-live="polite">
+        <h2 class="card-title">Вход</h2>
+        <p class="hint">
+          Включён режим <code>AUTH_ENABLED</code>. Нужен бот и домен в BotFather для виджета Telegram.
+        </p>
+        <div id="tg-widget-wrap" class="tg-widget-wrap"></div>
+        <p id="login-error" class="error hidden"></p>
+      </section>
+
+      <section id="panel-app" class="card hidden">
+        <div id="auth-toolbar" class="user-info hidden">
+          <span id="user-label"></span>
+          <button type="button" id="btn-logout" class="btn btn-ghost">Выйти</button>
+        </div>
+
+        <h2 class="card-title card-title-spaced">Настройки чата</h2>
+
+        <div class="form-section">
+          <div class="form-grid form-grid-3">
+            <label class="field">
+              <span class="field-label">Оформление</span>
+              <select id="platform" class="select">
+                <option value="android">Android</option>
+                <option value="ios">iPhone (iOS)</option>
+              </select>
+            </label>
+            <label class="field">
+              <span class="field-label">Время в статус-баре</span>
+              <input type="text" id="status-time" class="input" placeholder="14:32" maxlength="8" />
+            </label>
+            <label class="field ios-only-row hidden">
+              <span class="field-label">Заряд (%, опционально)</span>
+              <input type="text" id="ios-battery" class="input" placeholder="17" maxlength="6" />
+            </label>
+          </div>
+
+          <div class="form-grid form-grid-2">
+            <label class="field">
+              <span class="field-label">Имя оппонента</span>
+              <input type="text" id="name-opponent" class="input" placeholder="+7 … или имя" autocomplete="off" />
+            </label>
+            <label class="field">
+              <span class="field-label">Ваше имя в чате</span>
+              <input type="text" id="name-me" class="input" placeholder="Как в Telegram" autocomplete="off" />
+            </label>
+          </div>
+
+          <div class="form-grid form-grid-2 ios-only-row hidden">
+            <label class="field">
+              <span class="field-label">Подпись под именем (только iOS)</span>
+              <input type="text" id="ios-subtitle" class="input" placeholder="••• печатает" />
+            </label>
+            <label class="field">
+              <span class="field-label">Число у стрелки «назад»</span>
+              <input type="text" id="ios-back-badge" class="input" placeholder="16549" />
+            </label>
+          </div>
+
+          <label class="checkbox-row">
+            <input type="checkbox" id="chk-pinned" />
+            <span>Показать закреплённое сообщение</span>
+          </label>
+          <label class="field field-full">
+            <span class="field-label muted-small">Текст закрепа (видно на макете iPhone)</span>
+            <textarea id="pinned-text" class="textarea" rows="2" placeholder="Краткий текст закрепа…" disabled></textarea>
+          </label>
+
+          <label class="checkbox-row">
+            <input type="checkbox" id="chk-random-avatar" />
+            <span>Случайные аватарки из картинок в корне проекта</span>
+          </label>
+        </div>
+
+        <h3 class="section-heading">Сообщения в ленте</h3>
+        <p class="hint hint-tight">Порядок строк = порядок в переписке сверху вниз. Тип «Дата» — разделитель как в Telegram.</p>
+        <div id="message-rows" class="message-rows"></div>
+        <button type="button" id="btn-add-row" class="btn btn-secondary">+ Добавить строку</button>
+
+        <div class="form-actions">
+          <button type="button" id="btn-render" class="btn btn-primary">Сгенерировать PNG</button>
+          <button type="button" id="btn-render-random" class="btn btn-ghost" title="Случайные имена, текст из примера и аватарки из корня">Случайный пример</button>
+        </div>
+
+        <p id="render-error" class="error hidden"></p>
+        <div id="preview-wrap" class="preview-wrap hidden">
+          <img id="preview-img" alt="Предпросмотр переписки" class="preview-img" />
+          <a id="download-link" class="link-download" href="#" download="chat.png">Скачать PNG</a>
+        </div>
+      </section>
+
+      <section id="panel-loading" class="card">
+        <p class="muted">Загрузка…</p>
+      </section>
+    </main>
+  </div>
+  <script src="/app.js" type="module"></script>
+</body>
+</html>
