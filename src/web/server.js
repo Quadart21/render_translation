@@ -54,7 +54,7 @@ if (AUTH_ENABLED) {
   );
 }
 
-app.use(express.json({ limit: '2mb' }));
+app.use(express.json({ limit: '25mb' }));
 
 function requireAuth(req, res, next) {
   if (!AUTH_ENABLED) return next();

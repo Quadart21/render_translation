@@ -1,0 +1,12 @@
+Каталог для San Francisco Pro Text с AZFonts (раздел Apple / iPhone):
+https://ru.azfonts.net/fonts/categories/apple
+
+Скачайте начертания Regular, Medium, Semibold и положите файлы сюда (или в свою папку).
+Поддерживаются типичные имена Apple, в т.ч. с пробелами: «SF Pro Text Regular.ttf» и т.д.
+Полный список и «размытый» поиск по имени файла: src/renderer/iosFontFaces.js
+
+Если шрифты лежат в другом месте внутри проекта, задайте при рендере:
+  set IOS_FONT_DIR=fonts\мои-sf-pro
+(путь от корня репозитория или абсолютный).
+
+Без файлов iOS-макет использует системный стек (-apple-system / Segoe UI).

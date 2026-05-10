@@ -9,7 +9,8 @@ const userLabel = document.getElementById('user-label');
 const btnLogout = document.getElementById('btn-logout');
 const btnRender = document.getElementById('btn-render');
 const btnRenderRandom = document.getElementById('btn-render-random');
-const btnAddRow = document.getElementById('btn-add-row');
+const btnAddMessage = document.getElementById('btn-add-message');
+const btnAddImage = document.getElementById('btn-add-image');
 const platformSel = document.getElementById('platform');
 const previewWrap = document.getElementById('preview-wrap');
 const previewImg = document.getElementById('preview-img');
@@ -18,6 +19,9 @@ const messageRows = document.getElementById('message-rows');
 const chkPinned = document.getElementById('chk-pinned');
 const pinnedText = document.getElementById('pinned-text');
 const chkRandomAvatar = document.getElementById('chk-random-avatar');
+
+/** data URL выбранного файла по строке «Картинка» */
+const imageRowData = new WeakMap();
 
 function show(el) {
   el.classList.remove('hidden');
@@ -120,6 +124,7 @@ function createMessageRow(preset) {
         <span class="field-label">Тип</span>
         <select class="select select-sm row-kind">
           <option value="message">Сообщение</option>
+          <option value="image">Картинка</option>
           <option value="date">Дата в ленте</option>
         </select>
       </label>
@@ -144,6 +149,39 @@ function createMessageRow(preset) {
         <textarea class="textarea textarea-sm msg-text" rows="2" placeholder="Текст сообщения"></textarea>
       </label>
     </div>
+    <div class="msg-block msg-block-image hidden">
+      <div class="field-row">
+        <label class="field field-inline">
+          <span class="field-label">Кто</span>
+          <select class="select select-sm msg-from-img">
+            <option value="bank">Опонент</option>
+            <option value="me">Я</option>
+          </select>
+        </label>
+        <label class="field field-inline field-time">
+          <span class="field-label">Время</span>
+          <input type="text" class="input input-sm msg-time-img" placeholder="14:30" maxlength="8" />
+        </label>
+      </div>
+      <div class="field field-full">
+        <span class="field-label">Файл изображения</span>
+        <div class="msg-img-file-row">
+          <input type="file" class="msg-img-file" accept="image/*" />
+          <button type="button" class="btn btn-ghost btn-sm btn-clear-img">Сбросить</button>
+        </div>
+        <div class="msg-img-preview-wrap hidden">
+          <img class="msg-img-preview" alt="Предпросмотр" />
+        </div>
+      </div>
+      <label class="field field-full">
+        <span class="field-label">Подпись под картинкой</span>
+        <textarea class="textarea textarea-sm msg-img-caption" rows="2" placeholder="Необязательно"></textarea>
+      </label>
+      <label class="field field-full">
+        <span class="field-label">Текст кнопки под медиа</span>
+        <input type="text" class="input input-sm msg-img-action" placeholder="Например: Открыть" />
+      </label>
+    </div>
     <div class="msg-block msg-block-date hidden">
       <label class="field field-full">
         <span class="field-label">Подпись даты</span>
@@ -155,19 +193,73 @@ function createMessageRow(preset) {
   const kindSel = row.querySelector('.row-kind');
   kindSel.value = kind;
 
-  if (preset?.from) row.querySelector('.msg-from').value = preset.from;
-  if (preset?.time) row.querySelector('.msg-time').value = preset.time;
+  if (preset?.from) {
+    row.querySelector('.msg-from').value = preset.from;
+    row.querySelector('.msg-from-img').value = preset.from;
+  }
+  if (preset?.time) {
+    row.querySelector('.msg-time').value = preset.time;
+    row.querySelector('.msg-time-img').value = preset.time;
+  }
   if (preset?.text) row.querySelector('.msg-text').value = preset.text;
   if (preset?.dateLabel) row.querySelector('.date-label').value = preset.dateLabel;
+  if (preset?.caption) row.querySelector('.msg-img-caption').value = preset.caption;
+  if (preset?.action) row.querySelector('.msg-img-action').value = preset.action;
+
+  imageRowData.set(row, { dataUrl: null });
+
+  const fileIn = row.querySelector('.msg-img-file');
+  const preview = row.querySelector('.msg-img-preview');
+  const previewWrap = row.querySelector('.msg-img-preview-wrap');
+
+  fileIn.addEventListener('change', () => {
+    const f = fileIn.files && fileIn.files[0];
+    if (!f) {
+      imageRowData.set(row, { dataUrl: null });
+      preview.removeAttribute('src');
+      previewWrap.classList.add('hidden');
+      return;
+    }
+    if (!f.type.startsWith('image/')) {
+      fileIn.value = '';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      imageRowData.set(row, { dataUrl: reader.result });
+      preview.src = reader.result;
+      previewWrap.classList.remove('hidden');
+    };
+    reader.readAsDataURL(f);
+  });
+
+  row.querySelector('.btn-clear-img').addEventListener('click', () => {
+    fileIn.value = '';
+    imageRowData.set(row, { dataUrl: null });
+    preview.removeAttribute('src');
+    previewWrap.classList.add('hidden');
+  });
 
   function applyKind() {
     const k = kindSel.value;
     const isDate = k === 'date';
-    row.querySelector('.msg-block-message').classList.toggle('hidden', isDate);
+    const isImage = k === 'image';
+    row.querySelector('.msg-block-message').classList.toggle('hidden', isDate || isImage);
+    row.querySelector('.msg-block-image').classList.toggle('hidden', !isImage);
     row.querySelector('.msg-block-date').classList.toggle('hidden', !isDate);
   }
 
-  kindSel.addEventListener('change', applyKind);
+  kindSel.addEventListener('change', () => {
+    const k = kindSel.value;
+    if (k === 'image') {
+      row.querySelector('.msg-from-img').value = row.querySelector('.msg-from').value;
+      row.querySelector('.msg-time-img').value = row.querySelector('.msg-time').value;
+    } else if (k === 'message') {
+      row.querySelector('.msg-from').value = row.querySelector('.msg-from-img').value;
+      row.querySelector('.msg-time').value = row.querySelector('.msg-time-img').value;
+    }
+    applyKind();
+  });
   row.querySelector('.btn-remove-row').addEventListener('click', () => {
     if (messageRows.querySelectorAll('.msg-row').length <= 1) return;
     row.remove();
@@ -186,6 +278,19 @@ function collectItemsFromRows() {
       if (label) items.push({ type: 'date', label });
       return;
     }
+    if (kind === 'image') {
+      const from = row.querySelector('.msg-from-img').value;
+      const time = row.querySelector('.msg-time-img').value.trim() || '12:00';
+      const caption = row.querySelector('.msg-img-caption').value.trim();
+      const action = row.querySelector('.msg-img-action').value.trim();
+      const stored = imageRowData.get(row);
+      const src = stored && stored.dataUrl ? stored.dataUrl : null;
+      const item = { type: 'image', from, time, src };
+      if (caption) item.caption = caption;
+      if (action) item.action = action;
+      items.push(item);
+      return;
+    }
     const from = row.querySelector('.msg-from').value;
     const time = row.querySelector('.msg-time').value.trim() || '12:00';
     const text = row.querySelector('.msg-text').value.trim();
@@ -201,9 +306,9 @@ function buildScenePayload() {
   const nameMe = document.getElementById('name-me').value.trim() || 'Я';
 
   const items = collectItemsFromRows();
-  const contentMessages = items.filter((i) => i.type === 'text');
-  if (contentMessages.length === 0) {
-    throw new Error('Добавьте хотя бы одно сообщение с текстом.');
+  const hasContent = items.some((i) => i.type === 'text' || i.type === 'image');
+  if (!hasContent) {
+    throw new Error('Добавьте хотя бы одно сообщение или картинку в ленте.');
   }
 
   const scene = {
@@ -259,7 +364,25 @@ function initFormDefaults() {
     createMessageRow({ from: 'bank', time: '14:28', text: 'Здравствуйте! Чем могу помочь?' })
   );
   messageRows.appendChild(
-    createMessageRow({ from: 'me', time: '14:29', text: 'Добрый день.' })
+    createMessageRow({ from: 'me', time: '14:29', text: 'Добрый день. Приложите скан чека.' })
+  );
+  messageRows.appendChild(
+    createMessageRow({
+      kind: 'image',
+      from: 'me',
+      time: '14:30',
+      caption: 'Чек об оплате',
+      action: 'Открыть',
+    })
+  );
+  messageRows.appendChild(
+    createMessageRow({
+      kind: 'image',
+      from: 'me',
+      time: '14:31',
+      caption: 'Второй файл (при необходимости)',
+      action: 'Открыть',
+    })
   );
 
   platformSel.addEventListener('change', syncIosFields);
@@ -267,8 +390,13 @@ function initFormDefaults() {
     pinnedText.disabled = !chkPinned.checked;
   });
 
-  btnAddRow.addEventListener('click', () => {
+  btnAddMessage.addEventListener('click', () => {
     messageRows.appendChild(createMessageRow({ from: 'bank', time: '', text: '' }));
+  });
+  btnAddImage.addEventListener('click', () => {
+    messageRows.appendChild(
+      createMessageRow({ kind: 'image', from: 'me', time: '', caption: '', action: '' })
+    );
   });
 
   syncIosFields();

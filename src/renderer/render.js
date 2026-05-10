@@ -12,6 +12,7 @@ import {
 import { embedPngExif } from '../lib/embedPngExif.js';
 import { resolveTruthMeta } from '../lib/truthMeta.js';
 import { embedSceneAssets } from './resolveAssets.js';
+import { buildIosFontFaceCss } from './iosFontFaces.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.join(__dirname, '..', '..');
@@ -22,6 +23,7 @@ const iconMicrophonePath = path.join(projectRoot, 'assets', 'flaticon-microphone
 const statusCellularPath = path.join(projectRoot, 'assets', 'status-cellular.png');
 const statusWifiPath = path.join(projectRoot, 'assets', 'status-wifi.png');
 const composerSmileyPath = path.join(projectRoot, 'assets', 'composer-smiley.png');
+const iconPhonePath = path.join(projectRoot, 'assets', 'flaticon-phone.png');
 
 /** Запасные SVG (не 1×1 px): если PNG из assets недоступны, не будет «квадратиков». */
 const FALLBACK_ICON_CLIP =
@@ -49,7 +51,12 @@ const FALLBACK_ICON_SMILEY =
   encodeURIComponent(
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><circle cx="9" cy="10" r="1.3" fill="white" stroke="none"/><circle cx="15" cy="10" r="1.3" fill="white" stroke="none"/><path d="M8.5 14.5c1.3 1.6 3.7 2 5.5 1"/></svg>'
   );
-
+/** Звонок в шапке Android — контур трубки, белый силуэт после Sharp как у остальных иконок */
+const FALLBACK_ICON_PHONE =
+  'data:image/svg+xml,' +
+  encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>'
+  );
 /**
  * Белые силуэты на тёмной панели без CSS filter (иначе в Chromium часто «пустые» img).
  * Сохраняем альфу исходной иконки.
@@ -89,7 +96,7 @@ async function readComposerIconDataUrl(absPath, fallbackDataUrl) {
 }
 
 /**
- * Масштаб пикселей: по умолчанию под эталон экрана (iPhone 16 Pro / Xiaomi 15 Ultra),
+ * Масштаб пикселей: по умолчанию под эталон (iOS — ширина из PPI×мм, Android — Xiaomi 15 Ultra),
  * см. src/constants/renderEtalon.js. Переопределение: RENDER_DPR или opts.deviceScaleFactor.
  */
 function resolveDeviceScaleFactor(scene, opts) {
@@ -106,6 +113,15 @@ function resolveDeviceScaleFactor(scene, opts) {
   return clamp(deviceScaleFactorForEtalon(platform));
 }
 
+/** Доп. множитель DPR только для iOS: снимаем крупнее, затем Sharp даунскейлит к эталону — контур текста заметно резче. */
+function resolveIosSuperSampleMultiplier() {
+  const raw = process.env.RENDER_IOS_SUPER_SAMPLE;
+  if (raw != null && /^(0|false|off|no)$/i.test(String(raw).trim())) return 1;
+  const n = Number(raw);
+  if (Number.isFinite(n) && n >= 1 && n <= 3) return n;
+  return 1.4;
+}
+
 /**
  * Итоговая ширина файла приводится к эталону дисплея (Sharp): Playwright на части окружений
  * даёт скрин в CSS-пикселях без учёта DPR — поэтому нормализация по ширине обязательна.
@@ -116,13 +132,18 @@ async function normalizePngToEtalonDisplay(buf, platform) {
 
   const targetW = etalonDisplayWidthPx(platform);
   const meta = await sharp(buf).metadata();
-  if (!meta.width || !meta.height || meta.width === targetW) return buf;
+  if (!meta.width || !meta.height) return buf;
+
+  /* Один шаг Lanczos без численного шума: Playwright часто даёт 1294/1296 вместо 1295 */
+  if (Math.abs(meta.width - targetW) <= 2) return buf;
 
   const targetH = Math.round((meta.height * targetW) / meta.width);
-  return sharp(buf)
-    .resize(targetW, targetH, { kernel: sharp.kernel.lanczos3 })
-    .png()
-    .toBuffer();
+  const upscaled = meta.width < targetW - 2;
+  let pipe = sharp(buf).resize(targetW, targetH, { kernel: sharp.kernel.lanczos3 });
+  if (upscaled) {
+    pipe = pipe.sharpen({ sigma: 0.65, m1: 0.5, m2: 2.5, x1: 3, y2: 12, y3: 14 });
+  }
+  return pipe.png().toBuffer();
 }
 
 /**
@@ -138,10 +159,11 @@ async function normalizePngToEtalonDisplay(buf, platform) {
  */
 export async function renderSceneToPng(scene, opts = {}) {
   const embedExif = opts.embedExif !== false;
-  const dpr = resolveDeviceScaleFactor(scene, opts);
+  let dpr = resolveDeviceScaleFactor(scene, opts);
   const viewportWidth = opts.viewportWidth ?? 640;
   const viewportHeight = opts.viewportHeight ?? PHONE_LOGICAL_HEIGHT_CSS_PX + 120;
   const withAssets = embedSceneAssets(scene);
+  const platformKey = withAssets.platform === 'ios' ? 'ios' : 'android';
   const raw = await fs.readFile(templatePath, 'utf8');
   const json = JSON.stringify(withAssets);
   let wallpaperInject =
@@ -152,24 +174,44 @@ export async function renderSceneToPng(scene, opts = {}) {
   } catch {
     /* 1×1 px fallback если файла нет */
   }
-  const [iconAttachInject, iconMicInject, iconSignalInject, iconWifiInject, iconSmileyInject] =
-    await Promise.all([
-      readComposerIconDataUrl(iconPaperclipPath, FALLBACK_ICON_CLIP),
-      readComposerIconDataUrl(iconMicrophonePath, FALLBACK_ICON_MIC),
-      readComposerIconDataUrl(statusCellularPath, FALLBACK_ICON_SIGNAL),
-      readComposerIconDataUrl(statusWifiPath, FALLBACK_ICON_WIFI),
-      readComposerIconDataUrl(composerSmileyPath, FALLBACK_ICON_SMILEY),
-    ]);
+  const [
+    iconAttachInject,
+    iconMicInject,
+    iconSignalInject,
+    iconWifiInject,
+    iconSmileyInject,
+    iconPhoneInject,
+    iosFontFaces,
+  ] = await Promise.all([
+    readComposerIconDataUrl(iconPaperclipPath, FALLBACK_ICON_CLIP),
+    readComposerIconDataUrl(iconMicrophonePath, FALLBACK_ICON_MIC),
+    readComposerIconDataUrl(statusCellularPath, FALLBACK_ICON_SIGNAL),
+    readComposerIconDataUrl(statusWifiPath, FALLBACK_ICON_WIFI),
+    readComposerIconDataUrl(composerSmileyPath, FALLBACK_ICON_SMILEY),
+    readComposerIconDataUrl(iconPhonePath, FALLBACK_ICON_PHONE),
+    buildIosFontFaceCss(projectRoot),
+  ]);
   const html = raw
+    .replace('__IOS_FONT_FACES__', iosFontFaces)
     .replace('__SCENE_JSON__', json)
     .replace(/__CHAT_WALLPAPER__/g, wallpaperInject)
     .replace(/__ICON_ATTACH__/g, iconAttachInject)
     .replace(/__ICON_MIC__/g, iconMicInject)
     .replace(/__ICON_SIGNAL__/g, iconSignalInject)
     .replace(/__ICON_WIFI__/g, iconWifiInject)
-    .replace(/__ICON_SMILEY__/g, iconSmileyInject);
+    .replace(/__ICON_SMILEY__/g, iconSmileyInject)
+    .replace(/__ICON_PHONE__/g, iconPhoneInject);
 
-  const browser = await chromium.launch({ headless: true });
+  if (platformKey === 'ios') {
+    const mul = resolveIosSuperSampleMultiplier();
+    const cap = maxRenderDeviceScaleFactor();
+    dpr = Math.min(cap, dpr * mul);
+  }
+
+  const browser = await chromium.launch({
+    headless: true,
+    args: ['--force-color-profile=srgb', '--font-render-hinting=full'],
+  });
   try {
     const page = await browser.newPage({
       viewport: {
@@ -178,6 +220,7 @@ export async function renderSceneToPng(scene, opts = {}) {
         deviceScaleFactor: dpr,
       },
     });
+    await page.emulateMedia({ colorScheme: 'dark' });
     await page.setContent(html, { waitUntil: 'load' });
     await page.evaluate(() => {
       var chat = document.getElementById('chat');
@@ -185,9 +228,14 @@ export async function renderSceneToPng(scene, opts = {}) {
     });
     const phone = await page.$('.phone');
     if (!phone) throw new Error('.phone not found in template');
-    let buf = await phone.screenshot({ type: 'png', scale: 'device' });
+    let buf = await phone.screenshot({
+      type: 'png',
+      scale: 'device',
+      animations: 'disabled',
+      caret: 'hide',
+    });
 
-    const platform = withAssets.platform === 'ios' ? 'ios' : 'android';
+    const platform = platformKey;
     buf = await normalizePngToEtalonDisplay(buf, platform);
 
     if (embedExif) {

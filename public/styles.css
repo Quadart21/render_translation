@@ -122,6 +122,17 @@ body {
   color: var(--muted);
 }
 
+.field-label-with-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.field-label-icon {
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+
 .select {
   min-width: 200px;
   padding: 10px 12px;
@@ -334,6 +345,13 @@ label.field.field-inline {
   margin-bottom: 12px;
 }
 
+.message-rows-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
 .msg-row {
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -347,6 +365,41 @@ label.field.field-inline {
   align-items: flex-start;
   gap: 10px;
   margin-bottom: 10px;
+}
+
+.msg-img-file-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.msg-img-file-row input[type='file'] {
+  max-width: 100%;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.msg-img-preview-wrap {
+  margin-top: 10px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: #000;
+  max-width: 144px;
+}
+
+.msg-img-preview-wrap.hidden {
+  display: none;
+}
+
+.msg-img-preview {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 108px;
+  object-fit: contain;
 }
 
 .btn-sm {

@@ -27,6 +27,7 @@
  * @property {string} time
  * @property {string|null} [src]  путь к файлу или null для заглушки
  * @property {string} [caption]
+ * @property {string} [action]  подпись на кнопке под картинкой (например «Открыть»)
  *
  * @typedef {ItemDate|ItemText|ItemImage} ChatItem
  *
