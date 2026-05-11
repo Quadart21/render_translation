@@ -28,3 +28,16 @@ git push -u origin main
    ```
 
 Опционально приложите архив исходников (GitHub умеет **Source code** автоматически при создании тега).
+
+## Релиз v1.2.0
+
+1. Убедитесь, что в `main` есть коммит с версией **1.2.0** в `package.json` и разделом **[1.2.0]** в `CHANGELOG.md`.
+2. Создайте тег и запушьте:
+
+   ```bash
+   git tag -a v1.2.0 -m "v1.2.0 — iOS/Android стили, вёрстка пузырей, SF Pro Light"
+   git push origin main
+   git push origin v1.2.0
+   ```
+
+3. На GitHub: **Releases → New release** → выберите тег `v1.2.0`, заголовок `v1.2.0`, в описание вставьте блок из CHANGELOG для 1.2.0.

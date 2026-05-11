@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.2.0] — 2026-05-10
+
+### Рендер и шаблон
+
+- Стили чата разнесены по файлам: `templates/styles/chat-shared.css`, `chat-ios.css`, `chat-android.css`; в HTML подставляется только CSS активной платформы (`src/renderer/chatTemplate.js`).
+- Время на **изображении без подписи** накладывается на превью (класс `message__image-wrap--overlay`, правки в `templates/chat.html` и общих стилях).
+
+### iOS
+
+- Многострочные пузыри (**bubble--ios-c/d/e**): текст через **`inline-block`**, ширина по самой длинной строке; без общего «столбца» справа и без JS-подгонки ширины.
+- У **входящих**, только для **двух и более строк** (те же **c/d/e**): время смещено **чуть левее** (`right: 19px` вместо `10px`); однострочные **ios-a/ios-b** без этого сдвига.
+- Типографика: **SF Pro Text Light (300)** и смягчение перегруженных `font-weight` в интерфейсе; `@font-face` для Light добавлен в `iosFontFaces.js`.
+
+### Android
+
+- Узкие пузыри текста (не растягивание под самую длинную строку в flex): блок + float времени, колонка `fit-content`.
+
+[1.2.0]: https://github.com/Quadart21/render_translation/releases/tag/v1.2.0
+
 ## [1.0.0] — 2026-05-10
 
 Первый зафиксированный релиз для репозитория [render_translation](https://github.com/Quadart21/render_translation).

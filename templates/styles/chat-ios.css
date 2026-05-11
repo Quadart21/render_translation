@@ -337,7 +337,7 @@
       iOS — классы bubble--ios-a … ios-e по длине текста ([...text].length):
       ios-a ≤35      — одна строка: весь текст и время
       ios-b 36–40    — текст одна строка (nowrap), время строкой ниже справа
-      ios-c 41–75    — многострочный; время в полосе под последней строкой (absolute), без отдельной строки в потоке
+      ios-c 41–75    — многострочный; .bubble-text inline-block (ширина по самой длинной строке); время absolute в углу
       ios-d 76–80    — как ios-c, чуть больше нижний отступ
       ios-e >80      — как ios-c
     */
@@ -421,12 +421,19 @@
     }
 
 .theme-ios .bubble.bubble--ios-c:not(.message--media) .bubble-text {
-      display: block;
+      /*
+        inline-block: ширина блока = самая длинная строка текста (верхняя строка не укорачивается
+        общим «столбцом» под время). Время — absolute в углу пузыря той же ширины.
+      */
+      display: inline-block;
+      vertical-align: top;
+      max-width: 100%;
       word-break: break-word;
       overflow-wrap: break-word;
       font-weight: 300;
       padding-bottom: 4px;
-      padding-right: 4px;
+      padding-right: 2px;
+      box-sizing: border-box;
     }
 
 .theme-ios .bubble.bubble--ios-c:not(.message--media) .meta {
@@ -452,12 +459,15 @@
     }
 
 .theme-ios .bubble.bubble--ios-d:not(.message--media) .bubble-text {
-      display: block;
+      display: inline-block;
+      vertical-align: top;
+      max-width: 100%;
       word-break: break-word;
       overflow-wrap: break-word;
       padding-bottom: 4px;
-      padding-right: 4px;
+      padding-right: 2px;
       font-weight: 300;
+      box-sizing: border-box;
     }
 
 .theme-ios .bubble.bubble--ios-d:not(.message--media) .meta {
@@ -483,12 +493,15 @@
     }
 
 .theme-ios .bubble.bubble--ios-e:not(.message--media) .bubble-text {
-      display: block;
+      display: inline-block;
+      vertical-align: top;
+      max-width: 100%;
       word-break: break-word;
       overflow-wrap: break-word;
       font-weight: 300;
       padding-bottom: 4px;
-      padding-right: 4px;
+      padding-right: 2px;
+      box-sizing: border-box;
     }
 
 .theme-ios .bubble.bubble--ios-e:not(.message--media) .meta {
@@ -549,6 +562,13 @@
       color: rgba(255, 255, 255, 0.48);
       opacity: 1;
       font-size: 10px;
+    }
+
+/* Входящие, только 2+ строки (ios-c/d/e): время чуть левее от правого края */
+    .theme-ios .row.in .bubble.bubble--ios-c:not(.message--media) .meta,
+    .theme-ios .row.in .bubble.bubble--ios-d:not(.message--media) .meta,
+    .theme-ios .row.in .bubble.bubble--ios-e:not(.message--media) .meta {
+      right: 19px;
     }
 
 .theme-ios .row.out .bubble .meta {
