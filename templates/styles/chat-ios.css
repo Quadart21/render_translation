@@ -1,0 +1,556 @@
+/* Сгенерировано: node scripts/extract-chat-css.mjs из templates/chat.html */
+
+/* iOS-мок в Chromium: более «печатный» контур букв + отключён синтетический bold */
+    .theme-ios.phone {
+      text-rendering: geometricPrecision;
+      -webkit-font-smoothing: subpixel-antialiased;
+      font-synthesis: none;
+      font-optical-sizing: none;
+    }
+
+/* Верхняя панель iOS: подложка под blur на ~30% прозрачнее (альфа ×0.7), остальной UI без изменений */
+    .theme-ios .chrome-header-stack::before {
+      height: calc(100% + 40px);
+      background: rgba(0, 0, 0, 0.28);
+      backdrop-filter: blur(22px) saturate(168%);
+      -webkit-backdrop-filter: blur(22px) saturate(168%);
+      mask-image: linear-gradient(
+        to bottom,
+        #000 0%,
+        #000 55%,
+        rgba(0, 0, 0, 0.476) 70%,
+        rgba(0, 0, 0, 0.154) 86%,
+        transparent 100%
+      );
+      -webkit-mask-image: linear-gradient(
+        to bottom,
+        #000 0%,
+        #000 55%,
+        rgba(0, 0, 0, 0.476) 70%,
+        rgba(0, 0, 0, 0.154) 86%,
+        transparent 100%
+      );
+    }
+
+.theme-ios .chrome-header-stack .ios-status,
+    .theme-ios .chrome-header-stack .ios-nav.telegram-topbar {
+      background: transparent !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+
+.theme-ios-only { display: none !important; }
+
+/* ios+android в одном блоке — дубликат для изоляции */
+.theme-ios .theme-android-only { display: none !important; }
+
+.theme-ios .theme-ios-only { display: flex !important; }
+
+.theme-ios .theme-ios-only.ios-pinned-row,
+    .theme-ios .theme-ios-only.ios-composer-row { display: block !important; }
+
+.theme-ios .ios-nav.theme-ios-only {
+      display: grid !important;
+    }
+
+.theme-ios .ios-status.theme-ios-only {
+      display: grid !important;
+    }
+
+/* ——— Telegram iOS DARK UI (токены + совместимость со старыми --ios-*) ——— */
+    .theme-ios {
+      --tg-font: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+      --tg-bg: #000000;
+      --tg-glass: rgba(28, 28, 30, 0.72);
+      --tg-purple: #a855f7;
+      --tg-blue: #4f7cff;
+      --tg-text: #ffffff;
+      --tg-text-soft: rgba(255, 255, 255, 0.72);
+      --tg-text-fade: rgba(255, 255, 255, 0.42);
+      --tg-border: rgba(255, 255, 255, 0.05);
+      --tg-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+      --tg-radius-xl: 28px;
+      --tg-radius-lg: 22px;
+      --tg-radius-md: 18px;
+      --tg-radius-sm: 14px;
+      --tg-blur: blur(20px) saturate(165%);
+      --ios-bg: var(--tg-bg);
+      --ios-nav: var(--tg-glass);
+      --ios-in-text: var(--tg-text);
+      --ios-out-text: var(--tg-text);
+      --ios-date-pill: rgba(34, 34, 34, 0.76);
+      --ios-date-text: rgba(255, 255, 255, 0.92);
+      --ios-subtitle: #2f8cff;
+    }
+
+.theme-ios.phone {
+      background: var(--tg-bg);
+      font-family: var(--tg-font);
+      border-radius: var(--tg-radius-xl);
+      box-shadow: var(--tg-shadow);
+    }
+
+.theme-ios .ios-tray .status-tray-signal {
+      width: 30px;
+      height: 18px;
+      opacity: 0.98;
+    }
+
+.theme-ios .ios-tray .status-tray-wifi {
+      width: 24px;
+      height: 18px;
+      opacity: 0.98;
+    }
+
+/*
+      Батарея iOS — как в системном статус-баре: высота с Wi‑Fi (18px), серый корпус,
+      красная полоса уровня слева, крупная белая цифра. --battery-pct задаётся в JS.
+    */
+    .theme-ios .ios-battery-wrap {
+      --battery-pct: 22%;
+      display: inline-flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 2px;
+      flex-shrink: 0;
+      height: 18px;
+    }
+
+.theme-ios .ios-battery-body {
+      position: relative;
+      box-sizing: border-box;
+      width: 27px;
+      height: 18px;
+      border-radius: 4px;
+      overflow: hidden;
+      background: rgba(60, 60, 67, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    }
+
+.theme-ios .ios-battery-fill {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: var(--battery-pct);
+      max-width: 100%;
+      background: linear-gradient(180deg, #ff6969 0%, #ff375f 45%, #d62828 100%);
+      border-radius: 2px 0 0 2px;
+    }
+
+.theme-ios .ios-battery-digit {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.06em;
+      color: #fff;
+      font-family: var(--tg-font);
+      pointer-events: none;
+      line-height: 1;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+      z-index: 1;
+    }
+
+.theme-ios .ios-battery-nub {
+      width: 2px;
+      height: 10px;
+      border-radius: 0 2px 2px 0;
+      background: rgba(60, 60, 67, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-left: none;
+      flex-shrink: 0;
+    }
+
+.theme-ios.phone.chat-under-header .chrome-header-stack::before {
+      background: rgba(0, 0, 0, 0.364);
+      backdrop-filter: blur(20px) saturate(165%);
+      -webkit-backdrop-filter: blur(20px) saturate(165%);
+    }
+
+/* BACK — как .back-pill; ширина по числу символов в счётчике, без фиксированного «короба» */
+    .theme-ios .ios-back.back-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      box-sizing: border-box;
+      min-width: 44px;
+      width: max-content;
+      max-width: min(200px, 42vw);
+      height: 52px;
+      padding: 0 10px 0 11px;
+      border-radius: 999px;
+      background: rgba(25, 25, 25, 0.76);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--tg-border);
+      box-shadow: var(--tg-shadow);
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+/* USER — как .user-pill */
+    .theme-ios .ios-title-pill.user-pill {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-width: 0;
+      width: auto;
+      max-width: 100%;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(24, 24, 24, 0.78);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      box-shadow: var(--tg-shadow);
+      text-align: center;
+    }
+
+.theme-ios.phone.chat-under-pinned .ios-pinned-inner.pinned-message {
+      background: rgba(26, 26, 26, 0.58);
+    }
+
+.theme-ios .chat-wrap::before {
+      content: '';
+      position: absolute;
+      left: -14px;
+      right: -14px;
+      top: 0;
+      height: 112px;
+      z-index: 3;
+      pointer-events: none;
+      background: linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0.42) 0%,
+        rgba(0, 0, 0, 0.22) 38%,
+        rgba(0, 0, 0, 0.08) 72%,
+        rgba(0, 0, 0, 0.02) 90%,
+        transparent 100%
+      );
+    }
+
+.theme-ios .chat-wrap {
+      padding: 248px 14px 20px;
+      background-color: #000;
+      background-image: url("__CHAT_WALLPAPER__");
+      background-size: cover;
+      background-position: center top;
+      background-repeat: no-repeat;
+    }
+
+/* как .date-divider (iOS) */
+    .theme-ios .date-sep span.date-divider {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 16px;
+      border-radius: 999px;
+      font-size: 16px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.92);
+      background: rgba(34, 34, 34, 0.76);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+.theme-ios .avatar {
+      width: 34px;
+      height: 34px;
+    }
+
+.theme-ios .avatar.placeholder {
+      background: linear-gradient(135deg, #4a5f78, #354556);
+      color: rgba(255,255,255,0.85);
+    }
+
+/* Иначе узкая колонка обрезает пузырь: время оказывается «снаружи» скругления */
+    .theme-ios .bubble-col {
+      width: fit-content;
+      max-width: 78%;
+    }
+
+/* iOS: иначе flex+max-width режет строку ~до 27 символов */
+    .theme-ios .bubble:not(.message--media) .bubble-text {
+      max-width: none;
+      flex: none;
+    }
+
+/*
+      iOS — классы bubble--ios-a … ios-e по длине текста ([...text].length):
+      ios-a ≤35      — одна строка: весь текст и время
+      ios-b 36–40    — текст одна строка (nowrap), время строкой ниже справа
+      ios-c 41–75    — многострочный; время в полосе под последней строкой (absolute), без отдельной строки в потоке
+      ios-d 76–80    — как ios-c, чуть больше нижний отступ
+      ios-e >80      — как ios-c
+    */
+    .theme-ios .bubble.bubble--ios-a:not(.message--media) {
+      display: inline-grid !important;
+      grid-template-columns: max-content max-content;
+      align-items: end;
+      column-gap: 7px;
+      width: max-content;
+      max-width: 100%;
+      min-width: min-content;
+      vertical-align: top;
+      box-sizing: border-box;
+      border-radius: 22px;
+    }
+
+.theme-ios .bubble.bubble--ios-a:not(.message--media) .bubble-text {
+      display: block;
+      grid-column: 1;
+      min-width: 0;
+      white-space: nowrap;
+      word-break: normal;
+      overflow-wrap: normal;
+      font-weight: 400;
+    }
+
+.theme-ios .bubble.bubble--ios-a:not(.message--media) .meta {
+      display: inline-flex;
+      grid-column: 2;
+      align-self: end;
+      transform: translateY(3px);
+      white-space: nowrap;
+      margin-left: 0;
+    }
+
+.theme-ios .bubble.bubble--ios-b:not(.message--media) {
+      display: inline-block !important;
+      position: relative;
+      width: fit-content;
+      max-width: 100%;
+      vertical-align: top;
+      box-sizing: border-box;
+      overflow: hidden;
+      border-radius: 22px;
+    }
+
+.theme-ios .bubble.bubble--ios-b:not(.message--media) .bubble-text {
+      display: block;
+      flex-shrink: 0;
+      width: max-content;
+      max-width: 100%;
+      white-space: nowrap;
+      word-break: normal;
+      overflow-wrap: normal;
+      font-weight: 400;
+      padding-bottom: 4px;
+      padding-right: 2px;
+    }
+
+.theme-ios .bubble.bubble--ios-b:not(.message--media) .meta {
+      display: inline-flex;
+      position: absolute;
+      right: 10px;
+      bottom: 6px;
+      margin: 0;
+      white-space: nowrap;
+      transform: translateY(-4px);
+    }
+
+.theme-ios .bubble.bubble--ios-c:not(.message--media) {
+      display: inline-block !important;
+      position: relative;
+      width: fit-content;
+      max-width: 100%;
+      vertical-align: top;
+      text-align: left;
+      direction: ltr;
+      box-sizing: border-box;
+      overflow: hidden;
+      border-radius: 22px;
+    }
+
+.theme-ios .bubble.bubble--ios-c:not(.message--media) .bubble-text {
+      display: block;
+      word-break: break-word;
+      overflow-wrap: break-word;
+      font-weight: 400;
+      padding-bottom: 4px;
+      padding-right: 4px;
+    }
+
+.theme-ios .bubble.bubble--ios-c:not(.message--media) .meta {
+      display: inline-flex;
+      position: absolute;
+      right: 10px;
+      bottom: 6px;
+      float: none !important;
+      margin: 0;
+      white-space: nowrap;
+      transform: translateY(-4px);
+    }
+
+.theme-ios .bubble.bubble--ios-d:not(.message--media) {
+      display: inline-block !important;
+      width: fit-content;
+      max-width: 100%;
+      position: relative;
+      vertical-align: top;
+      overflow: hidden;
+      border-radius: 22px;
+      box-sizing: border-box;
+    }
+
+.theme-ios .bubble.bubble--ios-d:not(.message--media) .bubble-text {
+      display: block;
+      word-break: break-word;
+      overflow-wrap: break-word;
+      padding-bottom: 4px;
+      padding-right: 4px;
+      font-weight: 400;
+    }
+
+.theme-ios .bubble.bubble--ios-d:not(.message--media) .meta {
+      position: absolute;
+      right: 10px;
+      bottom: 6px;
+      margin-left: 0;
+      white-space: nowrap;
+      transform: translateY(-4px);
+    }
+
+.theme-ios .bubble.bubble--ios-e:not(.message--media) {
+      display: inline-block !important;
+      position: relative;
+      width: fit-content;
+      max-width: 100%;
+      vertical-align: top;
+      text-align: left;
+      direction: ltr;
+      box-sizing: border-box;
+      overflow: hidden;
+      border-radius: 22px;
+    }
+
+.theme-ios .bubble.bubble--ios-e:not(.message--media) .bubble-text {
+      display: block;
+      word-break: break-word;
+      overflow-wrap: break-word;
+      font-weight: 400;
+      padding-bottom: 4px;
+      padding-right: 4px;
+    }
+
+.theme-ios .bubble.bubble--ios-e:not(.message--media) .meta {
+      display: inline-flex;
+      position: absolute;
+      right: 10px;
+      bottom: 6px;
+      float: none !important;
+      margin: 0;
+      white-space: nowrap;
+      transform: translateY(-4px);
+    }
+
+.theme-ios .bubble {
+      padding: 8px 11px 9px 11px;
+      font-size: 13.5px;
+      line-height: 1.42;
+      border-radius: 22px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.24);
+    }
+
+/* Абсолютное время: меньше нижний padding пузыря — без лишней полосы под часами */
+    .theme-ios .bubble.bubble--ios-b:not(.message--media),
+    .theme-ios .bubble.bubble--ios-c:not(.message--media),
+    .theme-ios .bubble.bubble--ios-d:not(.message--media),
+    .theme-ios .bubble.bubble--ios-e:not(.message--media) {
+      padding: 8px 11px 5px 11px;
+    }
+
+.theme-ios .row.in .bubble {
+      background: linear-gradient(145deg, rgba(56, 46, 64, 0.92), rgba(34, 34, 40, 0.96));
+      color: var(--tg-text);
+      border-bottom-left-radius: 8px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+.theme-ios .row.out .bubble.out-purple {
+      background: linear-gradient(145deg, #b35cff, #7f52ff);
+      color: #fff;
+      border-bottom-right-radius: 8px;
+    }
+
+.theme-ios .row.out .bubble.out-blue {
+      background: linear-gradient(145deg, #2581ff, #5b44ff);
+      color: #fff;
+      border-bottom-right-radius: 8px;
+    }
+
+.theme-ios .bubble:not(.message--media) .meta {
+      float: none !important;
+      clear: none !important;
+      margin-left: 0;
+    }
+
+.theme-ios .row.in .bubble .meta {
+      color: rgba(255, 255, 255, 0.48);
+      opacity: 1;
+      font-size: 10px;
+    }
+
+.theme-ios .row.out .bubble .meta {
+      color: rgba(255, 255, 255, 0.48);
+      opacity: 1;
+      font-size: 10px;
+    }
+
+.theme-ios .checks {
+      font-size: 9.5px;
+      letter-spacing: -3px;
+      color: rgba(255,255,255,0.55);
+      margin-left: 2px;
+    }
+
+.theme-ios .bubble.message--media {
+      border-bottom-left-radius: 10px !important;
+      border-bottom-right-radius: 10px !important;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
+
+/* ios+android в одном блоке — дубликат для изоляции */
+.theme-android .bubble.message--media .meta,
+    .theme-ios .bubble.message--media .meta {
+      font-size: 8.25px;
+    }
+
+/* ios+android в одном блоке — дубликат для изоляции */
+.theme-android .bubble.message--media .checks,
+    .theme-ios .bubble.message--media .checks {
+      font-size: 7.5px;
+    }
+
+.theme-ios .img-placeholder {
+      background: repeating-linear-gradient(
+        -45deg,
+        rgba(0,0,0,0.25),
+        rgba(0,0,0,0.25) 8px,
+        rgba(0,0,0,0.15) 8px,
+        rgba(0,0,0,0.15) 16px
+      );
+      color: rgba(255,255,255,0.45);
+    }
+
+.theme-ios .ios-input-icons .composer-tool-icon {
+      width: 22px;
+      height: 22px;
+      opacity: 1;
+    }
+
+.theme-ios .circle-button .composer-tool-icon {
+      width: 22px;
+      height: 22px;
+      opacity: 0.95;
+    }

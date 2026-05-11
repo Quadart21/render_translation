@@ -13,10 +13,10 @@ import { embedPngExif } from '../lib/embedPngExif.js';
 import { resolveTruthMeta } from '../lib/truthMeta.js';
 import { embedSceneAssets } from './resolveAssets.js';
 import { buildIosFontFaceCss } from './iosFontFaces.js';
+import { loadChatHtmlWithStyles } from './chatTemplate.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.join(__dirname, '..', '..');
-const templatePath = path.join(projectRoot, 'templates', 'chat.html');
 const chatWallpaperPath = path.join(projectRoot, 'assets', 'chat-wallpaper.png');
 const iconPaperclipPath = path.join(projectRoot, 'assets', 'flaticon-paperclip.png');
 const iconMicrophonePath = path.join(projectRoot, 'assets', 'flaticon-microphone.png');
@@ -164,7 +164,7 @@ export async function renderSceneToPng(scene, opts = {}) {
   const viewportHeight = opts.viewportHeight ?? PHONE_LOGICAL_HEIGHT_CSS_PX + 120;
   const withAssets = embedSceneAssets(scene);
   const platformKey = withAssets.platform === 'ios' ? 'ios' : 'android';
-  const raw = await fs.readFile(templatePath, 'utf8');
+  const raw = await loadChatHtmlWithStyles(withAssets);
   const json = JSON.stringify(withAssets);
   let wallpaperInject =
     'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';

@@ -69,11 +69,17 @@ npm run bot
 
 | Путь | Назначение |
 |------|------------|
-| `templates/chat.html` | Вёрстка «телефона», темы iOS/Android |
+| `templates/chat.html` | Каркас «телефона» + плейсхолдеры стилей (`__CHAT_CSS_SHARED__`, `__CHAT_CSS_PLATFORM__`) |
+| `templates/styles/chat-shared.css` | Общие стили (без привязки к платформе) |
+| `templates/styles/chat-ios.css` | Только iOS (селекторы `.theme-ios` / `.theme-ios-only`) |
+| `templates/styles/chat-android.css` | Только Android (`.theme-android` / `.theme-android-only`) |
+| `src/renderer/chatTemplate.js` | Сборка HTML: подмешивает в шаблон только CSS активной платформы |
 | `assets/chat-wallpaper.png` | Фон чата |
 | `assets/flaticon-*.png`, `composer-smiley.png` | Иконки композера (скрепка, микрофон, смайл) |
 | `assets/status-*.png` | Сигнал и Wi‑Fi в статус-баре |
 | `src/renderer/render.js` | Подстановка плейсхолдеров, Sharp (белые силуэты иконок), Playwright |
+
+Регенерация трёх CSS из монолитного `<style>` (редко): `node scripts/extract-chat-css.mjs`.
 
 **Лицензия Flaticon (free):** при публикации иконок с Flaticon нужна [атрибуция](https://support.flaticon.com/s/article/Attribution-How-when-and-where-FI?language=en_US).
 
