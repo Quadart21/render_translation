@@ -575,10 +575,28 @@
       color: rgba(255, 255, 255, 0.48);
       opacity: 1;
       font-size: 10px;
+      gap: 2px;
+    }
+
+.theme-ios .row.out .bubble .checks {
+      margin-left: 0;
+      letter-spacing: -4px;
+    }
+
+/*
+      Исходящие b/c/d/e: время+галочки — подстройка через right / bottom / translateY поверх базового ios-meta.
+    */
+    .theme-ios .row.out .bubble.bubble--ios-b:not(.message--media) .meta,
+    .theme-ios .row.out .bubble.bubble--ios-c:not(.message--media) .meta,
+    .theme-ios .row.out .bubble.bubble--ios-d:not(.message--media) .meta,
+    .theme-ios .row.out .bubble.bubble--ios-e:not(.message--media) .meta {
+      right: 23px;
+      bottom: 4px;
+      transform: translateY(0);
     }
 
 .theme-ios .checks {
-      font-size: 9.5px;
+      font-size: 13px;
       letter-spacing: -3px;
       color: rgba(255,255,255,0.55);
       margin-left: 2px;
@@ -600,7 +618,7 @@
 /* ios+android в одном блоке — дубликат для изоляции */
 .theme-android .bubble.message--media .checks,
     .theme-ios .bubble.message--media .checks {
-      font-size: 7.5px;
+      font-size: 10.5px;
     }
 
 .theme-ios .img-placeholder {

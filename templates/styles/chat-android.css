@@ -489,11 +489,23 @@
       text-align: right;
     }
 
+.theme-android .row.out .bubble:not(.message--media) .meta {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 2px;
+      margin-left: 8px;
+    }
+
 .theme-android .checks {
-      font-size: 8.25px;
+      font-size: 12px;
       letter-spacing: -2px;
       color: rgba(255, 255, 255, 0.62);
       margin-left: 2px;
+    }
+
+.theme-android .row.out .bubble .checks {
+      margin-left: 0;
+      letter-spacing: -3px;
     }
 
 .theme-android .bubble.message--media {
@@ -508,7 +520,7 @@
 
 .theme-android .bubble.message--media .checks,
     .theme-ios .bubble.message--media .checks {
-      font-size: 7.5px;
+      font-size: 10.5px;
     }
 
 .theme-android .img-placeholder {
