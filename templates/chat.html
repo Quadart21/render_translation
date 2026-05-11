@@ -1046,6 +1046,11 @@
 
     .bubble-col { max-width: 78%; display: flex; flex-direction: column; gap: 4px; }
     .row.out .bubble-col { align-items: flex-end; }
+    /* Иначе узкая колонка обрезает пузырь: время оказывается «снаружи» скругления */
+    .theme-ios .bubble-col {
+      width: fit-content;
+      max-width: 78%;
+    }
 
     .bubble {
       padding: 8px 11px 7px;
@@ -1104,24 +1109,25 @@
       iOS — классы bubble--ios-a … ios-e по длине текста ([...text].length):
       ios-a ≤35      — одна строка: весь текст и время
       ios-b 36–40    — текст одна строка (nowrap), время строкой ниже справа
-      ios-c 41–75    — переносы; время в потоке после последнего слова (на последней строке текста)
-      ios-d 76–80    — время снизу справа под блоком текста
+      ios-c 41–75    — многострочный; время в полосе под последней строкой (absolute), без отдельной строки в потоке
+      ios-d 76–80    — как ios-c, чуть больше нижний отступ
       ios-e >80      — как ios-c
     */
     .theme-ios .bubble.bubble--ios-a:not(.message--media) {
-      display: inline-flex !important;
-      flex-direction: row;
-      flex-wrap: nowrap;
-      align-items: flex-end;
-      justify-content: flex-start;
+      display: inline-grid !important;
+      grid-template-columns: max-content max-content;
+      align-items: end;
       column-gap: 7px;
-      max-width: 100%;
       width: max-content;
+      max-width: 100%;
+      min-width: min-content;
       vertical-align: top;
+      box-sizing: border-box;
+      border-radius: 22px;
     }
     .theme-ios .bubble.bubble--ios-a:not(.message--media) .bubble-text {
       display: block;
-      flex: 0 1 auto;
+      grid-column: 1;
       min-width: 0;
       white-space: nowrap;
       word-break: normal;
@@ -1130,57 +1136,74 @@
     }
     .theme-ios .bubble.bubble--ios-a:not(.message--media) .meta {
       display: inline-flex;
-      flex: 0 0 auto;
-      align-self: flex-end;
+      grid-column: 2;
+      align-self: end;
       transform: translateY(3px);
       white-space: nowrap;
       margin-left: 0;
     }
 
     .theme-ios .bubble.bubble--ios-b:not(.message--media) {
-      display: inline-flex !important;
-      flex-direction: column;
-      align-items: stretch;
+      display: inline-block !important;
+      position: relative;
       width: fit-content;
       max-width: 100%;
       vertical-align: top;
+      box-sizing: border-box;
+      overflow: hidden;
+      border-radius: 22px;
     }
     .theme-ios .bubble.bubble--ios-b:not(.message--media) .bubble-text {
       display: block;
+      flex-shrink: 0;
+      width: max-content;
+      max-width: 100%;
       white-space: nowrap;
       word-break: normal;
       overflow-wrap: normal;
       font-weight: 400;
+      padding-bottom: 4px;
+      padding-right: 2px;
     }
     .theme-ios .bubble.bubble--ios-b:not(.message--media) .meta {
       display: inline-flex;
-      align-self: flex-end;
-      margin-top: 4px;
-      margin-left: 0;
+      position: absolute;
+      right: 10px;
+      bottom: 6px;
+      margin: 0;
       white-space: nowrap;
+      transform: translateY(-4px);
     }
 
     .theme-ios .bubble.bubble--ios-c:not(.message--media) {
       display: inline-block !important;
+      position: relative;
       width: fit-content;
       max-width: 100%;
       vertical-align: top;
       text-align: left;
       direction: ltr;
+      box-sizing: border-box;
+      overflow: hidden;
+      border-radius: 22px;
     }
     .theme-ios .bubble.bubble--ios-c:not(.message--media) .bubble-text {
-      display: inline;
+      display: block;
       word-break: break-word;
       overflow-wrap: break-word;
       font-weight: 400;
+      padding-bottom: 4px;
+      padding-right: 4px;
     }
     .theme-ios .bubble.bubble--ios-c:not(.message--media) .meta {
-      display: inline-block;
+      display: inline-flex;
+      position: absolute;
+      right: 10px;
+      bottom: 6px;
       float: none !important;
-      transform: translateY(2px);
-      margin-left: 6px;
-      vertical-align: text-bottom;
+      margin: 0;
       white-space: nowrap;
+      transform: translateY(-4px);
     }
 
     .theme-ios .bubble.bubble--ios-d:not(.message--media) {
@@ -1189,44 +1212,56 @@
       max-width: 100%;
       position: relative;
       vertical-align: top;
+      overflow: hidden;
+      border-radius: 22px;
+      box-sizing: border-box;
     }
     .theme-ios .bubble.bubble--ios-d:not(.message--media) .bubble-text {
       display: block;
       word-break: break-word;
       overflow-wrap: break-word;
-      padding-bottom: 19px;
+      padding-bottom: 4px;
       padding-right: 4px;
       font-weight: 400;
     }
     .theme-ios .bubble.bubble--ios-d:not(.message--media) .meta {
       position: absolute;
       right: 10px;
-      bottom: 7px;
+      bottom: 6px;
       margin-left: 0;
       white-space: nowrap;
+      transform: translateY(-4px);
     }
 
     .theme-ios .bubble.bubble--ios-e:not(.message--media) {
       display: inline-block !important;
+      position: relative;
       width: fit-content;
       max-width: 100%;
       vertical-align: top;
       text-align: left;
       direction: ltr;
+      box-sizing: border-box;
+      overflow: hidden;
+      border-radius: 22px;
     }
     .theme-ios .bubble.bubble--ios-e:not(.message--media) .bubble-text {
-      display: inline;
+      display: block;
       word-break: break-word;
       overflow-wrap: break-word;
       font-weight: 400;
+      padding-bottom: 4px;
+      padding-right: 4px;
     }
     .theme-ios .bubble.bubble--ios-e:not(.message--media) .meta {
-      display: inline-block;
+      display: inline-flex;
+      position: absolute;
+      right: 10px;
+      bottom: 6px;
       float: none !important;
-      transform: translateY(2px);
-      margin-left: 6px;
-      vertical-align: text-bottom;
+      margin: 0;
       white-space: nowrap;
+      transform: translateY(-4px);
     }
 
     .theme-android .row.in .bubble {
@@ -1260,6 +1295,13 @@
       line-height: 1.42;
       border-radius: 22px;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.24);
+    }
+    /* Абсолютное время: меньше нижний padding пузыря — без лишней полосы под часами */
+    .theme-ios .bubble.bubble--ios-b:not(.message--media),
+    .theme-ios .bubble.bubble--ios-c:not(.message--media),
+    .theme-ios .bubble.bubble--ios-d:not(.message--media),
+    .theme-ios .bubble.bubble--ios-e:not(.message--media) {
+      padding: 8px 11px 5px 11px;
     }
 
     .theme-ios .row.in .bubble {
