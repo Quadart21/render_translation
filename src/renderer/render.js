@@ -210,7 +210,11 @@ export async function renderSceneToPng(scene, opts = {}) {
 
   const browser = await chromium.launch({
     headless: true,
-    args: ['--force-color-profile=srgb', '--font-render-hinting=full'],
+    args: [
+      '--force-color-profile=srgb',
+      /* full заметно утолщает лёгкие начертания (SF Pro Text 300) в длинных пузырях */
+      `--font-render-hinting=${platformKey === 'ios' ? 'medium' : 'full'}`,
+    ],
   });
   try {
     const page = await browser.newPage({

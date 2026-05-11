@@ -356,6 +356,17 @@
       box-shadow: var(--tg-shadow);
     }
 
+/* Текст сообщений в ленте — SF Pro Text Light (300), как на iOS */
+    .theme-android.phone #chat .bubble:not(.message--media) .bubble-text,
+    .theme-android.phone #chat .bubble .bubble-text,
+    .theme-android.phone #chat .bubble .meta,
+    .theme-android.phone #chat .bubble.message--media .message__caption,
+    .theme-android.phone #chat .bubble.message--media .message__action {
+      font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+      font-weight: 300;
+      font-synthesis: none;
+    }
+
 /*
       Мягкий скрим у верхнего края ленты (без второго backdrop — иначе «рейка» на закрепе).
       Absolute к viewport прокрутки #chat: при скролле не уезжает вместе с пузырями.

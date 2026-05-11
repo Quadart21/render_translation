@@ -8,12 +8,12 @@
       font-optical-sizing: none;
     }
 
-/* Верхняя панель iOS: подложка под blur на ~30% прозрачнее (альфа ×0.7), остальной UI без изменений */
+/* Верхняя панель iOS: легче blur/saturate и светлее тинт у самого края — меньше «мутности» */
     .theme-ios .chrome-header-stack::before {
       height: calc(100% + 40px);
-      background: rgba(0, 0, 0, 0.28);
-      backdrop-filter: blur(22px) saturate(168%);
-      -webkit-backdrop-filter: blur(22px) saturate(168%);
+      background: rgba(28, 28, 30, 0.2);
+      backdrop-filter: blur(14px) saturate(118%);
+      -webkit-backdrop-filter: blur(14px) saturate(118%);
       mask-image: linear-gradient(
         to bottom,
         #000 0%,
@@ -73,7 +73,7 @@
       --tg-radius-lg: 22px;
       --tg-radius-md: 18px;
       --tg-radius-sm: 14px;
-      --tg-blur: blur(20px) saturate(165%);
+      --tg-blur: blur(14px) saturate(118%);
       --ios-bg: var(--tg-bg);
       --ios-nav: var(--tg-glass);
       --ios-in-text: var(--tg-text);
@@ -93,16 +93,22 @@
     }
 
 /*
-      chat-shared задаёт .bubble / .bubble-text / .meta как font-weight 400 и заголовки iOS как 600–700 —
-      без этого блока текст сообщений и шапка выглядят «жирными» поверх Light.
+      Текст сообщений в ленте — SF Pro Text Light (font-weight 300); файл через __IOS_FONT_FACES__.
+      chat-shared задаёт .bubble-text как 400 — перебиваем здесь.
     */
     .theme-ios.phone #chat .bubble:not(.message--media) .bubble-text,
     .theme-ios.phone #chat .bubble .bubble-text,
     .theme-ios.phone #chat .bubble .meta,
     .theme-ios.phone #chat .bubble.message--media .message__caption,
     .theme-ios.phone #chat .bubble.message--media .message__action {
+      font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
       font-weight: 300;
       font-synthesis: none;
+    }
+
+    /* Лента: без subpixel-сглаживания у текста пузырей — иначе Light в Chromium выглядит «жирным» */
+    .theme-ios.phone #chat .bubble .bubble-text {
+      -webkit-font-smoothing: antialiased;
     }
 
 .theme-ios .ios-nav-title {
@@ -218,9 +224,9 @@
     }
 
 .theme-ios.phone.chat-under-header .chrome-header-stack::before {
-      background: rgba(0, 0, 0, 0.364);
-      backdrop-filter: blur(20px) saturate(165%);
-      -webkit-backdrop-filter: blur(20px) saturate(165%);
+      background: rgba(28, 28, 30, 0.32);
+      backdrop-filter: blur(13px) saturate(118%);
+      -webkit-backdrop-filter: blur(13px) saturate(118%);
     }
 
 /* BACK — как .back-pill; ширина по числу символов в счётчике, без фиксированного «короба» */
@@ -268,6 +274,28 @@
       background: rgba(26, 26, 26, 0.58);
     }
 
+/* Композер и home — внутри phone-main, поверх ленты; без чёрной подложки телефона под ними */
+    .theme-ios.phone .ios-composer-row.message-input-bar {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 24px;
+      z-index: 9;
+      border-top: none;
+      background: transparent;
+      pointer-events: auto;
+    }
+
+.theme-ios.phone .ios-home-indicator.home-indicator {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 8;
+      background: transparent;
+      pointer-events: none;
+    }
+
 .theme-ios .chat-wrap::before {
       content: '';
       position: absolute;
@@ -279,16 +307,16 @@
       pointer-events: none;
       background: linear-gradient(
         to bottom,
-        rgba(0, 0, 0, 0.42) 0%,
-        rgba(0, 0, 0, 0.22) 38%,
-        rgba(0, 0, 0, 0.08) 72%,
-        rgba(0, 0, 0, 0.02) 90%,
+        rgba(0, 0, 0, 0.26) 0%,
+        rgba(0, 0, 0, 0.12) 38%,
+        rgba(0, 0, 0, 0.045) 72%,
+        rgba(0, 0, 0, 0.012) 90%,
         transparent 100%
       );
     }
 
 .theme-ios .chat-wrap {
-      padding: 248px 14px 20px;
+      padding: 248px 14px 128px;
       background-color: #000;
       background-image: url("__CHAT_WALLPAPER__");
       background-size: cover;
@@ -420,11 +448,13 @@
       border-radius: 22px;
     }
 
-.theme-ios .bubble.bubble--ios-c:not(.message--media) .bubble-text {
-      /*
-        inline-block: ширина блока = самая длинная строка текста (верхняя строка не укорачивается
-        общим «столбцом» под время). Время — absolute в углу пузыря той же ширины.
-      */
+/*
+      ios-c / ios-d / ios-e — одинаковая типографика многострочного текста (в т.ч. >80 символов).
+      inline-block: ширина = самая длинная строка; время — absolute в углу.
+    */
+    .theme-ios .bubble.bubble--ios-c:not(.message--media) .bubble-text,
+    .theme-ios .bubble.bubble--ios-d:not(.message--media) .bubble-text,
+    .theme-ios .bubble.bubble--ios-e:not(.message--media) .bubble-text {
       display: inline-block;
       vertical-align: top;
       max-width: 100%;
@@ -458,18 +488,6 @@
       box-sizing: border-box;
     }
 
-.theme-ios .bubble.bubble--ios-d:not(.message--media) .bubble-text {
-      display: inline-block;
-      vertical-align: top;
-      max-width: 100%;
-      word-break: break-word;
-      overflow-wrap: break-word;
-      padding-bottom: 4px;
-      padding-right: 2px;
-      font-weight: 300;
-      box-sizing: border-box;
-    }
-
 .theme-ios .bubble.bubble--ios-d:not(.message--media) .meta {
       position: absolute;
       right: 10px;
@@ -490,18 +508,6 @@
       box-sizing: border-box;
       overflow: hidden;
       border-radius: 22px;
-    }
-
-.theme-ios .bubble.bubble--ios-e:not(.message--media) .bubble-text {
-      display: inline-block;
-      vertical-align: top;
-      max-width: 100%;
-      word-break: break-word;
-      overflow-wrap: break-word;
-      font-weight: 300;
-      padding-bottom: 4px;
-      padding-right: 2px;
-      box-sizing: border-box;
     }
 
 .theme-ios .bubble.bubble--ios-e:not(.message--media) .meta {
