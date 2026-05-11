@@ -2,13 +2,25 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 
 /**
- * San Francisco Pro Text — категория Apple на AZFonts:
- * https://ru.azfonts.net/fonts/categories/apple
- *
- * По умолчанию: assets/fonts/sf-pro-text/
- * Другая папка (если перенесли файлы): IOS_FONT_DIR=относительный/или/абсолютный/путь
+ * SF Pro Text для мока: Light (300), Regular (400), Medium, Semibold — @font-face.
+ * iOS-тема в CSS использует вес 300 (Light), см. chat-ios.css.
+ * Файлы: assets/fonts/sf-pro-text/ (например SFProText-Light.ttf).
+ * Другая папка: IOS_FONT_DIR=…
  */
 const WEIGHT_CANDIDATES = [
+  {
+    weight: 300,
+    patterns: [/light|ultralight|thin/i],
+    files: [
+      'SFProText-Light.ttf',
+      'SFProText-Light.woff2',
+      'SF-Pro-Text-Light.otf',
+      'SFProText-Light.otf',
+      'SFProText-Light.woff',
+      'SF Pro Text Light.ttf',
+      'SF Pro Text Light.otf',
+    ],
+  },
   {
     weight: 400,
     patterns: [/regular|book\b/i],

@@ -60,7 +60,7 @@
       --tg-radius-md: 18px;
       --tg-radius-sm: 12px;
       --tg-shadow: 0 2px 10px rgba(0, 0, 0, 0.22);
-      --tg-font: Roboto, 'Noto Sans', system-ui, sans-serif;
+      --tg-font: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
       --incoming-bg: var(--tg-incoming);
       --incoming-text: var(--tg-text);
       --out-text: var(--tg-text);
@@ -351,6 +351,7 @@
 .theme-android.phone {
       background: var(--tg-bg);
       font-family: var(--tg-font);
+      font-weight: 400;
       border-radius: var(--tg-radius-xl);
       box-shadow: var(--tg-shadow);
     }

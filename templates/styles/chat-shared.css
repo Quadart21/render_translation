@@ -1,10 +1,12 @@
 /* Сгенерировано: node scripts/extract-chat-css.mjs из templates/chat.html */
 
-/* SF Pro Text подставляется в chat.html плейсхолдером __IOS_FONT_FACES__ (не дублировать здесь). */
+/* @font-face SF Pro Text (Regular 400) — в chat.html плейсхолдер __IOS_FONT_FACES__ (подмешивается при рендере). */
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+        sans-serif;
+      font-weight: 400;
       background: #0a0a0a;
       display: flex;
       justify-content: center;
@@ -533,6 +535,30 @@ body {
       background: #2a2a2d;
     }
 
+    /* Без подписи: время (и ✓✓) поверх картинки, как в Telegram */
+    .message__image-wrap.message__image-wrap--overlay {
+      position: relative;
+    }
+
+    .message__image-wrap--overlay .meta {
+      position: absolute;
+      right: 5px;
+      bottom: 4px;
+      margin: 0 !important;
+      float: none !important;
+      clear: none !important;
+      display: inline-flex;
+      align-items: baseline;
+      gap: 4px;
+      justify-content: flex-end;
+      font-size: 8.25px;
+      font-weight: 400;
+      color: rgba(255, 255, 255, 0.92);
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.75), 0 0 8px rgba(0, 0, 0, 0.45);
+      z-index: 2;
+      pointer-events: none;
+    }
+
 .message__image {
       display: block;
       width: 100%;
@@ -575,7 +601,7 @@ body {
       flex-shrink: 0;
     }
 
-.bubble.message--media .meta {
+.bubble.message--media > .meta {
       margin-top: 5px;
       font-size: 8.25px;
     }

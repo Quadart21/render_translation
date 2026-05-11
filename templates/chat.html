@@ -342,6 +342,7 @@
 
         var bubble = document.createElement('div');
         bubble.className = 'bubble';
+        var imageWrap = null;
         if (platform === 'ios' && outgoing && item.type === 'text') {
           bubble.classList.add(outIdx % 2 === 0 ? 'out-purple' : 'out-blue');
           outIdx++;
@@ -368,6 +369,7 @@
             ph.textContent = 'Изображение';
             wrap.appendChild(ph);
           }
+          imageWrap = wrap;
           bubble.appendChild(wrap);
           if (item.caption) {
             var cap = document.createElement('div');
@@ -392,7 +394,14 @@
           ck.textContent = '\u2713\u2713';
           meta.appendChild(ck);
         }
-        bubble.appendChild(meta);
+        var hasImageCaption =
+          item.type === 'image' && item.caption != null && String(item.caption).trim() !== '';
+        if (item.type === 'image' && imageWrap && !hasImageCaption) {
+          imageWrap.classList.add('message__image-wrap--overlay');
+          imageWrap.appendChild(meta);
+        } else {
+          bubble.appendChild(meta);
+        }
 
         if (platform === 'ios' && item.type === 'text') {
           var iosLen = [...String(item.text || '')].length;
