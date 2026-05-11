@@ -2,15 +2,16 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 
 /**
- * SF Pro Text для мока: Light (300), Regular (400), Medium, Semibold — @font-face.
- * iOS-тема в CSS использует вес 300 (Light), см. chat-ios.css.
- * Файлы: assets/fonts/sf-pro-text/ (например SFProText-Light.ttf).
- * Другая папка: IOS_FONT_DIR=…
+ * @font-face для мока iOS: веса 300 / 400 / 500 / 600.
+ * Семейство в CSS: --ios-font-family (templates/styles/chat-ios.css); здесь всегда объявляется как 'SF Pro Text'.
+ *
+ * Папка по умолчанию: assets/fonts/sf-pro-text/ (или IOS_FONT_DIR).
+ * Подойдут SF Pro Text / **SF UI Text** (.ttf из старых SDK) или fallback — SF Pro Display.
  */
 const WEIGHT_CANDIDATES = [
   {
     weight: 300,
-    patterns: [/light|ultralight|thin/i],
+    patterns: [/SF-UI-Text-Light/i, /Display-Light\.otf$/i, /Text-Light/i, /(^|-)Light\.otf$/i],
     files: [
       'SFProText-Light.ttf',
       'SFProText-Light.woff2',
@@ -19,13 +20,14 @@ const WEIGHT_CANDIDATES = [
       'SFProText-Light.woff',
       'SF Pro Text Light.ttf',
       'SF Pro Text Light.otf',
+      'SF-UI-Text-Light.ttf',
+      'SF-Pro-Display-Light.otf',
     ],
   },
   {
     weight: 400,
-    patterns: [/regular|book\b/i],
+    patterns: [/SF-UI-Text-Regular/i, /Display-Regular\.otf$/i, /Text-Regular/i, /regular/i],
     files: [
-      /* явный файл из репозитория: assets/fonts/sf-pro-text/SFProText-Regular.ttf */
       'SFProText-Regular.ttf',
       'SFProText-Regular.woff2',
       'SF-Pro-Text-Regular.otf',
@@ -33,11 +35,13 @@ const WEIGHT_CANDIDATES = [
       'SFProText-Regular.woff',
       'SF Pro Text Regular.ttf',
       'SF Pro Text Regular.otf',
+      'SF-UI-Text-Regular.ttf',
+      'SF-Pro-Display-Regular.otf',
     ],
   },
   {
     weight: 500,
-    patterns: [/medium/i],
+    patterns: [/SF-UI-Text-Medium/i, /Display-Medium\.otf$/i, /Text-Medium/i, /medium/i],
     files: [
       'SFProText-Medium.woff2',
       'SFProText-Medium.ttf',
@@ -46,11 +50,13 @@ const WEIGHT_CANDIDATES = [
       'SFProText-Medium.woff',
       'SF Pro Text Medium.ttf',
       'SF Pro Text Medium.otf',
+      'SF-UI-Text-Medium.ttf',
+      'SF-Pro-Display-Medium.otf',
     ],
   },
   {
     weight: 600,
-    patterns: [/semibold|semi[\s_-]?bold|demibold/i],
+    patterns: [/SF-UI-Text-Semibold/i, /Display-Semibold\.otf$/i, /Text-Semibold/i, /semibold/i],
     files: [
       'SFProText-Semibold.woff2',
       'SFProText-Semibold.ttf',
@@ -59,6 +65,8 @@ const WEIGHT_CANDIDATES = [
       'SFProText-Semibold.woff',
       'SF Pro Text Semibold.ttf',
       'SF Pro Text Semibold.otf',
+      'SF-UI-Text-Semibold.ttf',
+      'SF-Pro-Display-Semibold.otf',
     ],
   },
 ];

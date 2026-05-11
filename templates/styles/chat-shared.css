@@ -164,6 +164,10 @@ body {
       min-width: 0;
       justify-self: start;
       flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      line-height: 1;
+      min-height: 18px;
     }
 
 .ios-island-wrap {
@@ -175,20 +179,33 @@ body {
     }
 
 .ios-island {
-      height: 28px;
+      height: 18px;
       min-width: 0;
       max-width: min(200px, 100%);
-      padding: 0 12px;
-      border-radius: 20px;
+      padding: 0 5px;
+      border-radius: 9px;
       background: linear-gradient(180deg, #1e88e5 0%, #1565c0 100%);
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
-      font-size: 11px;
-      font-weight: 700;
+      gap: 3px;
+      font-size: 9px;
+      font-weight: 500;
       color: #fff;
       letter-spacing: 0.02em;
+    }
+
+.ios-island-icon {
+      display: block;
+      flex-shrink: 0;
+      width: 12px;
+      height: 12px;
+      object-fit: contain;
+      pointer-events: none;
+    }
+
+.ios-island-label {
+      line-height: 1;
     }
 
 .ios-tray {
@@ -202,6 +219,7 @@ body {
       color: rgba(255,255,255,0.92);
       flex-shrink: 0;
       white-space: nowrap;
+      min-height: 18px;
     }
 
 /* Top bar: без position:fixed — только внутри .phone для PNG */

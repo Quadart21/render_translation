@@ -59,7 +59,13 @@
 
 /* ——— Telegram iOS DARK UI (токены + совместимость со старыми --ios-*) ——— */
     .theme-ios {
-      --tg-font: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+      /*
+        Семейство шрифта для всего iOS-мока — только здесь (стек в --ios-font-family).
+        Размер и font-weight задаются у конкретных элементов.
+        --tg-font — алиас для правил, которые уже ссылаются на него.
+      */
+      --ios-font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+      --tg-font: var(--ios-font-family);
       --tg-bg: #000000;
       --tg-glass: rgba(28, 28, 30, 0.72);
       --tg-purple: #a855f7;
@@ -85,25 +91,36 @@
 
 .theme-ios.phone {
       background: var(--tg-bg);
-      font-family: var(--tg-font);
+      font-family: var(--ios-font-family);
       font-weight: 300;
       border-radius: var(--tg-radius-xl);
       box-shadow: var(--tg-shadow);
       font-synthesis: none;
     }
 
+/* Лента: то же сглаживание для всего #chat — иначе наследуется subpixel от .theme-ios.phone и Light выглядит жирнее */
+    .theme-ios.phone #chat {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+.theme-ios.phone #chat .bubble {
+      font-family: var(--ios-font-family);
+      font-weight: 300;
+      font-synthesis: none;
+    }
+
 /*
-      Текст сообщений в ленте — SF Pro Text Light (font-weight 300); файл через __IOS_FONT_FACES__.
-      chat-shared задаёт .bubble-text как 400 — перебиваем здесь.
+      Текст сообщений: семейство и вес 300 (SF Pro Text Light в @font-face). !important — перебить .bubble / .bubble-text из chat-shared (400).
     */
     .theme-ios.phone #chat .bubble:not(.message--media) .bubble-text,
     .theme-ios.phone #chat .bubble .bubble-text,
     .theme-ios.phone #chat .bubble .meta,
     .theme-ios.phone #chat .bubble.message--media .message__caption,
     .theme-ios.phone #chat .bubble.message--media .message__action {
-      font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
-      font-weight: 300;
-      font-synthesis: none;
+      font-family: var(--ios-font-family) !important;
+      font-weight: 300 !important;
+      font-synthesis: none !important;
     }
 
     /* Лента: без subpixel-сглаживания у текста пузырей — иначе Light в Chromium выглядит «жирным» */
@@ -180,8 +197,28 @@
       font-weight: 400;
     }
 
+/* Время и трей (сеть / Wi‑Fi / батарея) — одна линия по вертикали; время чуть выше и правее */
+    .theme-ios .ios-time {
+      transform: translate(6px, -3px);
+    }
+
+.theme-ios .ios-tray {
+      transform: translateY(-3px);
+    }
+
+/* Плашка TELEGRAM — выше уровня часов (без доп. сдвига по Y) */
+    .theme-ios .ios-island-wrap {
+      align-self: start;
+    }
+
 .theme-ios .ios-island {
-      font-weight: 500;
+      font-weight: 400;
+      font-synthesis: none;
+      -webkit-font-smoothing: antialiased;
+    }
+
+.theme-ios .ios-island-label {
+      font-weight: inherit;
     }
 
 .theme-ios .ios-nav-avatar.placeholder {
@@ -260,7 +297,7 @@
       font-variant-numeric: tabular-nums;
       letter-spacing: -0.06em;
       color: #fff;
-      font-family: var(--tg-font);
+      font-family: var(--ios-font-family);
       pointer-events: none;
       line-height: 1;
       text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
@@ -312,6 +349,7 @@
     }
 
 .theme-ios .ios-back.back-pill .ios-unread-pill {
+      /* Симметричный inset + tabular nums; оптика вертикали — на .ios-unread-pill-inner */
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -319,13 +357,30 @@
       background: #ffffff;
       color: #0a0a0a;
       border-radius: 999px;
-      padding: 2px 8px;
+      padding: 5px;
       font-size: 12.5px;
       font-weight: 400;
       line-height: 1;
-      letter-spacing: -0.03em;
-      font-variant-numeric: tabular-nums;
+      letter-spacing: 0;
+      font-variant-numeric: lining-nums tabular-nums;
+      font-feature-settings: 'tnum' 1, 'lnum' 1;
       flex-shrink: 0;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+.theme-ios .ios-back.back-pill .ios-unread-pill .ios-unread-pill-inner {
+      display: block;
+      line-height: 1;
+      transform: translateY(0.07em);
+    }
+
+@supports (text-box-trim: trim-both) {
+      .theme-ios .ios-back.back-pill .ios-unread-pill .ios-unread-pill-inner {
+        text-box-trim: trim-both;
+        text-box-edge: cap alphabetic;
+        transform: none;
+      }
     }
 
 /* USER: горизонтальный padding = 40% ширины блока с текстом с каждой стороны (--ios-title-pill-hpad в chat.html) */

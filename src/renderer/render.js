@@ -57,6 +57,12 @@ const FALLBACK_ICON_PHONE =
   encodeURIComponent(
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>'
   );
+/** Лого-самолётик в плашке Dynamic Island (белая заливка на синем фоне капсулы). */
+const FALLBACK_ICON_TELEGRAM =
+  'data:image/svg+xml,' +
+  encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="white" d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/></svg>'
+  );
 /**
  * Белые силуэты на тёмной панели без CSS filter (иначе в Chromium часто «пустые» img).
  * Сохраняем альфу исходной иконки.
@@ -200,7 +206,8 @@ export async function renderSceneToPng(scene, opts = {}) {
     .replace(/__ICON_SIGNAL__/g, iconSignalInject)
     .replace(/__ICON_WIFI__/g, iconWifiInject)
     .replace(/__ICON_SMILEY__/g, iconSmileyInject)
-    .replace(/__ICON_PHONE__/g, iconPhoneInject);
+    .replace(/__ICON_PHONE__/g, iconPhoneInject)
+    .replace(/__ICON_TELEGRAM__/g, FALLBACK_ICON_TELEGRAM);
 
   if (platformKey === 'ios') {
     const mul = resolveIosSuperSampleMultiplier();
@@ -212,8 +219,8 @@ export async function renderSceneToPng(scene, opts = {}) {
     headless: true,
     args: [
       '--force-color-profile=srgb',
-      /* full заметно утолщает лёгкие начертания (SF Pro Text 300) в длинных пузырях */
-      `--font-render-hinting=${platformKey === 'ios' ? 'medium' : 'full'}`,
+      /* iOS PNG: slight тоньше, чем medium/full, для Light (300) */
+      `--font-render-hinting=${platformKey === 'ios' ? 'slight' : 'full'}`,
     ],
   });
   try {

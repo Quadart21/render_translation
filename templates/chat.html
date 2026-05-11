@@ -73,7 +73,10 @@
           <div class="ios-status">
             <span class="ios-time" id="iosTime"></span>
             <div class="ios-island-wrap">
-              <div class="ios-island" aria-hidden="true">Telegram</div>
+              <div class="ios-island" aria-hidden="true">
+                <img class="ios-island-icon" src="__ICON_TELEGRAM__" alt="" width="12" height="12" decoding="async" />
+                <span class="ios-island-label">TELEGRAM</span>
+              </div>
             </div>
             <div class="ios-tray">
               <img class="status-tray-icon status-tray-signal" src="__ICON_SIGNAL__" alt="" width="30" height="18" decoding="async" aria-hidden="true" />
@@ -268,7 +271,10 @@
         var chev = '<span class="ios-chevron">&#8249;</span>';
         if (badge != null && badge !== '') {
           backEl.innerHTML =
-            chev + '<span class="ios-unread-pill counter">' + escapeHtml(String(badge)) + '</span>';
+            chev +
+            '<span class="ios-unread-pill counter"><span class="ios-unread-pill-inner">' +
+            escapeHtml(String(badge)) +
+            '</span></span>';
         } else {
           backEl.innerHTML = chev;
         }
