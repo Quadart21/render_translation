@@ -8,12 +8,12 @@
       font-optical-sizing: none;
     }
 
-/* Верхняя панель iOS: легче blur/saturate и светлее тинт у самого края — меньше «мутности» */
+/* Верхняя панель iOS: слабее blur — контент под «стеклом» менее размыт */
     .theme-ios .chrome-header-stack::before {
       height: calc(100% + 40px);
       background: rgba(28, 28, 30, 0.2);
-      backdrop-filter: blur(14px) saturate(118%);
-      -webkit-backdrop-filter: blur(14px) saturate(118%);
+      backdrop-filter: blur(4px) saturate(105%);
+      -webkit-backdrop-filter: blur(4px) saturate(105%);
       mask-image: linear-gradient(
         to bottom,
         #000 0%,
@@ -73,7 +73,7 @@
       --tg-radius-lg: 22px;
       --tg-radius-md: 18px;
       --tg-radius-sm: 14px;
-      --tg-blur: blur(14px) saturate(118%);
+      --tg-blur: blur(4px) saturate(105%);
       --ios-bg: var(--tg-bg);
       --ios-nav: var(--tg-glass);
       --ios-in-text: var(--tg-text);
@@ -111,14 +111,68 @@
       -webkit-font-smoothing: antialiased;
     }
 
+.theme-ios .ios-nav.telegram-topbar {
+      align-items: center;
+      --ios-nav-row-height: 46px;
+      --ios-nav-chrome-outline: rgba(255, 255, 255, 0.68);
+      --ios-nav-pill-outline: rgba(255, 255, 255, 0.44);
+      --ios-nav-chrome-outline-w: 0.5px;
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) var(--ios-nav-row-height);
+      justify-items: stretch;
+      column-gap: 6px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+/* Назад к левому краю, аватар к правому; средняя колонка 1fr — капсула по центру, зазоры слева/справа от неё равны */
+    .theme-ios .ios-nav-left {
+      justify-self: start;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+    }
+
+.theme-ios .ios-nav-mid {
+      justify-self: stretch;
+      min-width: 0;
+      max-width: 100%;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+.theme-ios .ios-nav-right {
+      justify-self: end;
+      width: var(--ios-nav-row-height);
+      height: var(--ios-nav-row-height);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+.theme-ios .ios-nav-right .ios-nav-avatar,
+    .theme-ios .ios-nav-right .ios-nav-avatar.placeholder {
+      width: var(--ios-nav-row-height);
+      height: var(--ios-nav-row-height);
+      border: var(--ios-nav-chrome-outline-w) solid var(--ios-nav-chrome-outline);
+      box-sizing: border-box;
+    }
+
 .theme-ios .ios-nav-title {
       font-weight: 400;
       font-synthesis: none;
+      font-size: 19px;
+      line-height: 1.2;
     }
 
 .theme-ios .ios-nav-sub {
       font-weight: 300;
       font-synthesis: none;
+      font-size: 11px;
+      margin-top: 1px;
+      line-height: 1.2;
     }
 
 .theme-ios .ios-status,
@@ -225,8 +279,8 @@
 
 .theme-ios.phone.chat-under-header .chrome-header-stack::before {
       background: rgba(28, 28, 30, 0.32);
-      backdrop-filter: blur(13px) saturate(118%);
-      -webkit-backdrop-filter: blur(13px) saturate(118%);
+      backdrop-filter: blur(3px) saturate(105%);
+      -webkit-backdrop-filter: blur(3px) saturate(105%);
     }
 
 /* BACK — как .back-pill; ширина по числу символов в счётчике, без фиксированного «короба» */
@@ -239,39 +293,98 @@
       min-width: 44px;
       width: max-content;
       max-width: min(200px, 42vw);
-      height: 52px;
+      height: var(--ios-nav-row-height);
       padding: 0 10px 0 11px;
       border-radius: 999px;
       background: rgba(25, 25, 25, 0.76);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
-      border: 1px solid var(--tg-border);
+      border: var(--ios-nav-chrome-outline-w) solid var(--ios-nav-pill-outline);
       box-shadow: var(--tg-shadow);
       flex-shrink: 0;
       overflow: hidden;
     }
 
-/* USER — как .user-pill */
+.theme-ios .ios-chevron {
+      color: #ffffff;
+      margin-top: 0;
+      transform: translateY(-2px);
+    }
+
+.theme-ios .ios-back.back-pill .ios-unread-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      background: #ffffff;
+      color: #0a0a0a;
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 12.5px;
+      font-weight: 400;
+      line-height: 1;
+      letter-spacing: -0.03em;
+      font-variant-numeric: tabular-nums;
+      flex-shrink: 0;
+    }
+
+/* USER: горизонтальный padding = 40% ширины блока с текстом с каждой стороны (--ios-title-pill-hpad в chat.html) */
+    .theme-ios .ios-title-pill-body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 0;
+      max-width: 100%;
+    }
+
+/* USER — одна высота с «назад» и аватаром; текст по центру по вертикали; ширина ограничена .ios-nav-mid */
     .theme-ios .ios-title-pill.user-pill {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
+      gap: 0;
       min-width: 0;
-      width: auto;
+      width: fit-content;
       max-width: 100%;
-      padding: 10px 14px;
+      box-sizing: border-box;
+      height: var(--ios-nav-row-height);
+      min-height: var(--ios-nav-row-height);
+      max-height: var(--ios-nav-row-height);
+      padding: 0 var(--ios-title-pill-hpad, 14px);
       border-radius: 999px;
       background: rgba(24, 24, 24, 0.78);
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
-      border: 1px solid rgba(255, 255, 255, 0.04);
+      border: var(--ios-nav-chrome-outline-w) solid var(--ios-nav-pill-outline);
       box-shadow: var(--tg-shadow);
       text-align: center;
     }
 
+.theme-ios .ios-title-pill.user-pill .ios-nav-title {
+      line-height: 1.1;
+    }
+
+.theme-ios .ios-title-pill.user-pill .ios-nav-sub {
+      margin-top: 0;
+      line-height: 1.1;
+    }
+
 .theme-ios.phone.chat-under-pinned .ios-pinned-inner.pinned-message {
       background: rgba(26, 26, 26, 0.58);
+    }
+
+/* Низ экрана: лёгкое затемнение поверх ленты (0 → 40%), композер/home поверх */
+    .theme-ios.phone .phone-main::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: min(280px, 38%);
+      z-index: 7;
+      pointer-events: none;
+      background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.4) 100%);
     }
 
 /* Композер и home — внутри phone-main, поверх ленты; без чёрной подложки телефона под ними */

@@ -93,10 +93,12 @@
             </div>
             <div class="ios-nav-mid">
               <div class="ios-title-pill user-pill">
-                <div class="ios-title-line">
-                  <span class="ios-nav-title" id="iosNavTitle"></span>
+                <div class="ios-title-pill-body">
+                  <div class="ios-title-line">
+                    <span class="ios-nav-title" id="iosNavTitle"></span>
+                  </div>
+                  <div class="ios-nav-sub" id="iosNavSub"></div>
                 </div>
-                <div class="ios-nav-sub" id="iosNavSub"></div>
               </div>
             </div>
             <div class="ios-nav-right theme-ios-only">
@@ -292,6 +294,22 @@
             escapeHtml(truncatePinnedText(pinned)) +
             '</span><span class="ios-pin-icon" aria-hidden="true">\uD83D\uDCCC</span>';
         }
+
+        (function syncIosTitlePillPad() {
+          var pill = document.querySelector('.ios-title-pill.user-pill');
+          if (!pill) return;
+          var inner = pill.querySelector('.ios-title-pill-body');
+          if (!inner) return;
+          function apply() {
+            var w = inner.offsetWidth || inner.scrollWidth;
+            var side = Math.round(w * 0.4);
+            pill.style.setProperty('--ios-title-pill-hpad', Math.max(6, side) + 'px');
+          }
+          apply();
+          requestAnimationFrame(function () {
+            requestAnimationFrame(apply);
+          });
+        })();
       }
 
       var msgItems = (scene.items || []).filter(function (it) {
