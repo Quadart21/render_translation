@@ -238,7 +238,7 @@
 
 /* Время и трей (сеть / Wi‑Fi / батарея) — одна линия по вертикали; время чуть выше и правее */
     .theme-ios .ios-time {
-      transform: translate(13px, -3px);
+      transform: translate(17px, -3px);
     }
 
 .theme-ios .ios-tray {
