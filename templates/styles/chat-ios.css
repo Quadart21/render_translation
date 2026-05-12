@@ -85,7 +85,7 @@
 
 /*
       compositeScreenshot (сцена): целиком ваш PNG под интерфейсом.
-      Скрываем наши дубли островка/трея/«назад»/композера — поверх скрина остаются время, ник, аватар, переписка.
+      Скрываем дубли островка/трея/композера; поле «назад» — только цифры поверх скрина (см. ниже).
     */
     .theme-ios.phone.composite-screen-on .composite-screen-bg {
       display: block !important;
@@ -128,8 +128,46 @@
       visibility: hidden;
     }
 
-.theme-ios.phone.composite-screen-on .ios-back.back-pill {
-      visibility: hidden;
+/*
+      compositeScreenshot: скрин уже даёт стрелку и белый «хвост» счётчика.
+      Наш блок «назад» оставляем только для наложения цифр — без тёмной капсулы и без белого овала.
+    */
+    .theme-ios.phone.composite-screen-on .ios-back.back-pill {
+      visibility: visible;
+      background: transparent !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      border: none !important;
+      box-shadow: none !important;
+      padding: 0 !important;
+      min-width: 0 !important;
+      width: auto !important;
+      max-width: none !important;
+      height: auto !important;
+      min-height: 0 !important;
+      gap: 0 !important;
+      overflow: visible !important;
+      justify-content: flex-start !important;
+      align-items: center !important;
+    }
+
+.theme-ios.phone.composite-screen-on .ios-back.back-pill .ios-chevron {
+      display: none !important;
+    }
+
+.theme-ios.phone.composite-screen-on .ios-back.back-pill .ios-unread-pill,
+    .theme-ios.phone.composite-screen-on .ios-back.back-pill .ios-unread-pill--w2,
+    .theme-ios.phone.composite-screen-on .ios-back.back-pill .ios-unread-pill--w3,
+    .theme-ios.phone.composite-screen-on .ios-back.back-pill .ios-unread-pill--w4 {
+      background: transparent !important;
+      color: #0a0a0a !important;
+      border-radius: 0 !important;
+      padding: 0 !important;
+      box-shadow: none !important;
+      font-size: 12.5px !important;
+      font-weight: 500 !important;
+      font-variant-numeric: lining-nums tabular-nums !important;
+      font-feature-settings: 'tnum' 1, 'lnum' 1 !important;
     }
 
 .theme-ios.phone.composite-screen-on .ios-title-pill.user-pill {
