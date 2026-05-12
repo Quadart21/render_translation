@@ -8,26 +8,43 @@
       font-optical-sizing: none;
     }
 
-/* Верхняя панель iOS: слабее blur — контент под «стеклом» менее размыт */
-    .theme-ios .chrome-header-stack::before {
-      height: calc(100% + 40px);
-      background: rgba(28, 28, 30, 0.2);
-      backdrop-filter: blur(4px) saturate(105%);
-      -webkit-backdrop-filter: blur(4px) saturate(105%);
+/* Верхняя панель iOS: размытие и мягкая маска снизу — без заметной «полосы» на границе */
+    .theme-ios .chrome-header-stack {
+      border-bottom: none;
+    }
+
+
+.theme-ios .chrome-header-stack::before {
+      height: calc(100% + 72px);
+      background: rgba(28, 28, 30, 0.14);
+      backdrop-filter: blur(2px) saturate(102%);
+      -webkit-backdrop-filter: blur(2px) saturate(102%);
       mask-image: linear-gradient(
         to bottom,
         #000 0%,
-        #000 55%,
-        rgba(0, 0, 0, 0.476) 70%,
-        rgba(0, 0, 0, 0.154) 86%,
+        #000 14%,
+        rgba(0, 0, 0, 0.97) 26%,
+        rgba(0, 0, 0, 0.85) 38%,
+        rgba(0, 0, 0, 0.62) 50%,
+        rgba(0, 0, 0, 0.38) 61%,
+        rgba(0, 0, 0, 0.2) 71%,
+        rgba(0, 0, 0, 0.1) 80%,
+        rgba(0, 0, 0, 0.045) 87%,
+        rgba(0, 0, 0, 0.015) 93%,
         transparent 100%
       );
       -webkit-mask-image: linear-gradient(
         to bottom,
         #000 0%,
-        #000 55%,
-        rgba(0, 0, 0, 0.476) 70%,
-        rgba(0, 0, 0, 0.154) 86%,
+        #000 14%,
+        rgba(0, 0, 0, 0.97) 26%,
+        rgba(0, 0, 0, 0.85) 38%,
+        rgba(0, 0, 0, 0.62) 50%,
+        rgba(0, 0, 0, 0.38) 61%,
+        rgba(0, 0, 0, 0.2) 71%,
+        rgba(0, 0, 0, 0.1) 80%,
+        rgba(0, 0, 0, 0.045) 87%,
+        rgba(0, 0, 0, 0.015) 93%,
         transparent 100%
       );
     }
@@ -79,7 +96,7 @@
       --tg-radius-lg: 22px;
       --tg-radius-md: 18px;
       --tg-radius-sm: 14px;
-      --tg-blur: blur(4px) saturate(105%);
+      --tg-blur: blur(2px) saturate(102%);
       --ios-bg: var(--tg-bg);
       --ios-nav: var(--tg-glass);
       --ios-in-text: var(--tg-text);
@@ -128,9 +145,14 @@
       -webkit-font-smoothing: antialiased;
     }
 
+.theme-ios .ios-status {
+      padding: 10px 12px 6px;
+    }
+
 .theme-ios .ios-nav.telegram-topbar {
       align-items: center;
       --ios-nav-row-height: 46px;
+      --ios-nav-avatar-inner: 36px;
       --ios-nav-chrome-outline: rgba(255, 255, 255, 0.68);
       --ios-nav-pill-outline: rgba(255, 255, 255, 0.44);
       --ios-nav-chrome-outline-w: 0.5px;
@@ -140,6 +162,8 @@
       column-gap: 6px;
       width: 100%;
       box-sizing: border-box;
+      padding: 18px 14px 2px;
+      transform: translateY(-15px);
     }
 
 /* Назад к левому краю, аватар к правому; средняя колонка 1fr — капсула по центру, зазоры слева/справа от неё равны */
@@ -162,32 +186,47 @@
 
 .theme-ios .ios-nav-right {
       justify-self: end;
+      box-sizing: border-box;
       width: var(--ios-nav-row-height);
       height: var(--ios-nav-row-height);
       display: flex;
       align-items: center;
       justify-content: center;
+      border-radius: 50%;
+      border: var(--ios-nav-chrome-outline-w) solid var(--ios-nav-chrome-outline);
+      overflow: hidden;
+      transform: translateX(-4px);
     }
 
 .theme-ios .ios-nav-right .ios-nav-avatar,
     .theme-ios .ios-nav-right .ios-nav-avatar.placeholder {
-      width: var(--ios-nav-row-height);
-      height: var(--ios-nav-row-height);
-      border: var(--ios-nav-chrome-outline-w) solid var(--ios-nav-chrome-outline);
+      width: var(--ios-nav-avatar-inner);
+      height: var(--ios-nav-avatar-inner);
+      border: none;
       box-sizing: border-box;
+      flex-shrink: 0;
+    }
+
+.theme-ios .ios-nav-right .ios-nav-avatar.user-avatar {
+      border: none;
+    }
+
+.theme-ios .ios-nav-right .ios-nav-avatar.placeholder {
+      font-size: 13px;
+      font-weight: 400;
     }
 
 .theme-ios .ios-nav-title {
       font-weight: 400;
       font-synthesis: none;
-      font-size: 19px;
+      font-size: 17px;
       line-height: 1.2;
     }
 
 .theme-ios .ios-nav-sub {
       font-weight: 300;
       font-synthesis: none;
-      font-size: 11px;
+      font-size: 10px;
       margin-top: 1px;
       line-height: 1.2;
     }
@@ -199,30 +238,39 @@
 
 /* Время и трей (сеть / Wi‑Fi / батарея) — одна линия по вертикали; время чуть выше и правее */
     .theme-ios .ios-time {
-      transform: translate(6px, -3px);
+      transform: translate(13px, -3px);
     }
 
 .theme-ios .ios-tray {
       transform: translateY(-3px);
     }
 
-/* Плашка TELEGRAM — выше уровня часов (без доп. сдвига по Y) */
+/* Плашка TELEGRAM — выше; фон плоский без «объёмного» градиента */
     .theme-ios .ios-island-wrap {
       align-self: start;
+      transform: translateY(-4px);
     }
 
 .theme-ios .ios-island {
+      height: 21px;
+      padding: 0 7px;
+      border-radius: 11px;
+      gap: 4px;
+      font-size: 10px;
       font-weight: 400;
       font-synthesis: none;
       -webkit-font-smoothing: antialiased;
+      background: #3390ec;
+      box-shadow: none;
+    }
+
+.theme-ios .ios-island-icon {
+      width: 13px;
+      height: 13px;
     }
 
 .theme-ios .ios-island-label {
       font-weight: inherit;
-    }
-
-.theme-ios .ios-nav-avatar.placeholder {
-      font-weight: 400;
     }
 
 .theme-ios .ios-pinned-inner.pinned-message .title {
@@ -315,9 +363,9 @@
     }
 
 .theme-ios.phone.chat-under-header .chrome-header-stack::before {
-      background: rgba(28, 28, 30, 0.32);
-      backdrop-filter: blur(3px) saturate(105%);
-      -webkit-backdrop-filter: blur(3px) saturate(105%);
+      background: rgba(28, 28, 30, 0.26);
+      backdrop-filter: blur(1.5px) saturate(102%);
+      -webkit-backdrop-filter: blur(1.5px) saturate(102%);
     }
 
 /* BACK — как .back-pill; ширина по числу символов в счётчике, без фиксированного «короба» */
@@ -325,7 +373,7 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
+      gap: 2px;
       box-sizing: border-box;
       min-width: 44px;
       width: max-content;
@@ -345,11 +393,13 @@
 .theme-ios .ios-chevron {
       color: #ffffff;
       margin-top: 0;
-      transform: translateY(-2px);
+      font-size: calc(28px * 1.38);
+      line-height: 1;
+      transform: translateY(-0.085em);
     }
 
 .theme-ios .ios-back.back-pill .ios-unread-pill {
-      /* Симметричный inset + tabular nums; оптика вертикали — на .ios-unread-pill-inner */
+      /* База: одна цифра или без модификатора; 2 / 3 / 4+ — .ios-unread-pill--w2…w4 */
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -369,21 +419,31 @@
       white-space: nowrap;
     }
 
+.theme-ios .ios-back.back-pill .ios-unread-pill--w2 {
+      padding: 5px 9px;
+    }
+
+.theme-ios .ios-back.back-pill .ios-unread-pill--w3 {
+      padding: 5px 7px;
+    }
+
+.theme-ios .ios-back.back-pill .ios-unread-pill--w4 {
+      padding: 4px 6px;
+    }
+
 .theme-ios .ios-back.back-pill .ios-unread-pill .ios-unread-pill-inner {
       display: block;
       line-height: 1;
-      transform: translateY(0.07em);
     }
 
 @supports (text-box-trim: trim-both) {
       .theme-ios .ios-back.back-pill .ios-unread-pill .ios-unread-pill-inner {
         text-box-trim: trim-both;
         text-box-edge: cap alphabetic;
-        transform: none;
       }
     }
 
-/* USER: горизонтальный padding = 40% ширины блока с текстом с каждой стороны (--ios-title-pill-hpad в chat.html) */
+/* USER: горизонтальный padding ≈ 52% ширины блока с текстом с каждой стороны (--ios-title-pill-hpad в chat.html) */
     .theme-ios .ios-title-pill-body {
       display: flex;
       flex-direction: column;
@@ -406,7 +466,7 @@
       height: var(--ios-nav-row-height);
       min-height: var(--ios-nav-row-height);
       max-height: var(--ios-nav-row-height);
-      padding: 0 var(--ios-title-pill-hpad, 14px);
+      padding: 0 var(--ios-title-pill-hpad, 20px);
       border-radius: 999px;
       background: rgba(24, 24, 24, 0.78);
       backdrop-filter: blur(18px);
@@ -414,6 +474,10 @@
       border: var(--ios-nav-chrome-outline-w) solid var(--ios-nav-pill-outline);
       box-shadow: var(--tg-shadow);
       text-align: center;
+    }
+
+.theme-ios .ios-title-pill.user-pill .ios-title-line {
+      transform: translateY(-3px);
     }
 
 .theme-ios .ios-title-pill.user-pill .ios-nav-title {
@@ -464,22 +528,25 @@
       pointer-events: none;
     }
 
-.theme-ios .chat-wrap::before {
+/* Затемнение под «стеклом» на ленте */
+    .theme-ios .chat-wrap::before {
       content: '';
       position: absolute;
       left: -14px;
       right: -14px;
       top: 0;
-      height: 112px;
+      height: min(260px, 48%);
       z-index: 3;
       pointer-events: none;
       background: linear-gradient(
         to bottom,
-        rgba(0, 0, 0, 0.26) 0%,
-        rgba(0, 0, 0, 0.12) 38%,
-        rgba(0, 0, 0, 0.045) 72%,
-        rgba(0, 0, 0, 0.012) 90%,
-        transparent 100%
+        rgba(0, 0, 0, 0.13) 0%,
+        rgba(0, 0, 0, 0.075) 14%,
+        rgba(0, 0, 0, 0.038) 30%,
+        rgba(0, 0, 0, 0.017) 48%,
+        rgba(0, 0, 0, 0.007) 64%,
+        rgba(0, 0, 0, 0.002) 78%,
+        transparent 88%
       );
     }
 

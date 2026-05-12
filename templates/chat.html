@@ -270,10 +270,23 @@
         var backEl = document.getElementById('iosBack');
         var chev = '<span class="ios-chevron">&#8249;</span>';
         if (badge != null && badge !== '') {
+          var badgeStr = String(badge);
+          var digitLen = (badgeStr.match(/\d/g) || []).length;
+          if (digitLen === 0) digitLen = badgeStr.length;
+          var wClass =
+            digitLen >= 4
+              ? ' ios-unread-pill--w4'
+              : digitLen === 3
+                ? ' ios-unread-pill--w3'
+                : digitLen === 2
+                  ? ' ios-unread-pill--w2'
+                  : '';
           backEl.innerHTML =
             chev +
-            '<span class="ios-unread-pill counter"><span class="ios-unread-pill-inner">' +
-            escapeHtml(String(badge)) +
+            '<span class="ios-unread-pill counter' +
+            wClass +
+            '"><span class="ios-unread-pill-inner">' +
+            escapeHtml(badgeStr) +
             '</span></span>';
         } else {
           backEl.innerHTML = chev;
@@ -308,8 +321,8 @@
           if (!inner) return;
           function apply() {
             var w = inner.offsetWidth || inner.scrollWidth;
-            var side = Math.round(w * 0.4);
-            pill.style.setProperty('--ios-title-pill-hpad', Math.max(6, side) + 'px');
+            var side = Math.round(w * 0.52);
+            pill.style.setProperty('--ios-title-pill-hpad', Math.max(10, side) + 'px');
           }
           apply();
           requestAnimationFrame(function () {
