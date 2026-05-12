@@ -11,7 +11,7 @@ import {
 } from '../constants/renderEtalon.js';
 import { embedPngExif } from '../lib/embedPngExif.js';
 import { resolveTruthMeta } from '../lib/truthMeta.js';
-import { embedSceneAssets } from './resolveAssets.js';
+import { embedSceneAssets, resolveImageSrc } from './resolveAssets.js';
 import { buildIosFontFaceCss } from './iosFontFaces.js';
 import { loadChatHtmlWithStyles } from './chatTemplate.js';
 
@@ -202,9 +202,14 @@ export async function renderSceneToPng(scene, opts = {}) {
     readComposerIconDataUrl(iconPhonePath, FALLBACK_ICON_PHONE),
     buildIosFontFaceCss(projectRoot),
   ]);
+  const compositeInject =
+    resolveImageSrc(withAssets.compositeScreenshot) ||
+    'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+
   const html = raw
     .replace('__IOS_FONT_FACES__', iosFontFaces)
     .replace('__SCENE_JSON__', json)
+    .replace(/__COMPOSITE_SCREENSHOT_SRC__/g, compositeInject)
     .replace(/__CHAT_WALLPAPER__/g, wallpaperInject)
     .replace(/__ICON_ATTACH__/g, iconAttachInject)
     .replace(/__ICON_MIC__/g, iconMicInject)

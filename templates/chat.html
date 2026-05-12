@@ -14,6 +14,15 @@
 <body>
   <div class="phone" id="phone">
     <div class="phone-main">
+      <!-- Режим compositeScreenshot: полный скрин снизу; поверх — время, ник, аватар, переписка -->
+      <div class="composite-screen-bg theme-ios-only" id="compositeScreenBg" hidden aria-hidden="true">
+        <img
+          id="compositeScreenImg"
+          alt=""
+          decoding="async"
+          src="__COMPOSITE_SCREENSHOT_SRC__"
+        />
+      </div>
       <!-- Лента на весь фрейм; статус/шапка/закреп — отдельный слой поверх (сообщения уходят под «стекло») -->
       <div class="chat-wrap" id="chat"></div>
 
@@ -159,6 +168,12 @@
       var phone = document.getElementById('phone');
       phone.classList.add(platform === 'ios' ? 'theme-ios' : 'theme-android');
       /* Стили платформ разведены в файлах templates/styles/chat-ios.css и chat-android.css (в HTML попадает только один). */
+
+      if (platform === 'ios' && scene.compositeScreenshot) {
+        phone.classList.add('composite-screen-on');
+        var csb = document.getElementById('compositeScreenBg');
+        if (csb) csb.hidden = false;
+      }
 
       var timeStr = scene.statusBar && scene.statusBar.time ? scene.statusBar.time : '';
       var battery = scene.statusBar && scene.statusBar.battery != null ? String(scene.statusBar.battery) : '';

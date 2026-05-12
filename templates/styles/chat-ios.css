@@ -83,6 +83,76 @@
       display: grid !important;
     }
 
+/*
+      compositeScreenshot (сцена): целиком ваш PNG под интерфейсом.
+      Скрываем наши дубли островка/трея/«назад»/композера — поверх скрина остаются время, ник, аватар, переписка.
+    */
+    .theme-ios.phone.composite-screen-on .composite-screen-bg {
+      display: block !important;
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+.theme-ios.phone.composite-screen-on .composite-screen-bg img {
+      width: 100%;
+      height: 100%;
+      object-fit: fill;
+      display: block;
+    }
+
+.theme-ios.phone.composite-screen-on .chat-wrap {
+      background-image: none !important;
+      background-color: transparent !important;
+    }
+
+.theme-ios.phone.composite-screen-on .chat-wrap::before {
+      display: none !important;
+    }
+
+.theme-ios.phone.composite-screen-on .phone-main::after {
+      display: none !important;
+    }
+
+.theme-ios.phone.composite-screen-on .chrome-header-stack::before {
+      display: none !important;
+    }
+
+.theme-ios.phone.composite-screen-on .chrome-header-stack {
+      border-bottom-color: transparent;
+    }
+
+.theme-ios.phone.composite-screen-on .ios-island-wrap,
+    .theme-ios.phone.composite-screen-on .ios-tray {
+      visibility: hidden;
+    }
+
+.theme-ios.phone.composite-screen-on .ios-back.back-pill {
+      visibility: hidden;
+    }
+
+.theme-ios.phone.composite-screen-on .ios-title-pill.user-pill {
+      background: transparent !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      border-color: transparent !important;
+      box-shadow: none !important;
+    }
+
+.theme-ios.phone.composite-screen-on .ios-nav-right {
+      border-color: transparent !important;
+      background: transparent !important;
+    }
+
+.theme-ios.phone.composite-screen-on .theme-ios-only.ios-composer-row {
+      display: none !important;
+    }
+
+.theme-ios.phone.composite-screen-on .ios-home-indicator.home-indicator {
+      display: none !important;
+    }
+
 /* ——— Telegram iOS DARK UI (токены + совместимость со старыми --ios-*) ——— */
     .theme-ios {
       /*
