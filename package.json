@@ -7,7 +7,7 @@
     "start": "node src/web/server.js",
     "bot": "node src/index.js",
     "render": "node src/cli-render.js",
-    "render:random": "node src/cli-render.js random"
+    "wallpaper:from-screenshot": "node scripts/extract-wallpaper-from-ui-screenshot.mjs"
   },
   "engines": {
     "node": ">=18"

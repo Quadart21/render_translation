@@ -17,7 +17,12 @@ import { loadChatHtmlWithStyles } from './chatTemplate.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.join(__dirname, '..', '..');
-const chatWallpaperPath = path.join(projectRoot, 'assets', 'chat-wallpaper.png');
+const wallpaperRaw = process.env.CHAT_WALLPAPER_PATH;
+const chatWallpaperPath = wallpaperRaw
+  ? path.isAbsolute(wallpaperRaw)
+    ? wallpaperRaw
+    : path.join(projectRoot, wallpaperRaw)
+  : path.join(projectRoot, 'assets', 'chat-wallpaper.png');
 const iconPaperclipPath = path.join(projectRoot, 'assets', 'flaticon-paperclip.png');
 const iconMicrophonePath = path.join(projectRoot, 'assets', 'flaticon-microphone.png');
 const statusCellularPath = path.join(projectRoot, 'assets', 'status-cellular.png');
