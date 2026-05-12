@@ -8,7 +8,7 @@
       font-optical-sizing: none;
     }
 
-/* Верхняя панель iOS: размытие и мягкая маска снизу — без заметной «полосы» на границе */
+/* Верхняя панель iOS: сверху сплошное затемнение, ниже — мягкий спад; лёгкое размытие; маска с плавным низом */
     .theme-ios .chrome-header-stack {
       border-bottom: none;
     }
@@ -16,35 +16,44 @@
 
 .theme-ios .chrome-header-stack::before {
       height: calc(100% + 72px);
-      background: rgba(28, 28, 30, 0.14);
-      backdrop-filter: blur(2px) saturate(102%);
-      -webkit-backdrop-filter: blur(2px) saturate(102%);
+      background: linear-gradient(
+        to bottom,
+        #000 0%,
+        #000 11%,
+        rgba(0, 0, 0, 0.93) 20%,
+        rgba(0, 0, 0, 0.58) 34%,
+        rgba(0, 0, 0, 0.38) 50%
+      );
+      backdrop-filter: blur(8px) saturate(104%);
+      -webkit-backdrop-filter: blur(8px) saturate(104%);
       mask-image: linear-gradient(
         to bottom,
         #000 0%,
-        #000 14%,
-        rgba(0, 0, 0, 0.97) 26%,
-        rgba(0, 0, 0, 0.85) 38%,
-        rgba(0, 0, 0, 0.62) 50%,
-        rgba(0, 0, 0, 0.38) 61%,
-        rgba(0, 0, 0, 0.2) 71%,
-        rgba(0, 0, 0, 0.1) 80%,
-        rgba(0, 0, 0, 0.045) 87%,
-        rgba(0, 0, 0, 0.015) 93%,
+        #000 18%,
+        rgba(0, 0, 0, 0.98) 28%,
+        rgba(0, 0, 0, 0.9) 37%,
+        rgba(0, 0, 0, 0.72) 47%,
+        rgba(0, 0, 0, 0.52) 56%,
+        rgba(0, 0, 0, 0.34) 66%,
+        rgba(0, 0, 0, 0.19) 76%,
+        rgba(0, 0, 0, 0.09) 85%,
+        rgba(0, 0, 0, 0.035) 92%,
+        rgba(0, 0, 0, 0.01) 97%,
         transparent 100%
       );
       -webkit-mask-image: linear-gradient(
         to bottom,
         #000 0%,
-        #000 14%,
-        rgba(0, 0, 0, 0.97) 26%,
-        rgba(0, 0, 0, 0.85) 38%,
-        rgba(0, 0, 0, 0.62) 50%,
-        rgba(0, 0, 0, 0.38) 61%,
-        rgba(0, 0, 0, 0.2) 71%,
-        rgba(0, 0, 0, 0.1) 80%,
-        rgba(0, 0, 0, 0.045) 87%,
-        rgba(0, 0, 0, 0.015) 93%,
+        #000 18%,
+        rgba(0, 0, 0, 0.98) 28%,
+        rgba(0, 0, 0, 0.9) 37%,
+        rgba(0, 0, 0, 0.72) 47%,
+        rgba(0, 0, 0, 0.52) 56%,
+        rgba(0, 0, 0, 0.34) 66%,
+        rgba(0, 0, 0, 0.19) 76%,
+        rgba(0, 0, 0, 0.09) 85%,
+        rgba(0, 0, 0, 0.035) 92%,
+        rgba(0, 0, 0, 0.01) 97%,
         transparent 100%
       );
     }
@@ -363,9 +372,16 @@
     }
 
 .theme-ios.phone.chat-under-header .chrome-header-stack::before {
-      background: rgba(28, 28, 30, 0.26);
-      backdrop-filter: blur(1.5px) saturate(102%);
-      -webkit-backdrop-filter: blur(1.5px) saturate(102%);
+      background: linear-gradient(
+        to bottom,
+        #000 0%,
+        #000 11%,
+        rgba(0, 0, 0, 0.95) 20%,
+        rgba(0, 0, 0, 0.65) 34%,
+        rgba(0, 0, 0, 0.46) 50%
+      );
+      backdrop-filter: blur(8px) saturate(104%);
+      -webkit-backdrop-filter: blur(8px) saturate(104%);
     }
 
 /* BACK — как .back-pill; ширина по числу символов в счётчике, без фиксированного «короба» */
