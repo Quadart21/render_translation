@@ -202,8 +202,19 @@ export async function renderSceneToPng(scene, opts = {}) {
     readComposerIconDataUrl(iconPhonePath, FALLBACK_ICON_PHONE),
     buildIosFontFaceCss(projectRoot),
   ]);
+  const resolvedComposite = resolveImageSrc(withAssets.compositeScreenshot);
+  if (
+    withAssets.compositeScreenshot &&
+    String(withAssets.compositeScreenshot).trim() &&
+    !resolvedComposite
+  ) {
+    console.warn(
+      '[render] compositeScreenshot не загрузился (проверьте путь к файлу или data URL):',
+      String(withAssets.compositeScreenshot).slice(0, 120)
+    );
+  }
   const compositeInject =
-    resolveImageSrc(withAssets.compositeScreenshot) ||
+    resolvedComposite ||
     'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 
   const html = raw

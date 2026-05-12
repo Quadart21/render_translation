@@ -19,6 +19,13 @@ const messageRows = document.getElementById('message-rows');
 const chkPinned = document.getElementById('chk-pinned');
 const pinnedText = document.getElementById('pinned-text');
 const chkRandomAvatar = document.getElementById('chk-random-avatar');
+const chkCompositeScreen = document.getElementById('chk-composite-screen');
+const compositeScreenFile = document.getElementById('composite-screen-file');
+const btnCompositeClear = document.getElementById('btn-composite-clear');
+const compositeScreenStatus = document.getElementById('composite-screen-status');
+
+/** data URL полного скрина для compositeScreenshot (только iOS) */
+let compositeScreenshotDataUrl = null;
 
 /** data URL выбранного файла по строке «Картинка» */
 const imageRowData = new WeakMap();
@@ -344,6 +351,15 @@ function buildScenePayload() {
   const payload = { ...scene };
   if (chkRandomAvatar.checked) payload.randomAvatars = true;
 
+  if (platform === 'ios') {
+    if (chkCompositeScreen.checked && !compositeScreenshotDataUrl) {
+      throw new Error('Включена подложка скрина: загрузите файл скрина (PNG или JPEG).');
+    }
+    if (chkCompositeScreen.checked && compositeScreenshotDataUrl) {
+      payload.compositeScreenshot = compositeScreenshotDataUrl;
+    }
+  }
+
   return payload;
 }
 
@@ -358,6 +374,43 @@ function initFormDefaults() {
   pinnedText.value = '';
   pinnedText.disabled = true;
   chkRandomAvatar.checked = false;
+  chkCompositeScreen.checked = false;
+  compositeScreenshotDataUrl = null;
+  compositeScreenFile.value = '';
+  compositeScreenStatus.textContent = '';
+
+  compositeScreenFile.addEventListener('change', () => {
+    const f = compositeScreenFile.files && compositeScreenFile.files[0];
+    if (!f) {
+      compositeScreenshotDataUrl = null;
+      compositeScreenStatus.textContent = '';
+      return;
+    }
+    if (!f.type.startsWith('image/')) {
+      compositeScreenFile.value = '';
+      compositeScreenshotDataUrl = null;
+      compositeScreenStatus.textContent = 'Нужен файл изображения.';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      compositeScreenshotDataUrl = reader.result;
+      chkCompositeScreen.checked = true;
+      compositeScreenStatus.textContent = `Загружено: ${f.name} (${Math.round(f.size / 1024)} KB)`;
+    };
+    reader.onerror = () => {
+      compositeScreenshotDataUrl = null;
+      compositeScreenStatus.textContent = 'Не удалось прочитать файл.';
+    };
+    reader.readAsDataURL(f);
+  });
+
+  btnCompositeClear.addEventListener('click', () => {
+    compositeScreenFile.value = '';
+    compositeScreenshotDataUrl = null;
+    chkCompositeScreen.checked = false;
+    compositeScreenStatus.textContent = '';
+  });
 
   messageRows.innerHTML = '';
   messageRows.appendChild(

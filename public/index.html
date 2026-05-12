@@ -88,6 +88,21 @@
             <input type="checkbox" id="chk-random-avatar" />
             <span>Случайные аватарки из картинок в корне проекта</span>
           </label>
+
+          <div class="ios-only-row hidden composite-screen-section">
+            <label class="checkbox-row">
+              <input type="checkbox" id="chk-composite-screen" />
+              <span>Подложка: полный скрин iPhone (поверх — время, ник, аватар, сообщения)</span>
+            </label>
+            <div class="field field-full composite-file-row">
+              <span class="field-label muted-small">PNG скрина чата (как с телефона)</span>
+              <div class="composite-file-actions">
+                <input type="file" id="composite-screen-file" class="input-file" accept="image/png,image/jpeg,image/webp" />
+                <button type="button" id="btn-composite-clear" class="btn btn-ghost btn-sm">Сбросить скрин</button>
+              </div>
+              <p id="composite-screen-status" class="hint hint-tight muted-small"></p>
+            </div>
+          </div>
         </div>
 
         <h3 class="section-heading">Сообщения в ленте</h3>

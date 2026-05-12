@@ -251,6 +251,18 @@ body {
   width: 100%;
 }
 
+.composite-file-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.input-file {
+  max-width: min(100%, 320px);
+}
+
 .field-inline {
   flex-direction: row;
   align-items: center;
