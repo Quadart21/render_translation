@@ -30,6 +30,8 @@ const statusWifiPath = path.join(projectRoot, 'assets', 'status-wifi.png');
 const composerSmileyPath = path.join(projectRoot, 'assets', 'composer-smiley.png');
 const iconPhonePath = path.join(projectRoot, 'assets', 'flaticon-phone.png');
 const telegramPlaquePath = path.join(projectRoot, 'assets', 'telegram-plaque.png');
+const messageChecksPath = path.join(projectRoot, 'assets', 'message-checks-read.png');
+const iosStatusTrayStripPath = path.join(projectRoot, 'assets', 'ios-status-tray-strip.png');
 
 /** Запасные SVG (не 1×1 px): если PNG из assets недоступны, не будет «квадратиков». */
 const FALLBACK_ICON_CLIP =
@@ -68,6 +70,18 @@ const FALLBACK_TELEGRAM_PLAQUE =
   'data:image/svg+xml,' +
   encodeURIComponent(
     '<svg xmlns="http://www.w3.org/2000/svg" width="140" height="32" viewBox="0 0 140 32"><rect width="140" height="32" rx="16" fill="#3390ec"/></svg>'
+  );
+/** Две галочки «прочитано» у исходящих (если нет PNG — упрощённый SVG). */
+const FALLBACK_MESSAGE_CHECKS =
+  'data:image/svg+xml,' +
+  encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="26" height="12" viewBox="0 0 26 12"><path fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" d="M1 6l3.5 3.5L12 2m4 4l3.5 3.5L25 2"/></svg>'
+  );
+/** iOS: справа в статус-баре одним PNG (сигнал + Wi‑Fi + батарея). */
+const FALLBACK_IOS_STATUS_TRAY =
+  'data:image/svg+xml,' +
+  encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="78" height="18" viewBox="0 0 78 18"><rect width="78" height="18" rx="4" fill="rgba(255,255,255,0.14)"/></svg>'
   );
 /**
  * Белые силуэты на тёмной панели без CSS filter (иначе в Chromium часто «пустые» img).
@@ -113,6 +127,66 @@ async function readPngDataUrlRaw(absPath, fallbackDataUrl) {
     return `data:image/png;base64,${buf.toString('base64')}`;
   } catch {
     return fallbackDataUrl;
+  }
+}
+
+function escapeSvgText(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
+/** Цифры заряда для оверлея на PNG статус-трея (без символа %). */
+function extractIosBatteryDigits(scene) {
+  const b = scene?.statusBar?.battery;
+  if (b == null || String(b).trim() === '') return '22';
+  const digits = String(b).trim().replace(/%/g, '').match(/\d+/);
+  return digits ? digits[0] : '22';
+}
+
+/**
+ * Рисует цифры заряда поверх ios-status-tray-strip.png (Sharp composite).
+ * Размер текста по умолчанию = высота PNG минус IOS_TRAY_BATTERY_FONT_TRIM_PX (по умолчанию 2).
+ * Env: IOS_TRAY_BATTERY_TEXT_X_FRAC, TEXT_Y_FRAC; IOS_TRAY_BATTERY_FONT_FRAC — если задан, кегль = высота × доля (вместо высота − trim).
+ */
+async function composeIosStatusTrayWithBattery(trayPngBuf, scene) {
+  const label = extractIosBatteryDigits(scene);
+  const meta = await sharp(trayPngBuf).metadata();
+  const w = meta.width || 197;
+  const h = meta.height || 33;
+  const xFrac = Number(process.env.IOS_TRAY_BATTERY_TEXT_X_FRAC);
+  const yFrac = Number(process.env.IOS_TRAY_BATTERY_TEXT_Y_FRAC);
+  const fontFrac = Number(process.env.IOS_TRAY_BATTERY_FONT_FRAC);
+  const trimPxRaw = Number(process.env.IOS_TRAY_BATTERY_FONT_TRIM_PX);
+  const trimPx = Number.isFinite(trimPxRaw) ? trimPxRaw : 2;
+  const xf = Number.isFinite(xFrac) ? xFrac : 0.82;
+  const yf = Number.isFinite(yFrac) ? yFrac : 0.42;
+  const fs = Number.isFinite(fontFrac)
+    ? Math.max(8, Math.round(h * fontFrac))
+    : Math.max(8, Math.round(h - trimPx));
+  const cx = Math.round(w * xf);
+  const cy = Math.round(h * yf);
+  const svg = Buffer.from(
+    `<?xml version="1.0" encoding="UTF-8"?>
+<svg width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg">
+  <text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="central"
+    font-family="-apple-system, BlinkMacSystemFont, &quot;SF Pro Text&quot;, sans-serif"
+    font-size="${fs}" font-weight="600" fill="#ffffff">${escapeSvgText(label)}</text>
+</svg>`
+  );
+  return sharp(trayPngBuf).composite([{ input: svg, left: 0, top: 0 }]).png().toBuffer();
+}
+
+async function buildIosStatusTrayDataUrl(scene) {
+  try {
+    const buf = await fs.readFile(iosStatusTrayStripPath);
+    const composed = await composeIosStatusTrayWithBattery(buf, scene);
+    return `data:image/png;base64,${composed.toString('base64')}`;
+  } catch {
+    return FALLBACK_IOS_STATUS_TRAY;
   }
 }
 
@@ -203,6 +277,7 @@ export async function renderSceneToPng(scene, opts = {}) {
     iconSmileyInject,
     iconPhoneInject,
     telegramPlaqueInject,
+    messageChecksInject,
     iosFontFaces,
   ] = await Promise.all([
     readComposerIconDataUrl(iconPaperclipPath, FALLBACK_ICON_CLIP),
@@ -212,8 +287,13 @@ export async function renderSceneToPng(scene, opts = {}) {
     readComposerIconDataUrl(composerSmileyPath, FALLBACK_ICON_SMILEY),
     readComposerIconDataUrl(iconPhonePath, FALLBACK_ICON_PHONE),
     readPngDataUrlRaw(telegramPlaquePath, FALLBACK_TELEGRAM_PLAQUE),
+    readComposerIconDataUrl(messageChecksPath, FALLBACK_MESSAGE_CHECKS),
     buildIosFontFaceCss(projectRoot),
   ]);
+  let iosStatusTrayInject = FALLBACK_IOS_STATUS_TRAY;
+  if (platformKey === 'ios') {
+    iosStatusTrayInject = await buildIosStatusTrayDataUrl(withAssets);
+  }
   const resolvedComposite = resolveImageSrc(withAssets.compositeScreenshot);
   if (
     withAssets.compositeScreenshot &&
@@ -240,7 +320,9 @@ export async function renderSceneToPng(scene, opts = {}) {
     .replace(/__ICON_WIFI__/g, iconWifiInject)
     .replace(/__ICON_SMILEY__/g, iconSmileyInject)
     .replace(/__ICON_PHONE__/g, iconPhoneInject)
-    .replace(/__TELEGRAM_PLAQUE__/g, telegramPlaqueInject);
+    .replace(/__TELEGRAM_PLAQUE__/g, telegramPlaqueInject)
+    .replace(/__MESSAGE_CHECKS_SRC__/g, messageChecksInject)
+    .replace(/__IOS_STATUS_TRAY__/g, iosStatusTrayInject);
 
   if (platformKey === 'ios') {
     const mul = resolveIosSuperSampleMultiplier();

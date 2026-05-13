@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.6.0] — 2026-05-10
+
+### iOS
+
+- Справа в статус-баре один PNG-трей **`assets/ios-status-tray-strip.png`** (`__IOS_STATUS_TRAY__`): перед подстановкой в HTML Sharp накладывает **цифры заряда** из `scene.statusBar.battery` (без `%`).
+- Позиция и размер текста: по умолчанию кегль ≈ **высота PNG минус 2px**, координаты через доли ширины/высоты; переопределение переменными окружения `IOS_TRAY_BATTERY_TEXT_X_FRAC`, `IOS_TRAY_BATTERY_TEXT_Y_FRAC`, `IOS_TRAY_BATTERY_FONT_TRIM_PX`, опционально `IOS_TRAY_BATTERY_FONT_FRAC`.
+
+### Рендер и шаблон
+
+- Галочки прочитанности исходящих: PNG **`assets/message-checks-read.png`** (`__MESSAGE_CHECKS_SRC__`).
+- Прочие правки вёрстки iOS/Android и общих стилей (шапка, композер, классы трея).
+
+[1.6.0]: https://github.com/Quadart21/render_translation/releases/tag/v1.6.0
+
 ## [1.2.0] — 2026-05-10
 
 ### Рендер и шаблон

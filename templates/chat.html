@@ -87,15 +87,13 @@
               </div>
             </div>
             <div class="ios-tray">
-              <img class="status-tray-icon status-tray-signal" src="__ICON_SIGNAL__" alt="" width="30" height="18" decoding="async" aria-hidden="true" />
-              <img class="status-tray-icon status-tray-wifi" src="__ICON_WIFI__" alt="" width="24" height="18" decoding="async" aria-hidden="true" />
-              <div class="ios-battery-wrap" id="iosBatteryWrap" aria-hidden="true">
-                <div class="ios-battery-body">
-                  <div class="ios-battery-fill" aria-hidden="true"></div>
-                  <span class="ios-battery-digit" id="iosBattery"></span>
-                </div>
-                <div class="ios-battery-nub" aria-hidden="true"></div>
-              </div>
+              <img
+                class="ios-status-tray-img"
+                src="__IOS_STATUS_TRAY__"
+                alt=""
+                decoding="async"
+                aria-hidden="true"
+              />
             </div>
           </div>
           <div class="ios-nav telegram-topbar">
@@ -244,13 +242,6 @@
         }
       } else {
         document.getElementById('iosTime').textContent = timeStr;
-        var batEl = document.getElementById('iosBattery');
-        var iosPct = Math.floor(Math.random() * 10) + 20;
-        batEl.textContent = String(iosPct);
-        var iosBatWrap = document.getElementById('iosBatteryWrap');
-        if (iosBatWrap) {
-          iosBatWrap.style.setProperty('--battery-pct', iosPct + '%');
-        }
 
         var cp = scene.participants.find(function (p) { return p.side === 'left'; }) || scene.participants[0];
         document.getElementById('iosNavTitle').textContent = cp ? cp.name : 'Чат';
@@ -335,8 +326,8 @@
           if (!inner) return;
           function apply() {
             var w = inner.offsetWidth || inner.scrollWidth;
-            var side = Math.round(w * 0.52);
-            pill.style.setProperty('--ios-title-pill-hpad', Math.max(10, side) + 'px');
+            var side = Math.round(w * 0.58);
+            pill.style.setProperty('--ios-title-pill-hpad', Math.max(12, side) + 'px');
           }
           apply();
           requestAnimationFrame(function () {
@@ -442,7 +433,13 @@
         if ((platform === 'ios' || platform === 'android') && outgoing) {
           var ck = document.createElement('span');
           ck.className = 'checks';
-          ck.textContent = '\u2713\u2713';
+          var ckImg = document.createElement('img');
+          ckImg.className = 'checks-img';
+          ckImg.src = '__MESSAGE_CHECKS_SRC__';
+          ckImg.alt = '';
+          ckImg.decoding = 'async';
+          ckImg.setAttribute('aria-hidden', 'true');
+          ck.appendChild(ckImg);
           meta.appendChild(ck);
         }
         var hasImageCaption =

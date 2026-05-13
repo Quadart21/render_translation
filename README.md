@@ -77,7 +77,10 @@ npm run bot
 | `assets/chat-wallpaper.png` | Фон чата |
 | `assets/flaticon-*.png`, `composer-smiley.png` | Иконки композера (скрепка, микрофон, смайл) |
 | `assets/status-*.png` | Сигнал и Wi‑Fi в статус-баре |
-| `src/renderer/render.js` | Подстановка плейсхолдеров, Sharp (белые силуэты иконок), Playwright |
+| `assets/telegram-plaque.png` | Плашка TELEGRAM в статус-строке |
+| `assets/message-checks-read.png` | Две галочки «прочитано» у исходящих |
+| `assets/ios-status-tray-strip.png` | iOS: справа в статусе (сигнал, Wi‑Fi, батарея); цифры заряда рисует Sharp поверх PNG |
+| `src/renderer/render.js` | Подстановка плейсхолдеров, Sharp (белые силуэты иконок, оверлей заряда на трее), Playwright |
 
 Регенерация трёх CSS из монолитного `<style>` (редко): `node scripts/extract-chat-css.mjs`.
 
@@ -104,4 +107,4 @@ npm run bot
 
 ---
 
-**Версия 1.0.0** — зафиксированное состояние: хром шапки, мягкий низ размытия, скрим ленты чата, иконки статуса/композера, фиксированный viewport телефона.
+**Версия 1.6.0** — в числе прочего: iOS-трей статуса одним PNG с наложением заряда Sharp, галочки прочитанности PNG, актуальная таблица ассетов в этом README.

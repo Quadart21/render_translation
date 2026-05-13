@@ -488,6 +488,7 @@
       opacity: 1;
       color: rgba(255, 255, 255, 0.55);
       font-size: 8.25px;
+      line-height: 1;
     }
 
 .theme-android .bubble:not(.message--media) .meta {
@@ -502,21 +503,18 @@
 
 .theme-android .row.out .bubble:not(.message--media) .meta {
       display: inline-flex;
-      align-items: baseline;
+      align-items: center;
       gap: 2px;
       margin-left: 8px;
+      line-height: 1;
     }
 
 .theme-android .checks {
-      font-size: 12px;
-      letter-spacing: -2px;
-      color: rgba(255, 255, 255, 0.62);
       margin-left: 2px;
     }
 
 .theme-android .row.out .bubble .checks {
       margin-left: 0;
-      letter-spacing: -3px;
     }
 
 .theme-android .bubble.message--media {
@@ -527,11 +525,6 @@
 .theme-android .bubble.message--media .meta,
     .theme-ios .bubble.message--media .meta {
       font-size: 8.25px;
-    }
-
-.theme-android .bubble.message--media .checks,
-    .theme-ios .bubble.message--media .checks {
-      font-size: 10.5px;
     }
 
 .theme-android .img-placeholder {

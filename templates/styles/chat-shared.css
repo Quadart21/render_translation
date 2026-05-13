@@ -216,6 +216,17 @@ body {
       min-height: 18px;
     }
 
+.ios-status-tray-img {
+      display: block;
+      height: 1em;
+      width: auto;
+      max-width: min(140px, 34vw);
+      object-fit: contain;
+      object-position: center right;
+      pointer-events: none;
+      flex-shrink: 0;
+    }
+
 /* Top bar: без position:fixed — только внутри .phone для PNG */
     .ios-nav.telegram-topbar {
       display: grid;
@@ -518,7 +529,7 @@ body {
 
 .bubble .meta {
       display: inline-flex;
-      align-items: baseline;
+      align-items: center;
       gap: 5px;
       justify-content: flex-end;
       margin-top: 0;
@@ -527,6 +538,23 @@ body {
       float: right;
       margin-left: 10px;
       clear: both;
+      line-height: 1;
+    }
+
+.checks {
+      display: inline-flex;
+      align-items: center;
+      line-height: 0;
+      flex-shrink: 0;
+    }
+
+.checks-img {
+      display: block;
+      height: 1em;
+      width: auto;
+      object-fit: contain;
+      pointer-events: none;
+      opacity: 1;
     }
 
 /* Медиа-сообщение (картинка + опционально подпись и кнопка) — ~60% от прежних 240px */
@@ -560,7 +588,7 @@ body {
       float: none !important;
       clear: none !important;
       display: inline-flex;
-      align-items: baseline;
+      align-items: center;
       gap: 4px;
       justify-content: flex-end;
       font-size: 8.25px;
@@ -569,6 +597,7 @@ body {
       text-shadow: 0 1px 2px rgba(0, 0, 0, 0.75), 0 0 8px rgba(0, 0, 0, 0.45);
       z-index: 2;
       pointer-events: none;
+      line-height: 1;
     }
 
 .message__image {
