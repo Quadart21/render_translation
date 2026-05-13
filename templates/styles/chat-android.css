@@ -96,7 +96,7 @@
       min-width: 44px;
       width: max-content;
       max-width: min(200px, 52vw);
-      height: 48px;
+      height: 45px;
       padding: 0 6px 0 4px;
       display: inline-flex;
       align-items: center;
@@ -133,8 +133,8 @@
     }
 
 .theme-android .chat-avatar {
-      width: 48px;
-      height: 48px;
+      width: 45px;
+      height: 45px;
       border-radius: 50%;
       overflow: hidden;
       object-fit: cover;
@@ -154,11 +154,12 @@
 .theme-android .chat-meta {
       margin-left: 10px;
       min-width: 0;
+      transform: translateY(2px);
     }
 
 .theme-android .chat-meta .name {
       color: #fff;
-      font-size: 17px;
+      font-size: 16px;
       font-weight: 600;
       line-height: 1.1;
       white-space: nowrap;
@@ -167,13 +168,14 @@
     }
 
 .theme-android .chat-meta .status {
-      margin-top: 3px;
+      margin-top: 5px;
       color: rgba(255, 255, 255, 0.55);
       font-size: 12px;
       font-weight: 500;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      transform: translateY(-2px);
     }
 
 .theme-android .header-actions {

@@ -289,7 +289,7 @@
 
 .theme-ios .ios-nav.telegram-topbar {
       align-items: center;
-      --ios-nav-row-height: 48px;
+      --ios-nav-row-height: 45px;
       --ios-nav-avatar-inner: 36px;
       --ios-nav-chrome-outline: rgba(255, 255, 255, 0.68);
       --ios-nav-pill-outline: rgba(255, 255, 255, 0.44);
@@ -357,7 +357,7 @@
 .theme-ios .ios-nav-title {
       font-weight: 400;
       font-synthesis: none;
-      font-size: 17px;
+      font-size: 16px;
       line-height: 1.2;
     }
 
@@ -384,7 +384,8 @@
     }
 
 .theme-ios .ios-status-tray-img {
-      max-width: min(150px, 36vw);
+      height: 0.84em;
+      max-width: min(126px, 30vw);
       opacity: 0.98;
     }
 
@@ -540,8 +541,13 @@
       text-align: center;
     }
 
+/* Ник + «в сети»: ниже по центру капсулы (единым блоком) */
+    .theme-ios .ios-title-pill.user-pill .ios-title-pill-body {
+      transform: translateY(2px);
+    }
+
 .theme-ios .ios-title-pill.user-pill .ios-title-line {
-      transform: translateY(-3px);
+      transform: none;
     }
 
 .theme-ios .ios-title-pill.user-pill .ios-nav-title {
@@ -549,8 +555,9 @@
     }
 
 .theme-ios .ios-title-pill.user-pill .ios-nav-sub {
-      margin-top: 0;
+      margin-top: 5px;
       line-height: 1.1;
+      transform: translateY(-2px);
     }
 
 .theme-ios.phone.chat-under-pinned .ios-pinned-inner.pinned-message {
@@ -868,13 +875,6 @@
       opacity: 1;
       font-size: 10px;
       line-height: 1;
-    }
-
-/* Входящие, только 2+ строки (ios-c/d/e): время чуть левее от правого края */
-    .theme-ios .row.in .bubble.bubble--ios-c:not(.message--media) .meta,
-    .theme-ios .row.in .bubble.bubble--ios-d:not(.message--media) .meta,
-    .theme-ios .row.in .bubble.bubble--ios-e:not(.message--media) .meta {
-      right: 19px;
     }
 
 .theme-ios .row.out .bubble .meta {
