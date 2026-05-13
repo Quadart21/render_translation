@@ -369,25 +369,15 @@
     }
 
 .theme-ios .ios-island {
-      height: 21px;
-      padding: 0 7px;
-      border-radius: 11px;
-      gap: 4px;
-      font-size: 10px;
-      font-weight: 400;
-      font-synthesis: none;
-      -webkit-font-smoothing: antialiased;
-      background: #3390ec;
+      height: auto;
+      padding: 0;
+      border-radius: 0;
+      background: transparent;
       box-shadow: none;
     }
 
-.theme-ios .ios-island-icon {
-      width: 13px;
-      height: 13px;
-    }
-
-.theme-ios .ios-island-label {
-      font-weight: inherit;
+.theme-ios .ios-island-plaque {
+      height: 21px;
     }
 
 .theme-ios .ios-pinned-inner.pinned-message .title {

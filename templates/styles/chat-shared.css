@@ -179,33 +179,27 @@ body {
     }
 
 .ios-island {
-      height: 18px;
+      height: auto;
       min-width: 0;
-      max-width: min(200px, 100%);
-      padding: 0 5px;
-      border-radius: 9px;
-      background: linear-gradient(180deg, #1e88e5 0%, #1565c0 100%);
+      max-width: min(220px, 100%);
+      padding: 0;
+      border-radius: 0;
+      background: transparent;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 3px;
-      font-size: 9px;
-      font-weight: 500;
-      color: #fff;
-      letter-spacing: 0.02em;
+      line-height: 0;
     }
 
-.ios-island-icon {
+.ios-island-plaque {
       display: block;
       flex-shrink: 0;
-      width: 12px;
-      height: 12px;
+      height: 18px;
+      width: auto;
+      max-width: 100%;
       object-fit: contain;
+      object-position: center;
       pointer-events: none;
-    }
-
-.ios-island-label {
-      line-height: 1;
     }
 
 .ios-tray {

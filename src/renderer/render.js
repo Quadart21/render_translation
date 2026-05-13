@@ -29,6 +29,7 @@ const statusCellularPath = path.join(projectRoot, 'assets', 'status-cellular.png
 const statusWifiPath = path.join(projectRoot, 'assets', 'status-wifi.png');
 const composerSmileyPath = path.join(projectRoot, 'assets', 'composer-smiley.png');
 const iconPhonePath = path.join(projectRoot, 'assets', 'flaticon-phone.png');
+const telegramPlaquePath = path.join(projectRoot, 'assets', 'telegram-plaque.png');
 
 /** Запасные SVG (не 1×1 px): если PNG из assets недоступны, не будет «квадратиков». */
 const FALLBACK_ICON_CLIP =
@@ -62,11 +63,11 @@ const FALLBACK_ICON_PHONE =
   encodeURIComponent(
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>'
   );
-/** Лого-самолётик в плашке Dynamic Island (белая заливка на синем фоне капсулы). */
-const FALLBACK_ICON_TELEGRAM =
+/** Плашка TELEGRAM в строке статуса (полноцветный PNG). */
+const FALLBACK_TELEGRAM_PLAQUE =
   'data:image/svg+xml,' +
   encodeURIComponent(
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="white" d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/></svg>'
+    '<svg xmlns="http://www.w3.org/2000/svg" width="140" height="32" viewBox="0 0 140 32"><rect width="140" height="32" rx="16" fill="#3390ec"/></svg>'
   );
 /**
  * Белые силуэты на тёмной панели без CSS filter (иначе в Chromium часто «пустые» img).
@@ -101,6 +102,15 @@ async function readComposerIconDataUrl(absPath, fallbackDataUrl) {
   try {
     const buf = await fs.readFile(absPath);
     return await pngToWhiteSilhouetteDataUrl(buf);
+  } catch {
+    return fallbackDataUrl;
+  }
+}
+
+async function readPngDataUrlRaw(absPath, fallbackDataUrl) {
+  try {
+    const buf = await fs.readFile(absPath);
+    return `data:image/png;base64,${buf.toString('base64')}`;
   } catch {
     return fallbackDataUrl;
   }
@@ -192,6 +202,7 @@ export async function renderSceneToPng(scene, opts = {}) {
     iconWifiInject,
     iconSmileyInject,
     iconPhoneInject,
+    telegramPlaqueInject,
     iosFontFaces,
   ] = await Promise.all([
     readComposerIconDataUrl(iconPaperclipPath, FALLBACK_ICON_CLIP),
@@ -200,6 +211,7 @@ export async function renderSceneToPng(scene, opts = {}) {
     readComposerIconDataUrl(statusWifiPath, FALLBACK_ICON_WIFI),
     readComposerIconDataUrl(composerSmileyPath, FALLBACK_ICON_SMILEY),
     readComposerIconDataUrl(iconPhonePath, FALLBACK_ICON_PHONE),
+    readPngDataUrlRaw(telegramPlaquePath, FALLBACK_TELEGRAM_PLAQUE),
     buildIosFontFaceCss(projectRoot),
   ]);
   const resolvedComposite = resolveImageSrc(withAssets.compositeScreenshot);
@@ -228,7 +240,7 @@ export async function renderSceneToPng(scene, opts = {}) {
     .replace(/__ICON_WIFI__/g, iconWifiInject)
     .replace(/__ICON_SMILEY__/g, iconSmileyInject)
     .replace(/__ICON_PHONE__/g, iconPhoneInject)
-    .replace(/__ICON_TELEGRAM__/g, FALLBACK_ICON_TELEGRAM);
+    .replace(/__TELEGRAM_PLAQUE__/g, telegramPlaqueInject);
 
   if (platformKey === 'ios') {
     const mul = resolveIosSuperSampleMultiplier();
