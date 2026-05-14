@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.9.0] — 2026-05-10
+
+### iOS / рендер
+
+- Цифры заряда на PNG-трее статуса (`__IOS_STATUS_TRAY__`): отрисовка через Playwright (минимальный HTML + `@font-face` **TrayIosBat** из Data URL, `document.fonts.ready` и кадр), композит Sharp поверх полосы **`assets/ios-status-tray-strip.png`**.
+- Для оверлея трея значение заряда — **случайное целое от 3 до 15** на каждый рендер (поле `scene.statusBar.battery` на эти цифры не влияет).
+- Позиция текста по умолчанию: **`IOS_TRAY_BATTERY_TEXT_X_FRAC`** ≈ **0.81**, **`IOS_TRAY_BATTERY_TEXT_Y_FRAC`** ≈ **0.48**.
+- Fallback Sharp/SVG: то же семейство **TrayIosBat** через `buildTrayBatteryFontFaceCss` / `trayBatterySvgFontFamily` в `iosFontFaces.js`.
+
+### Стили
+
+- Правки **`chat-ios.css`** и **`chat-android.css`**.
+
+[1.9.0]: https://github.com/Quadart21/render_translation/releases/tag/v1.9.0
+
 ## [1.8.0] — 2026-05-11
 
 ### Рендер
@@ -35,7 +50,7 @@
 ### iOS
 
 - Справа в статус-баре один PNG-трей **`assets/ios-status-tray-strip.png`** (`__IOS_STATUS_TRAY__`): перед подстановкой в HTML Sharp накладывает **цифры заряда** из `scene.statusBar.battery` (без `%`).
-- Позиция и размер текста: по умолчанию кегль ≈ **высота PNG минус 2px**, координаты через доли ширины/высоты; переопределение переменными окружения `IOS_TRAY_BATTERY_TEXT_X_FRAC`, `IOS_TRAY_BATTERY_TEXT_Y_FRAC`, `IOS_TRAY_BATTERY_FONT_TRIM_PX`, опционально `IOS_TRAY_BATTERY_FONT_FRAC`.
+- Позиция и размер текста: по умолчанию кегль ≈ **высота PNG минус 3px** (trim **3**), координаты через доли ширины/высоты; переопределение переменными окружения `IOS_TRAY_BATTERY_TEXT_X_FRAC`, `IOS_TRAY_BATTERY_TEXT_Y_FRAC`, `IOS_TRAY_BATTERY_FONT_TRIM_PX`, опционально `IOS_TRAY_BATTERY_FONT_FRAC`.
 
 ### Рендер и шаблон
 

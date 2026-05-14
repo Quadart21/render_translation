@@ -92,7 +92,7 @@ async function readFontFile(abs, basename) {
   const buf = await fs.readFile(abs);
   const { mime, format } = extToMimeAndFormat(path.extname(basename));
   const dataUrl = `data:${mime};base64,${buf.toString('base64')}`;
-  return { dataUrl, format };
+  return { dataUrl, format, basename, absolutePath: abs };
 }
 
 async function tryExactNames(dir, filenames) {
@@ -152,7 +152,7 @@ export async function buildIosFontFaceCss(projectRoot) {
  * Один файл SF Pro Text для указанного веса (Sharp/SVG, напр. цифры на трее).
  * @param {string} projectRoot
  * @param {number} weight — 300 | 400 | 500 | 600
- * @returns {Promise<{ dataUrl: string, format: string } | null>}
+ * @returns {Promise<{ dataUrl: string, format: string, basename: string, absolutePath: string } | null>}
  */
 export async function resolveSfProTextFontForWeight(projectRoot, weight) {
   const dir = resolveFontDir(projectRoot);
@@ -161,4 +161,21 @@ export async function resolveSfProTextFontForWeight(projectRoot, weight) {
   let found = await tryExactNames(dir, entry.files);
   if (!found) found = await tryFuzzyDir(dir, entry.patterns);
   return found;
+}
+
+/**
+ * Синтетическое семейство + встроенный файл: Sharp/librsvg часто не подхватывают «родное» имя SF из TTF.
+ * В Chromium (Playwright) с data: URL это работает надёжно.
+ */
+export function buildTrayBatteryFontFaceCss(embed) {
+  const src = `url('${embed.dataUrl}') format('${embed.format}')`;
+  return `@font-face{font-family:'TrayIosBat';src:${src};font-weight:100 900;font-style:normal;font-display:block;}`;
+}
+
+/** Для SVG fallback (Sharp): синтетическое имя при встроенном шрифте; иначе системный стек. */
+export function trayBatterySvgFontFamily(embed) {
+  if (!embed) {
+    return "'SF Pro Text', 'SF UI Text', -apple-system, BlinkMacSystemFont, sans-serif";
+  }
+  return "'TrayIosBat', sans-serif";
 }
