@@ -108,6 +108,8 @@ npm run bot
 
 ---
 
+**Версия 1.9.1** — единый стек San Francisco для PNG-мока (shared/iOS/Android CSS); **`@font-face`** с весом **700**; см. [CHANGELOG.md](./CHANGELOG.md).
+
 **Версия 1.9.0** — iOS: цифры заряда на PNG-трее через Playwright + SF как Data URL, случайный процент **3–15** на рендер, дефолты позиции текста; см. [CHANGELOG.md](./CHANGELOG.md).
 
 **Версия 1.8.0** — суперсэмплинг iOS и `fonts.ready` перед скрином; смягчение blur/градиентов шапки и ленты для PNG; см. [CHANGELOG.md](./CHANGELOG.md).

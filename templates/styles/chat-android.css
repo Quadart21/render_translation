@@ -79,7 +79,7 @@
       --tg-radius-md: 18px;
       --tg-radius-sm: 12px;
       --tg-shadow: 0 2px 10px rgba(0, 0, 0, 0.22);
-      --tg-font: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+      --tg-font: 'SF Pro Text', 'SF UI Text', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
       --incoming-bg: var(--tg-incoming);
       --incoming-text: var(--tg-text);
       --out-text: var(--tg-text);
@@ -391,7 +391,7 @@
     .theme-android.phone #chat .bubble .meta,
     .theme-android.phone #chat .bubble.message--media .message__caption,
     .theme-android.phone #chat .bubble.message--media .message__action {
-      font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+      font-family: 'SF Pro Text', 'SF UI Text', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
       font-weight: 300;
       font-synthesis: none;
     }

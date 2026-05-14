@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.9.1] — 2026-05-10
+
+### Шрифты (PNG-рендер iOS и Android)
+
+- Базовый стек в **`chat-shared.css`**: **San Francisco** (**SF Pro Text**, **SF UI Text**) и системные `-apple-system` / **`BlinkMacSystemFont`** — без **Segoe UI**, **Roboto**, **Arial** в середине цепочки (меньше ухода на не-SF при скрине в Chromium).
+- **`chat-ios.css`** / **`chat-android.css`**: тот же порядок **`'SF Pro Text', 'SF UI Text', …`** в переменных и там, где задано семейство явно.
+- **`iosFontFaces.js`**: в **`buildIosFontFaceCss`** добавлен вес **700 (Bold)**; для `.ios-nav-title` и прочих **`font-weight: 700`** нужен файл вроде **`SFProText-Bold.otf`** в **`assets/fonts/sf-pro-text/`** (или **`IOS_FONT_DIR`**).
+
+[1.9.1]: https://github.com/Quadart21/render_translation/releases/tag/v1.9.1
+
 ## [1.9.0] — 2026-05-10
 
 ### iOS / рендер

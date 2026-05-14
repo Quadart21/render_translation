@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 
 /**
- * @font-face для мока iOS: веса 300 / 400 / 500 / 600.
+ * @font-face для мока чата (iOS/Android PNG): веса 300 / 400 / 500 / 600 / 700 (San Francisco — SF Pro Text / SF UI Text).
  * Семейство в CSS: --ios-font-family (templates/styles/chat-ios.css); здесь всегда объявляется как 'SF Pro Text'.
  *
  * Папка по умолчанию: assets/fonts/sf-pro-text/ (или IOS_FONT_DIR).
@@ -67,6 +67,21 @@ const WEIGHT_CANDIDATES = [
       'SF Pro Text Semibold.otf',
       'SF-UI-Text-Semibold.ttf',
       'SF-Pro-Display-Semibold.otf',
+    ],
+  },
+  {
+    weight: 700,
+    patterns: [/SF-UI-Text-Bold/i, /Display-Bold\.otf$/i, /Text-Bold/i, /(^|-)Bold\.otf$/i],
+    files: [
+      'SFProText-Bold.woff2',
+      'SFProText-Bold.ttf',
+      'SF-Pro-Text-Bold.otf',
+      'SFProText-Bold.otf',
+      'SFProText-Bold.woff',
+      'SF Pro Text Bold.ttf',
+      'SF Pro Text Bold.otf',
+      'SF-UI-Text-Bold.ttf',
+      'SF-Pro-Display-Bold.otf',
     ],
   },
 ];
@@ -151,7 +166,7 @@ export async function buildIosFontFaceCss(projectRoot) {
 /**
  * Один файл SF Pro Text для указанного веса (Sharp/SVG, напр. цифры на трее).
  * @param {string} projectRoot
- * @param {number} weight — 300 | 400 | 500 | 600
+ * @param {number} weight — 300 | 400 | 500 | 600 | 700
  * @returns {Promise<{ dataUrl: string, format: string, basename: string, absolutePath: string } | null>}
  */
 export async function resolveSfProTextFontForWeight(projectRoot, weight) {
