@@ -7,8 +7,8 @@
 .theme-android .chrome-header-stack::before {
       height: calc(100% + 36px);
       background: rgba(15, 15, 16, 0.92);
-      backdrop-filter: blur(8px) saturate(120%);
-      -webkit-backdrop-filter: blur(8px) saturate(120%);
+      backdrop-filter: blur(6px) saturate(118%);
+      -webkit-backdrop-filter: blur(6px) saturate(118%);
       mask-image: linear-gradient(
         to bottom,
         #000 0%,
@@ -437,11 +437,7 @@
 
 .theme-android .row.out .bubble {
       padding: 10px 12px 11px;
-      background: linear-gradient(
-        165deg,
-        var(--tg-outgoing-1) 0%,
-        var(--tg-outgoing-2) 100%
-      );
+      background: linear-gradient(165deg, #964bec, #3f66ff);
       border-radius: 18px;
       border-bottom-right-radius: 6px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.14);

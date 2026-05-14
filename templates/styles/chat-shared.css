@@ -600,6 +600,25 @@ body {
       line-height: 1;
     }
 
+    .message__image-wrap--overlay.message__image-wrap--light-bg .meta {
+      background: rgba(118, 118, 125, 0.72);
+      border-radius: 999px;
+      padding: 3px 7px;
+      box-sizing: border-box;
+      color: #ffffff !important;
+      opacity: 1;
+      text-shadow: none;
+      box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.1);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .message__image-wrap--overlay.message__image-wrap--light-bg .meta .checks-img {
+      opacity: 1;
+      filter: brightness(0) invert(1);
+    }
+
 .message__image {
       display: block;
       width: 100%;

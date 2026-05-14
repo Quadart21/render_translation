@@ -147,3 +147,18 @@ export async function buildIosFontFaceCss(projectRoot) {
 
   return rules.join('');
 }
+
+/**
+ * Один файл SF Pro Text для указанного веса (Sharp/SVG, напр. цифры на трее).
+ * @param {string} projectRoot
+ * @param {number} weight — 300 | 400 | 500 | 600
+ * @returns {Promise<{ dataUrl: string, format: string } | null>}
+ */
+export async function resolveSfProTextFontForWeight(projectRoot, weight) {
+  const dir = resolveFontDir(projectRoot);
+  const entry = WEIGHT_CANDIDATES.find((w) => w.weight === weight);
+  if (!entry) return null;
+  let found = await tryExactNames(dir, entry.files);
+  if (!found) found = await tryFuzzyDir(dir, entry.patterns);
+  return found;
+}

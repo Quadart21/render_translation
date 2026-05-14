@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.8.0] — 2026-05-11
+
+### Рендер
+
+- iOS: множитель суперсэмплинга по умолчанию **1.72** (было 1.4); по-прежнему **`RENDER_IOS_SUPER_SAMPLE`** и один даунскейл Sharp к эталону в `normalizePngToEtalonDisplay`.
+- Перед скрином: **`document.fonts.ready`** и два **`requestAnimationFrame`** для стабилизации шрифтов и кадра.
+
+### Стили (iOS / Android)
+
+- Шапка «стекла»: чуть мягче **`backdrop-filter`** (8px → 6px), градиенты затемнения с дополнительными ступенями (**меньше бэндинга** на скрине после даунскейла).
+- Лента: плавнее градиенты **`chat-wrap::before`** и **`phone-main::after`**.
+- iOS: **`font-smoothing: antialiased`** для телефонного мока (ровнее текст в PNG при высоком DPR).
+
+[1.8.0]: https://github.com/Quadart21/render_translation/releases/tag/v1.8.0
+
 ## [1.7.0] — 2026-05-11
 
 ### Шапка (iOS / Android)

@@ -3,7 +3,7 @@
 /* iOS-мок в Chromium: более «печатный» контур букв + отключён синтетический bold */
     .theme-ios.phone {
       text-rendering: geometricPrecision;
-      -webkit-font-smoothing: subpixel-antialiased;
+      -webkit-font-smoothing: antialiased;
       font-synthesis: none;
       font-optical-sizing: none;
     }
@@ -20,12 +20,15 @@
         to bottom,
         #000 0%,
         #000 11%,
+        rgba(0, 0, 0, 0.97) 15%,
         rgba(0, 0, 0, 0.93) 20%,
+        rgba(0, 0, 0, 0.78) 27%,
         rgba(0, 0, 0, 0.58) 34%,
+        rgba(0, 0, 0, 0.47) 42%,
         rgba(0, 0, 0, 0.38) 50%
       );
-      backdrop-filter: blur(8px) saturate(104%);
-      -webkit-backdrop-filter: blur(8px) saturate(104%);
+      backdrop-filter: blur(6px) saturate(105%);
+      -webkit-backdrop-filter: blur(6px) saturate(105%);
       mask-image: linear-gradient(
         to bottom,
         #000 0%,
@@ -148,6 +151,8 @@
       overflow: visible !important;
       justify-content: flex-start !important;
       align-items: center !important;
+      --ios-unread-digit-shift-x: 0px;
+      --ios-unread-digit-shift-y: -1px;
     }
 
 .theme-ios.phone.composite-screen-on .ios-back.back-pill .ios-chevron {
@@ -188,7 +193,7 @@
 .theme-ios.phone.composite-screen-on .ios-back.back-pill .ios-unread-pill .ios-unread-pill-inner {
       display: block !important;
       line-height: 1 !important;
-      transform: translateY(1px) !important;
+      transform: translate(var(--ios-unread-digit-shift-x), var(--ios-unread-digit-shift-y)) !important;
     }
 
 .theme-ios.phone.composite-screen-on .ios-title-pill.user-pill {
@@ -424,12 +429,15 @@
         to bottom,
         #000 0%,
         #000 11%,
+        rgba(0, 0, 0, 0.97) 15%,
         rgba(0, 0, 0, 0.95) 20%,
+        rgba(0, 0, 0, 0.82) 27%,
         rgba(0, 0, 0, 0.65) 34%,
+        rgba(0, 0, 0, 0.54) 42%,
         rgba(0, 0, 0, 0.46) 50%
       );
-      backdrop-filter: blur(8px) saturate(104%);
-      -webkit-backdrop-filter: blur(8px) saturate(104%);
+      backdrop-filter: blur(6px) saturate(105%);
+      -webkit-backdrop-filter: blur(6px) saturate(105%);
     }
 
 /* BACK — как .back-pill; ширина по числу символов в счётчике, без фиксированного «короба» */
@@ -452,6 +460,9 @@
       box-shadow: var(--tg-shadow);
       flex-shrink: 0;
       overflow: hidden;
+      /* Сдвиг цифр внутри белого овала (счётчик): переопредели при необходимости */
+      --ios-unread-digit-shift-x: 0px;
+      --ios-unread-digit-shift-y: 0px;
     }
 
 .theme-ios .ios-chevron {
@@ -498,7 +509,7 @@
 .theme-ios .ios-back.back-pill .ios-unread-pill .ios-unread-pill-inner {
       display: block;
       line-height: 1;
-      transform: translateY(1px);
+      transform: translate(var(--ios-unread-digit-shift-x), var(--ios-unread-digit-shift-y));
     }
 
 @supports (text-box-trim: trim-both) {
@@ -574,7 +585,14 @@
       height: min(280px, 38%);
       z-index: 7;
       pointer-events: none;
-      background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.4) 100%);
+      background: linear-gradient(
+        to bottom,
+        transparent 0%,
+        rgba(0, 0, 0, 0.06) 28%,
+        rgba(0, 0, 0, 0.18) 55%,
+        rgba(0, 0, 0, 0.32) 78%,
+        rgba(0, 0, 0, 0.4) 100%
+      );
     }
 
 /* Композер и home — внутри phone-main, поверх ленты; без чёрной подложки телефона под ними */
@@ -612,10 +630,15 @@
       background: linear-gradient(
         to bottom,
         rgba(0, 0, 0, 0.13) 0%,
+        rgba(0, 0, 0, 0.1) 8%,
         rgba(0, 0, 0, 0.075) 14%,
+        rgba(0, 0, 0, 0.056) 22%,
         rgba(0, 0, 0, 0.038) 30%,
+        rgba(0, 0, 0, 0.026) 39%,
         rgba(0, 0, 0, 0.017) 48%,
+        rgba(0, 0, 0, 0.011) 56%,
         rgba(0, 0, 0, 0.007) 64%,
+        rgba(0, 0, 0, 0.004) 71%,
         rgba(0, 0, 0, 0.002) 78%,
         transparent 88%
       );
@@ -852,14 +875,8 @@
       -webkit-backdrop-filter: blur(12px);
     }
 
-.theme-ios .row.out .bubble.out-purple {
-      background: linear-gradient(145deg, #b35cff, #7f52ff);
-      color: #fff;
-      border-bottom-right-radius: 8px;
-    }
-
-.theme-ios .row.out .bubble.out-blue {
-      background: linear-gradient(145deg, #2581ff, #5b44ff);
+.theme-ios .row.out .bubble {
+      background: linear-gradient(145deg, #964BEC, #3f66ff);
       color: #fff;
       border-bottom-right-radius: 8px;
     }

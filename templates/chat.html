@@ -357,7 +357,135 @@
       });
 
       var chat = document.getElementById('chat');
-      var outIdx = 0;
+
+      function hexToRgb(hex) {
+        var h = hex.replace('#', '');
+        return {
+          r: parseInt(h.slice(0, 2), 16),
+          g: parseInt(h.slice(2, 4), 16),
+          b: parseInt(h.slice(4, 6), 16),
+        };
+      }
+      function lerpHex(a, b, t) {
+        var A = hexToRgb(a);
+        var B = hexToRgb(b);
+        var r = Math.round(A.r + (B.r - A.r) * t);
+        var g = Math.round(A.g + (B.g - A.g) * t);
+        var bl = Math.round(A.b + (B.b - A.b) * t);
+        return (
+          '#' +
+          [r, g, bl]
+            .map(function (x) {
+              return ('0' + Math.max(0, Math.min(255, x)).toString(16)).slice(-2);
+            })
+            .join('')
+        );
+      }
+      /** Исходящие: цвет от #964BEC (выше в переписке) к #3F66FF (ниже), без ступеней. */
+      function applyOutgoingBubbleVerticalGradient() {
+        if (platform !== 'ios' && platform !== 'android') return;
+        var purple = '#964BEC';
+        var blue = '#3F66FF';
+        var bubbles = chat.querySelectorAll('.row.out .bubble:not(.message--media)');
+        if (!bubbles.length) return;
+        var centers = [];
+        for (var i = 0; i < bubbles.length; i++) {
+          var row = bubbles[i].closest('.row');
+          centers.push(row ? row.offsetTop + row.offsetHeight / 2 : 0);
+        }
+        var minY = Math.min.apply(null, centers);
+        var maxY = Math.max.apply(null, centers);
+        var span = maxY - minY;
+        var angle = platform === 'ios' ? '145deg' : '165deg';
+        for (var j = 0; j < bubbles.length; j++) {
+          var rowJ = bubbles[j].closest('.row');
+          var cy = rowJ ? rowJ.offsetTop + rowJ.offsetHeight / 2 : minY;
+          var t = span <= 0 ? 1 : (cy - minY) / span;
+          var c1 = lerpHex(purple, blue, t);
+          var c2 = lerpHex(purple, blue, Math.min(1, t + 0.1));
+          bubbles[j].style.background = 'linear-gradient(' + angle + ', ' + c1 + ', ' + c2 + ')';
+        }
+      }
+      window.applyOutgoingBubbleVerticalGradient = applyOutgoingBubbleVerticalGradient;
+
+      /** Превью под временем: если угол светлый — время в серой капсуле. */
+      function sampleImageCornerIsLight(img, cb) {
+        function run() {
+          try {
+            var w = img.naturalWidth || img.width;
+            var h = img.naturalHeight || img.height;
+            if (!w || !h) {
+              cb(false);
+              return;
+            }
+            var canvas = document.createElement('canvas');
+            var ctx = canvas.getContext('2d');
+            if (!ctx) {
+              cb(false);
+              return;
+            }
+            var dw = 28;
+            var dh = 28;
+            canvas.width = dw;
+            canvas.height = dh;
+            var sx = Math.max(0, Math.floor(w * 0.4));
+            var sy = Math.max(0, Math.floor(h * 0.5));
+            var sw = w - sx;
+            var sh = h - sy;
+            if (sw < 2 || sh < 2) {
+              cb(false);
+              return;
+            }
+            ctx.drawImage(img, sx, sy, sw, sh, 0, 0, dw, dh);
+            var data = ctx.getImageData(0, 0, dw, dh).data;
+            var sum = 0;
+            var n = 0;
+            for (var i = 0; i < data.length; i += 4) {
+              var r = data[i];
+              var g = data[i + 1];
+              var b = data[i + 2];
+              var a = data[i + 3];
+              if (a < 12) continue;
+              sum += 0.2126 * r + 0.7152 * g + 0.0722 * b;
+              n++;
+            }
+            if (!n) {
+              cb(false);
+              return;
+            }
+            cb(sum / n > 176);
+          } catch (err) {
+            cb(false);
+          }
+        }
+        if (img.complete && img.naturalWidth) {
+          run();
+        } else {
+          img.addEventListener('load', run, { once: true });
+          img.addEventListener(
+            'error',
+            function () {
+              cb(false);
+            },
+            { once: true }
+          );
+        }
+      }
+
+      function applyLightImageOverlayMeta() {
+        var wraps = document.querySelectorAll('.message__image-wrap.message__image-wrap--overlay');
+        for (var i = 0; i < wraps.length; i++) {
+          (function (wrap) {
+            var img = wrap.querySelector('img.message__image');
+            if (!img) return;
+            sampleImageCornerIsLight(img, function (light) {
+              if (light) wrap.classList.add('message__image-wrap--light-bg');
+              else wrap.classList.remove('message__image-wrap--light-bg');
+            });
+          })(wraps[i]);
+        }
+      }
+      window.applyLightImageOverlayMeta = applyLightImageOverlayMeta;
 
       (scene.items || []).forEach(function (item) {
         if (item.type === 'date') {
@@ -385,10 +513,6 @@
         var bubble = document.createElement('div');
         bubble.className = 'bubble';
         var imageWrap = null;
-        if (platform === 'ios' && outgoing && item.type === 'text') {
-          bubble.classList.add(outIdx % 2 === 0 ? 'out-purple' : 'out-blue');
-          outIdx++;
-        }
 
         if (item.type === 'text') {
           var bubbleText = document.createElement('span');
@@ -470,6 +594,19 @@
         row.appendChild(col);
 
         chat.appendChild(row);
+      });
+
+      applyOutgoingBubbleVerticalGradient();
+      applyLightImageOverlayMeta();
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+          applyOutgoingBubbleVerticalGradient();
+          applyLightImageOverlayMeta();
+        });
+      });
+      window.addEventListener('load', function () {
+        applyOutgoingBubbleVerticalGradient();
+        applyLightImageOverlayMeta();
       });
 
       function escapeHtml(s) {

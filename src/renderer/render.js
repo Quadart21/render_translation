@@ -12,7 +12,7 @@ import {
 import { embedPngExif } from '../lib/embedPngExif.js';
 import { resolveTruthMeta } from '../lib/truthMeta.js';
 import { embedSceneAssets, resolveImageSrc } from './resolveAssets.js';
-import { buildIosFontFaceCss } from './iosFontFaces.js';
+import { buildIosFontFaceCss, resolveSfProTextFontForWeight } from './iosFontFaces.js';
 import { loadChatHtmlWithStyles } from './chatTemplate.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -149,10 +149,11 @@ function extractIosBatteryDigits(scene) {
 
 /**
  * Рисует цифры заряда поверх ios-status-tray-strip.png (Sharp composite).
- * Размер текста по умолчанию = высота PNG минус IOS_TRAY_BATTERY_FONT_TRIM_PX (по умолчанию 2).
- * Env: IOS_TRAY_BATTERY_TEXT_X_FRAC, TEXT_Y_FRAC; IOS_TRAY_BATTERY_FONT_FRAC — если задан, кегль = высота × доля (вместо высота − trim).
+ * Шрифт: SF Pro Text (San Francisco в UI iOS), если есть файлы в assets/fonts/sf-pro-text.
+ * Размер: по умолчанию (высота − trim) × IOS_TRAY_BATTERY_FONT_SCALE (по умолчанию 0.93 — чуть меньше).
+ * Env: IOS_TRAY_BATTERY_TEXT_X_FRAC, TEXT_Y_FRAC, FONT_TRIM_PX, FONT_FRAC, FONT_SCALE.
  */
-async function composeIosStatusTrayWithBattery(trayPngBuf, scene) {
+async function composeIosStatusTrayWithBattery(trayPngBuf, scene, projectRoot) {
   const label = extractIosBatteryDigits(scene);
   const meta = await sharp(trayPngBuf).metadata();
   const w = meta.width || 197;
@@ -162,19 +163,42 @@ async function composeIosStatusTrayWithBattery(trayPngBuf, scene) {
   const fontFrac = Number(process.env.IOS_TRAY_BATTERY_FONT_FRAC);
   const trimPxRaw = Number(process.env.IOS_TRAY_BATTERY_FONT_TRIM_PX);
   const trimPx = Number.isFinite(trimPxRaw) ? trimPxRaw : 2;
+  const scaleRaw = Number(process.env.IOS_TRAY_BATTERY_FONT_SCALE);
+  const fsScale = Number.isFinite(scaleRaw) ? scaleRaw : 0.93;
   const xf = Number.isFinite(xFrac) ? xFrac : 0.82;
   const yf = Number.isFinite(yFrac) ? yFrac : 0.42;
-  const fs = Number.isFinite(fontFrac)
+  let fs = Number.isFinite(fontFrac)
     ? Math.max(8, Math.round(h * fontFrac))
     : Math.max(8, Math.round(h - trimPx));
+  fs = Math.max(8, Math.round(fs * fsScale));
   const cx = Math.round(w * xf);
   const cy = Math.round(h * yf);
+
+  let fontFaceBlock = '';
+  let fontFamily = "'SF Pro Text', -apple-system, BlinkMacSystemFont, '.SF NS Text', sans-serif";
+  let fontWeight = 600;
+  if (projectRoot) {
+    let embed = null;
+    for (const wgt of [600, 500, 400]) {
+      embed = await resolveSfProTextFontForWeight(projectRoot, wgt);
+      if (embed) {
+        fontWeight = wgt;
+        break;
+      }
+    }
+    if (embed) {
+      fontFamily = "'SF Pro Text', -apple-system, BlinkMacSystemFont, sans-serif";
+      fontFaceBlock = `<defs><style type="text/css"><![CDATA[@font-face{font-family:'SF Pro Text';src:url('${embed.dataUrl}') format('${embed.format}');font-weight:${fontWeight};font-style:normal;}]]></style></defs>`;
+    }
+  }
+
   const svg = Buffer.from(
     `<?xml version="1.0" encoding="UTF-8"?>
 <svg width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg">
+  ${fontFaceBlock}
   <text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="central"
-    font-family="-apple-system, BlinkMacSystemFont, &quot;SF Pro Text&quot;, sans-serif"
-    font-size="${fs}" font-weight="600" fill="#ffffff">${escapeSvgText(label)}</text>
+    font-family="${fontFamily}"
+    font-size="${fs}" font-weight="${fontWeight}" fill="#ffffff">${escapeSvgText(label)}</text>
 </svg>`
   );
   return sharp(trayPngBuf).composite([{ input: svg, left: 0, top: 0 }]).png().toBuffer();
@@ -183,7 +207,7 @@ async function composeIosStatusTrayWithBattery(trayPngBuf, scene) {
 async function buildIosStatusTrayDataUrl(scene) {
   try {
     const buf = await fs.readFile(iosStatusTrayStripPath);
-    const composed = await composeIosStatusTrayWithBattery(buf, scene);
+    const composed = await composeIosStatusTrayWithBattery(buf, scene, projectRoot);
     return `data:image/png;base64,${composed.toString('base64')}`;
   } catch {
     return FALLBACK_IOS_STATUS_TRAY;
@@ -214,7 +238,23 @@ function resolveIosSuperSampleMultiplier() {
   if (raw != null && /^(0|false|off|no)$/i.test(String(raw).trim())) return 1;
   const n = Number(raw);
   if (Number.isFinite(n) && n >= 1 && n <= 3) return n;
-  return 1.4;
+  return 1.72;
+}
+
+/** Перед скрином: webfonts и два кадра раскладки — меньше «плывущего» текста и метрик. */
+async function waitForFontsAndPaintStable(page) {
+  await page.evaluate(async () => {
+    try {
+      if (typeof document !== 'undefined' && document.fonts && document.fonts.ready) {
+        await document.fonts.ready;
+      }
+    } catch {
+      /* ignore */
+    }
+    await new Promise((resolve) => {
+      requestAnimationFrame(() => requestAnimationFrame(resolve));
+    });
+  });
 }
 
 /**
@@ -351,7 +391,14 @@ export async function renderSceneToPng(scene, opts = {}) {
     await page.evaluate(() => {
       var chat = document.getElementById('chat');
       if (chat) chat.scrollTop = chat.scrollHeight;
+      if (typeof window.applyOutgoingBubbleVerticalGradient === 'function') {
+        window.applyOutgoingBubbleVerticalGradient();
+      }
+      if (typeof window.applyLightImageOverlayMeta === 'function') {
+        window.applyLightImageOverlayMeta();
+      }
     });
+    await waitForFontsAndPaintStable(page);
     const phone = await page.$('.phone');
     if (!phone) throw new Error('.phone not found in template');
     let buf = await phone.screenshot({
