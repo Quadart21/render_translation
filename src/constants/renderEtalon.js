@@ -1,6 +1,6 @@
 /**
  * Эталонные физические разрешения экранов (пиксели) для масштаба экспорта PNG.
- * Логическая ширина макета `.phone` в templates/chat.html должна совпадать с
+ * Логическая ширина макета `.phone` в templates/chat-ios.html / chat-android.html должна совпадать с
  * {@link PHONE_LOGICAL_WIDTH_CSS_PX}.
  */
 

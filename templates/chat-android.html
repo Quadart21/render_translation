@@ -3,30 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>chat-mock</title>
+  <title>chat-mock — Android</title>
   <style>
-    /* Вёрстка: templates/styles/chat-shared.css + chat-{ios|android}.css (сборка в render) */
-    __IOS_FONT_FACES__
-    __CHAT_CSS_SHARED__
-    __CHAT_CSS_PLATFORM__
+    /* Только Android: полный CSS из templates/styles/chat-android.css (без SF Pro). */
+    __CHAT_CSS__
   </style>
 </head>
 <body>
-  <div class="phone" id="phone">
+  <div class="phone theme-android" id="phone">
     <div class="phone-main">
-      <!-- Режим compositeScreenshot: полный скрин снизу; поверх — время, ник, аватар, переписка -->
-      <div class="composite-screen-bg theme-ios-only" id="compositeScreenBg" hidden aria-hidden="true">
-        <img
-          id="compositeScreenImg"
-          alt=""
-          decoding="async"
-          src="__COMPOSITE_SCREENSHOT_SRC__"
-        />
-      </div>
-      <!-- Лента на весь фрейм; статус/шапка/закреп — отдельный слой поверх (сообщения уходят под «стекло») -->
       <div class="chat-wrap" id="chat"></div>
 
-      <div class="phone-chrome theme-android-only">
+      <div class="phone-chrome">
         <div class="chrome-header-stack">
           <div class="status-bar">
             <span id="androidTime"></span>
@@ -76,73 +64,11 @@
           </div>
         </div>
       </div>
-
-      <div class="phone-chrome theme-ios-only">
-        <div class="chrome-header-stack">
-          <div class="ios-status">
-            <span class="ios-time" id="iosTime"></span>
-            <div class="ios-island-wrap">
-              <div class="ios-island" aria-hidden="true">
-                <img class="ios-island-plaque" src="__TELEGRAM_PLAQUE__" alt="" decoding="async" />
-              </div>
-            </div>
-            <div class="ios-tray">
-              <img
-                class="ios-status-tray-img"
-                src="__IOS_STATUS_TRAY__"
-                alt=""
-                decoding="async"
-                aria-hidden="true"
-              />
-            </div>
-          </div>
-          <div class="ios-nav telegram-topbar">
-            <div class="ios-nav-left theme-ios-only">
-              <div class="ios-back back-pill" id="iosBack"></div>
-            </div>
-            <div class="ios-nav-mid">
-              <div class="ios-title-pill user-pill">
-                <div class="ios-title-pill-body">
-                  <div class="ios-title-line">
-                    <span class="ios-nav-title" id="iosNavTitle"></span>
-                  </div>
-                  <div class="ios-nav-sub" id="iosNavSub"></div>
-                </div>
-              </div>
-            </div>
-            <div class="ios-nav-right theme-ios-only">
-              <div class="ios-nav-avatar user-avatar placeholder" id="iosNavAvatarPh"></div>
-              <img class="ios-nav-avatar user-avatar" id="iosNavAvatarImg" alt="" style="display:none" />
-            </div>
-          </div>
-        </div>
-        <div class="ios-pinned-row" id="iosPinnedWrap" hidden>
-          <div class="ios-pinned-inner pinned-message" id="iosPinnedInner"></div>
-        </div>
-      </div>
-
-      <div class="ios-composer-row message-input-bar theme-ios-only">
-        <div class="ios-composer">
-          <div class="ios-attach circle-button">
-            <img class="composer-tool-icon" src="__ICON_ATTACH__" alt="" width="22" height="22" decoding="async" />
-          </div>
-          <div class="ios-input-fake message-input">
-            <span class="ios-input-placeholder">Сообщение</span>
-            <span class="ios-input-icons">
-              <img class="composer-tool-icon" src="__ICON_SMILEY__" alt="" width="22" height="22" decoding="async" />
-            </span>
-          </div>
-          <div class="ios-mic circle-button">
-            <img class="composer-tool-icon" src="__ICON_MIC__" alt="" width="22" height="22" decoding="async" />
-          </div>
-        </div>
-      </div>
-      <div class="ios-home-indicator home-indicator theme-ios-only"></div>
     </div>
 
-    <div class="scroll-down theme-android-only" aria-hidden="true">&#8595;</div>
+    <div class="scroll-down" aria-hidden="true">&#8595;</div>
 
-    <div class="input-panel theme-android-only">
+    <div class="input-panel">
       <div class="input-action">
         <img class="composer-tool-icon" src="__ICON_ATTACH__" alt="" width="24" height="24" decoding="async" />
       </div>
@@ -159,181 +85,81 @@
   <script type="application/json" id="scene-data">__SCENE_JSON__</script>
   <script>
     (function () {
+      function escapeHtml(s) {
+        var d = document.createElement('div');
+        d.textContent = s;
+        return d.innerHTML;
+      }
+
       var el = document.getElementById('scene-data');
       var scene = JSON.parse(el.textContent);
-      var platform = scene.platform === 'ios' ? 'ios' : 'android';
-      var phone = document.getElementById('phone');
-      phone.classList.add(platform === 'ios' ? 'theme-ios' : 'theme-android');
-      /* Стили платформ разведены в файлах templates/styles/chat-ios.css и chat-android.css (в HTML попадает только один). */
+      if (scene.platform !== 'android') return;
 
-      if (platform === 'ios' && scene.compositeScreenshot) {
-        phone.classList.add('composite-screen-on');
-        var csb = document.getElementById('compositeScreenBg');
-        if (csb) csb.hidden = false;
-      }
+      var phone = document.getElementById('phone');
 
       var timeStr = scene.statusBar && scene.statusBar.time ? scene.statusBar.time : '';
       var battery = scene.statusBar && scene.statusBar.battery != null ? String(scene.statusBar.battery) : '';
 
-      /** Только текст закреплённого сообщения (не подпись): макс. 36 символов + «…» */
       function truncatePinnedText(s) {
         if (s == null) return '';
         var str = String(s);
         return str.length <= 36 ? str : str.slice(0, 36) + '...';
       }
 
-      if (platform === 'android') {
-        document.getElementById('androidTime').textContent = timeStr;
-        var tray = document.getElementById('androidBattery');
-        if (battery) {
-          tray.textContent = battery.indexOf('%') >= 0 ? battery : battery + '%';
-        } else {
-          tray.textContent = '';
-        }
-
-        var counterpartyA =
-          scene.participants.find(function (p) {
-            return p.side === 'left';
-          }) || scene.participants[0];
-        document.getElementById('androidChatName').textContent = counterpartyA
-          ? counterpartyA.name
-          : 'Чат';
-
-        var headerMetaA = scene.header || {};
-        var subA = typeof headerMetaA.subtitle === 'string' ? headerMetaA.subtitle : '';
-        var stA = document.getElementById('androidChatStatus');
-        if (subA) {
-          stA.textContent = subA;
-          stA.style.display = 'block';
-        } else {
-          stA.style.display = 'none';
-        }
-
-        var imgPhA = document.getElementById('androidAvatarPh');
-        var imgElA = document.getElementById('androidAvatarImg');
-        if (counterpartyA && counterpartyA.avatar) {
-          imgElA.src = counterpartyA.avatar;
-          imgElA.style.display = 'block';
-          imgPhA.style.display = 'none';
-        } else {
-          imgElA.style.display = 'none';
-          imgPhA.style.display = 'flex';
-          imgPhA.textContent = counterpartyA && counterpartyA.name
-            ? counterpartyA.name.charAt(0).toUpperCase()
-            : '?';
-        }
-
-        var badgeA = headerMetaA.backBadge;
-        var adb = document.getElementById('androidBackBadge');
-        if (badgeA != null && String(badgeA) !== '') {
-          adb.textContent = String(badgeA);
-          adb.hidden = false;
-        } else {
-          adb.textContent = '';
-          adb.hidden = true;
-        }
-
-        var pinnedA = scene.pinned && scene.pinned.text;
-        var apw = document.getElementById('androidPinnedWrap');
-        if (pinnedA) {
-          apw.hidden = false;
-          document.getElementById('androidPinnedSubtitle').textContent =
-            truncatePinnedText(pinnedA);
-        }
+      document.getElementById('androidTime').textContent = timeStr;
+      var tray = document.getElementById('androidBattery');
+      if (battery) {
+        tray.textContent = battery.indexOf('%') >= 0 ? battery : battery + '%';
       } else {
-        document.getElementById('iosTime').textContent = timeStr;
+        tray.textContent = '';
+      }
 
-        var cp = scene.participants.find(function (p) { return p.side === 'left'; }) || scene.participants[0];
-        document.getElementById('iosNavTitle').textContent = cp ? cp.name : 'Чат';
+      var counterpartyA =
+        scene.participants.find(function (p) {
+          return p.side === 'left';
+        }) || scene.participants[0];
+      document.getElementById('androidChatName').textContent = counterpartyA
+        ? counterpartyA.name
+        : 'Чат';
 
-        var headerMeta = scene.header || {};
-        var subEl = document.getElementById('iosNavSub');
-        subEl.classList.remove('ios-nav-sub--online', 'ios-nav-sub--gray');
-        var customSub =
-          typeof headerMeta.subtitle === 'string' && headerMeta.subtitle.trim() !== ''
-            ? headerMeta.subtitle.trim()
-            : '';
-        if (customSub) {
-          subEl.textContent = customSub;
-          if (/^онлайн$/i.test(customSub) || /^online$/i.test(customSub)) {
-            subEl.classList.add('ios-nav-sub--online');
-          } else {
-            subEl.classList.add('ios-nav-sub--gray');
-          }
-        } else {
-          if (Math.random() < 0.5) {
-            subEl.textContent = 'в сети';
-            subEl.classList.add('ios-nav-sub--online');
-          } else {
-            subEl.textContent = 'был(а) недавно';
-            subEl.classList.add('ios-nav-sub--gray');
-          }
-        }
-        subEl.style.display = 'block';
+      var headerMetaA = scene.header || {};
+      var subA = typeof headerMetaA.subtitle === 'string' ? headerMetaA.subtitle : '';
+      var stA = document.getElementById('androidChatStatus');
+      if (subA) {
+        stA.textContent = subA;
+        stA.style.display = 'block';
+      } else {
+        stA.style.display = 'none';
+      }
 
-        var badge = headerMeta.backBadge;
-        var backEl = document.getElementById('iosBack');
-        var chev = '<span class="ios-chevron">&#8249;</span>';
-        if (badge != null && badge !== '') {
-          var badgeStr = String(badge);
-          var digitLen = (badgeStr.match(/\d/g) || []).length;
-          if (digitLen === 0) digitLen = badgeStr.length;
-          var wClass =
-            digitLen >= 4
-              ? ' ios-unread-pill--w4'
-              : digitLen === 3
-                ? ' ios-unread-pill--w3'
-                : digitLen === 2
-                  ? ' ios-unread-pill--w2'
-                  : '';
-          backEl.innerHTML =
-            chev +
-            '<span class="ios-unread-pill counter' +
-            wClass +
-            '"><span class="ios-unread-pill-inner">' +
-            escapeHtml(badgeStr) +
-            '</span></span>';
-        } else {
-          backEl.innerHTML = chev;
-        }
+      var imgPhA = document.getElementById('androidAvatarPh');
+      var imgElA = document.getElementById('androidAvatarImg');
+      if (counterpartyA && counterpartyA.avatar) {
+        imgElA.src = counterpartyA.avatar;
+        imgElA.style.display = 'block';
+        imgPhA.style.display = 'none';
+      } else {
+        imgElA.style.display = 'none';
+        imgPhA.style.display = 'flex';
+        imgPhA.textContent =
+          counterpartyA && counterpartyA.name ? counterpartyA.name.charAt(0).toUpperCase() : '?';
+      }
 
-        var imgPh = document.getElementById('iosNavAvatarPh');
-        var imgEl = document.getElementById('iosNavAvatarImg');
-        if (cp && cp.avatar) {
-          imgEl.src = cp.avatar;
-          imgEl.style.display = 'block';
-          imgPh.style.display = 'none';
-        } else {
-          imgEl.style.display = 'none';
-          imgPh.style.display = 'flex';
-          imgPh.textContent = cp && cp.name ? cp.name.charAt(0).toUpperCase() : '?';
-        }
+      var badgeA = headerMetaA.backBadge;
+      var adb = document.getElementById('androidBackBadge');
+      if (badgeA != null && String(badgeA) !== '') {
+        adb.textContent = String(badgeA);
+        adb.hidden = false;
+      } else {
+        adb.textContent = '';
+        adb.hidden = true;
+      }
 
-        var pinned = scene.pinned && scene.pinned.text;
-        var pw = document.getElementById('iosPinnedWrap');
-        if (pinned) {
-          pw.hidden = false;
-          document.getElementById('iosPinnedInner').innerHTML =
-            '<span class="title">Закреплённое сообщение</span><span class="content">' +
-            escapeHtml(truncatePinnedText(pinned)) +
-            '</span><span class="ios-pin-icon" aria-hidden="true">\uD83D\uDCCC</span>';
-        }
-
-        (function syncIosTitlePillPad() {
-          var pill = document.querySelector('.ios-title-pill.user-pill');
-          if (!pill) return;
-          var inner = pill.querySelector('.ios-title-pill-body');
-          if (!inner) return;
-          function apply() {
-            var w = inner.offsetWidth || inner.scrollWidth;
-            var side = Math.round(w * 0.58);
-            pill.style.setProperty('--ios-title-pill-hpad', Math.max(12, side) + 'px');
-          }
-          apply();
-          requestAnimationFrame(function () {
-            requestAnimationFrame(apply);
-          });
-        })();
+      var pinnedA = scene.pinned && scene.pinned.text;
+      var apw = document.getElementById('androidPinnedWrap');
+      if (pinnedA) {
+        apw.hidden = false;
+        document.getElementById('androidPinnedSubtitle').textContent = truncatePinnedText(pinnedA);
       }
 
       var msgItems = (scene.items || []).filter(function (it) {
@@ -381,9 +207,8 @@
             .join('')
         );
       }
-      /** Исходящие: цвет от #964BEC (выше в переписке) к #3F66FF (ниже), без ступеней. */
+
       function applyOutgoingBubbleVerticalGradient() {
-        if (platform !== 'ios' && platform !== 'android') return;
         var purple = '#964BEC';
         var blue = '#3F66FF';
         var bubbles = chat.querySelectorAll('.row.out .bubble:not(.message--media)');
@@ -396,7 +221,7 @@
         var minY = Math.min.apply(null, centers);
         var maxY = Math.max.apply(null, centers);
         var span = maxY - minY;
-        var angle = platform === 'ios' ? '145deg' : '165deg';
+        var angle = '165deg';
         for (var j = 0; j < bubbles.length; j++) {
           var rowJ = bubbles[j].closest('.row');
           var cy = rowJ ? rowJ.offsetTop + rowJ.offsetHeight / 2 : minY;
@@ -408,7 +233,6 @@
       }
       window.applyOutgoingBubbleVerticalGradient = applyOutgoingBubbleVerticalGradient;
 
-      /** Превью под временем: если угол светлый — время в серой капсуле. */
       function sampleImageCornerIsLight(img, cb) {
         function run() {
           try {
@@ -491,11 +315,8 @@
         if (item.type === 'date') {
           var ds = document.createElement('div');
           ds.className = 'date-sep';
-          var spanTag =
-            platform === 'ios' || platform === 'android'
-              ? '<span class="date-divider">' + escapeHtml(item.label || '') + '</span>'
-              : '<span>' + escapeHtml(item.label || '') + '</span>';
-          ds.innerHTML = spanTag;
+          ds.innerHTML =
+            '<span class="date-divider">' + escapeHtml(item.label || '') + '</span>';
           chat.appendChild(ds);
           return;
         }
@@ -554,7 +375,7 @@
         var meta = document.createElement('span');
         meta.className = 'meta';
         meta.appendChild(document.createTextNode(item.time || ''));
-        if ((platform === 'ios' || platform === 'android') && outgoing) {
+        if (outgoing) {
           var ck = document.createElement('span');
           ck.className = 'checks';
           var ckImg = document.createElement('img');
@@ -575,21 +396,6 @@
           bubble.appendChild(meta);
         }
 
-        if (platform === 'ios' && item.type === 'text') {
-          var iosLen = [...String(item.text || '')].length;
-          var iosSeg =
-            iosLen <= 35
-              ? 'bubble--ios-a'
-              : iosLen <= 40
-                ? 'bubble--ios-b'
-                : iosLen <= 75
-                  ? 'bubble--ios-c'
-                  : iosLen <= 80
-                    ? 'bubble--ios-d'
-                    : 'bubble--ios-e';
-          bubble.classList.add(iosSeg);
-        }
-
         col.appendChild(bubble);
         row.appendChild(col);
 
@@ -608,12 +414,6 @@
         applyOutgoingBubbleVerticalGradient();
         applyLightImageOverlayMeta();
       });
-
-      function escapeHtml(s) {
-        var d = document.createElement('div');
-        d.textContent = s;
-        return d.innerHTML;
-      }
     })();
   </script>
 </body>

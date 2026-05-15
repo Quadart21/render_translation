@@ -1,0 +1,39 @@
+{
+  "platform": "android",
+  "statusBar": {
+    "time": "14:28"
+  },
+  "androidHeaderScreenshot": "assets/android-substrate-header.png",
+  "androidBodyScreenshot": "assets/android-substrate-body.png",
+  "header": {
+    "subtitle": "был(а) недавно"
+  },
+  "participants": [
+    {
+      "id": "bank",
+      "name": "Поддержка банка",
+      "side": "left",
+      "avatar": null
+    },
+    {
+      "id": "me",
+      "name": "Вы",
+      "side": "right",
+      "avatar": null
+    }
+  ],
+  "items": [
+    {
+      "type": "text",
+      "from": "bank",
+      "time": "12:00",
+      "text": "Пример сообщения поверх подложки."
+    },
+    {
+      "type": "text",
+      "from": "me",
+      "time": "12:01",
+      "text": "Ответ справа."
+    }
+  ]
+}

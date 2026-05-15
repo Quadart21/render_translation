@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>chat-mock — iOS</title>
+  <style>
+    /* Только iPhone: шрифты SF Pro + полный CSS из templates/styles/chat-ios.css */
+    __IOS_FONT_FACES__
+    __CHAT_CSS__
+  </style>
+</head>
+<body>
+  <div class="phone theme-ios" id="phone">
+    <div class="phone-main">
+      <div class="composite-screen-bg" id="compositeScreenBg" hidden aria-hidden="true">
+        <img
+          id="compositeScreenImg"
+          alt=""
+          decoding="async"
+          src="__COMPOSITE_SCREENSHOT_SRC__"
+        />
+      </div>
+      <div class="chat-wrap" id="chat"></div>
+
+      <div class="phone-chrome">
+        <div class="chrome-header-stack">
+          <div class="ios-status">
+            <span class="ios-time" id="iosTime"></span>
+            <div class="ios-island-wrap">
+              <div class="ios-island" aria-hidden="true">
+                <img class="ios-island-plaque" src="__TELEGRAM_PLAQUE__" alt="" decoding="async" />
+              </div>
+            </div>
+            <div class="ios-tray">
+              <img
+                class="ios-status-tray-img"
+                src="__IOS_STATUS_TRAY__"
+                alt=""
+                decoding="async"
+                aria-hidden="true"
+              />
+            </div>
+          </div>
+          <div class="ios-nav telegram-topbar">
+            <div class="ios-nav-left">
+              <div class="ios-back back-pill" id="iosBack"></div>
+            </div>
+            <div class="ios-nav-mid">
+              <div class="ios-title-pill user-pill">
+                <div class="ios-title-pill-body">
+                  <div class="ios-title-line">
+                    <span class="ios-nav-title" id="iosNavTitle"></span>
+                  </div>
+                  <div class="ios-nav-sub" id="iosNavSub"></div>
+                </div>
+              </div>
+            </div>
+            <div class="ios-nav-right">
+              <div class="ios-nav-avatar user-avatar placeholder" id="iosNavAvatarPh"></div>
+              <img class="ios-nav-avatar user-avatar" id="iosNavAvatarImg" alt="" style="display:none" />
+            </div>
+          </div>
+        </div>
+        <div class="ios-pinned-row" id="iosPinnedWrap" hidden>
+          <div class="ios-pinned-inner pinned-message" id="iosPinnedInner"></div>
+        </div>
+      </div>
+
+      <div class="ios-composer-row message-input-bar">
+        <div class="ios-composer">
+          <div class="ios-attach circle-button">
+            <img class="composer-tool-icon" src="__ICON_ATTACH__" alt="" width="22" height="22" decoding="async" />
+          </div>
+          <div class="ios-input-fake message-input">
+            <span class="ios-input-placeholder">Сообщение</span>
+            <span class="ios-input-icons">
+              <img class="composer-tool-icon" src="__ICON_SMILEY__" alt="" width="22" height="22" decoding="async" />
+            </span>
+          </div>
+          <div class="ios-mic circle-button">
+            <img class="composer-tool-icon" src="__ICON_MIC__" alt="" width="22" height="22" decoding="async" />
+          </div>
+        </div>
+      </div>
+      <div class="ios-home-indicator home-indicator"></div>
+    </div>
+  </div>
+  <script type="application/json" id="scene-data">__SCENE_JSON__</script>
+  <script>
+    (function () {
+      function escapeHtml(s) {
+        var d = document.createElement('div');
+        d.textContent = s;
+        return d.innerHTML;
+      }
+
+      var el = document.getElementById('scene-data');
+      var scene = JSON.parse(el.textContent);
+      if (scene.platform !== 'ios') return;
+
+      var phone = document.getElementById('phone');
+
+      if (scene.compositeScreenshot) {
+        phone.classList.add('composite-screen-on');
+        var csb = document.getElementById('compositeScreenBg');
+        if (csb) csb.hidden = false;
+      }
+
+      var timeStr = scene.statusBar && scene.statusBar.time ? scene.statusBar.time : '';
+
+      function truncatePinnedText(s) {
+        if (s == null) return '';
+        var str = String(s);
+        return str.length <= 36 ? str : str.slice(0, 36) + '...';
+      }
+
+      document.getElementById('iosTime').textContent = timeStr;
+
+      var cp = scene.participants.find(function (p) {
+        return p.side === 'left';
+      }) || scene.participants[0];
+      document.getElementById('iosNavTitle').textContent = cp ? cp.name : 'Чат';
+
+      var headerMeta = scene.header || {};
+      var subEl = document.getElementById('iosNavSub');
+      subEl.classList.remove('ios-nav-sub--online', 'ios-nav-sub--gray');
+      var customSub =
+        typeof headerMeta.subtitle === 'string' && headerMeta.subtitle.trim() !== ''
+          ? headerMeta.subtitle.trim()
+          : '';
+      if (customSub) {
+        subEl.textContent = customSub;
+        if (/^онлайн$/i.test(customSub) || /^online$/i.test(customSub)) {
+          subEl.classList.add('ios-nav-sub--online');
+        } else {
+          subEl.classList.add('ios-nav-sub--gray');
+        }
+      } else {
+        if (Math.random() < 0.5) {
+          subEl.textContent = 'в сети';
+          subEl.classList.add('ios-nav-sub--online');
+        } else {
+          subEl.textContent = 'был(а) недавно';
+          subEl.classList.add('ios-nav-sub--gray');
+        }
+      }
+      subEl.style.display = 'block';
+
+      var badge = headerMeta.backBadge;
+      var backEl = document.getElementById('iosBack');
+      var chev = '<span class="ios-chevron">&#8249;</span>';
+      if (badge != null && badge !== '') {
+        var badgeStr = String(badge);
+        var digitLen = (badgeStr.match(/\d/g) || []).length;
+        if (digitLen === 0) digitLen = badgeStr.length;
+        var wClass =
+          digitLen >= 4
+            ? ' ios-unread-pill--w4'
+            : digitLen === 3
+              ? ' ios-unread-pill--w3'
+              : digitLen === 2
+                ? ' ios-unread-pill--w2'
+                : '';
+        backEl.innerHTML =
+          chev +
+          '<span class="ios-unread-pill counter' +
+          wClass +
+          '"><span class="ios-unread-pill-inner">' +
+          escapeHtml(badgeStr) +
+          '</span></span>';
+      } else {
+        backEl.innerHTML = chev;
+      }
+
+      var imgPh = document.getElementById('iosNavAvatarPh');
+      var imgEl = document.getElementById('iosNavAvatarImg');
+      if (cp && cp.avatar) {
+        imgEl.src = cp.avatar;
+        imgEl.style.display = 'block';
+        imgPh.style.display = 'none';
+      } else {
+        imgEl.style.display = 'none';
+        imgPh.style.display = 'flex';
+        imgPh.textContent = cp && cp.name ? cp.name.charAt(0).toUpperCase() : '?';
+      }
+
+      var pinned = scene.pinned && scene.pinned.text;
+      var pw = document.getElementById('iosPinnedWrap');
+      if (pinned) {
+        pw.hidden = false;
+        document.getElementById('iosPinnedInner').innerHTML =
+          '<span class="title">Закреплённое сообщение</span><span class="content">' +
+          escapeHtml(truncatePinnedText(pinned)) +
+          '</span><span class="ios-pin-icon" aria-hidden="true">\uD83D\uDCCC</span>';
+      }
+
+      (function syncIosTitlePillPad() {
+        var pill = document.querySelector('.ios-title-pill.user-pill');
+        if (!pill) return;
+        var inner = pill.querySelector('.ios-title-pill-body');
+        if (!inner) return;
+        function apply() {
+          var w = inner.offsetWidth || inner.scrollWidth;
+          var side = Math.round(w * 0.58);
+          pill.style.setProperty('--ios-title-pill-hpad', Math.max(12, side) + 'px');
+        }
+        apply();
+        requestAnimationFrame(function () {
+          requestAnimationFrame(apply);
+        });
+      })();
+
+      var msgItems = (scene.items || []).filter(function (it) {
+        return it.type === 'text' || it.type === 'image';
+      });
+      var msgCount = msgItems.length;
+      var hasPinText = !!(scene.pinned && scene.pinned.text);
+      var underMode =
+        hasPinText && msgCount > 9
+          ? 'pinned'
+          : !hasPinText && msgCount > 11
+            ? 'header'
+            : null;
+      if (underMode) {
+        phone.classList.add('chat-under-' + underMode);
+      }
+
+      var participants = {};
+      (scene.participants || []).forEach(function (p) {
+        participants[p.id] = p;
+      });
+
+      var chat = document.getElementById('chat');
+
+      function hexToRgb(hex) {
+        var h = hex.replace('#', '');
+        return {
+          r: parseInt(h.slice(0, 2), 16),
+          g: parseInt(h.slice(2, 4), 16),
+          b: parseInt(h.slice(4, 6), 16),
+        };
+      }
+      function lerpHex(a, b, t) {
+        var A = hexToRgb(a);
+        var B = hexToRgb(b);
+        var r = Math.round(A.r + (B.r - A.r) * t);
+        var g = Math.round(A.g + (B.g - A.g) * t);
+        var bl = Math.round(A.b + (B.b - A.b) * t);
+        return (
+          '#' +
+          [r, g, bl]
+            .map(function (x) {
+              return ('0' + Math.max(0, Math.min(255, x)).toString(16)).slice(-2);
+            })
+            .join('')
+        );
+      }
+
+      function applyOutgoingBubbleVerticalGradient() {
+        var purple = '#964BEC';
+        var blue = '#3F66FF';
+        var bubbles = chat.querySelectorAll('.row.out .bubble:not(.message--media)');
+        if (!bubbles.length) return;
+        var centers = [];
+        for (var i = 0; i < bubbles.length; i++) {
+          var row = bubbles[i].closest('.row');
+          centers.push(row ? row.offsetTop + row.offsetHeight / 2 : 0);
+        }
+        var minY = Math.min.apply(null, centers);
+        var maxY = Math.max.apply(null, centers);
+        var span = maxY - minY;
+        var angle = '145deg';
+        for (var j = 0; j < bubbles.length; j++) {
+          var rowJ = bubbles[j].closest('.row');
+          var cy = rowJ ? rowJ.offsetTop + rowJ.offsetHeight / 2 : minY;
+          var t = span <= 0 ? 1 : (cy - minY) / span;
+          var c1 = lerpHex(purple, blue, t);
+          var c2 = lerpHex(purple, blue, Math.min(1, t + 0.1));
+          bubbles[j].style.background = 'linear-gradient(' + angle + ', ' + c1 + ', ' + c2 + ')';
+        }
+      }
+      window.applyOutgoingBubbleVerticalGradient = applyOutgoingBubbleVerticalGradient;
+
+      function sampleImageCornerIsLight(img, cb) {
+        function run() {
+          try {
+            var w = img.naturalWidth || img.width;
+            var h = img.naturalHeight || img.height;
+            if (!w || !h) {
+              cb(false);
+              return;
+            }
+            var canvas = document.createElement('canvas');
+            var ctx = canvas.getContext('2d');
+            if (!ctx) {
+              cb(false);
+              return;
+            }
+            var dw = 28;
+            var dh = 28;
+            canvas.width = dw;
+            canvas.height = dh;
+            var sx = Math.max(0, Math.floor(w * 0.4));
+            var sy = Math.max(0, Math.floor(h * 0.5));
+            var sw = w - sx;
+            var sh = h - sy;
+            if (sw < 2 || sh < 2) {
+              cb(false);
+              return;
+            }
+            ctx.drawImage(img, sx, sy, sw, sh, 0, 0, dw, dh);
+            var data = ctx.getImageData(0, 0, dw, dh).data;
+            var sum = 0;
+            var n = 0;
+            for (var i = 0; i < data.length; i += 4) {
+              var r = data[i];
+              var g = data[i + 1];
+              var b = data[i + 2];
+              var a = data[i + 3];
+              if (a < 12) continue;
+              sum += 0.2126 * r + 0.7152 * g + 0.0722 * b;
+              n++;
+            }
+            if (!n) {
+              cb(false);
+              return;
+            }
+            cb(sum / n > 176);
+          } catch (err) {
+            cb(false);
+          }
+        }
+        if (img.complete && img.naturalWidth) {
+          run();
+        } else {
+          img.addEventListener('load', run, { once: true });
+          img.addEventListener(
+            'error',
+            function () {
+              cb(false);
+            },
+            { once: true }
+          );
+        }
+      }
+
+      function applyLightImageOverlayMeta() {
+        var wraps = document.querySelectorAll('.message__image-wrap.message__image-wrap--overlay');
+        for (var i = 0; i < wraps.length; i++) {
+          (function (wrap) {
+            var img = wrap.querySelector('img.message__image');
+            if (!img) return;
+            sampleImageCornerIsLight(img, function (light) {
+              if (light) wrap.classList.add('message__image-wrap--light-bg');
+              else wrap.classList.remove('message__image-wrap--light-bg');
+            });
+          })(wraps[i]);
+        }
+      }
+      window.applyLightImageOverlayMeta = applyLightImageOverlayMeta;
+
+      (scene.items || []).forEach(function (item) {
+        if (item.type === 'date') {
+          var ds = document.createElement('div');
+          ds.className = 'date-sep';
+          ds.innerHTML =
+            '<span class="date-divider">' + escapeHtml(item.label || '') + '</span>';
+          chat.appendChild(ds);
+          return;
+        }
+
+        var part = participants[item.from];
+        if (!part) return;
+        var outgoing = part.side === 'right';
+
+        var row = document.createElement('div');
+        row.className = 'row ' + (outgoing ? 'out' : 'in');
+
+        var col = document.createElement('div');
+        col.className = 'bubble-col';
+
+        var bubble = document.createElement('div');
+        bubble.className = 'bubble';
+        var imageWrap = null;
+
+        if (item.type === 'text') {
+          var bubbleText = document.createElement('span');
+          bubbleText.className = 'bubble-text';
+          bubbleText.textContent = item.text || '';
+          bubble.appendChild(bubbleText);
+        } else if (item.type === 'image') {
+          bubble.classList.add('message--media');
+          var wrap = document.createElement('div');
+          wrap.className = 'message__image-wrap';
+          if (item.src) {
+            var im = document.createElement('img');
+            im.className = 'message__image';
+            im.src = item.src;
+            im.alt = '';
+            wrap.appendChild(im);
+          } else {
+            var ph = document.createElement('div');
+            ph.className = 'message__image-placeholder';
+            ph.textContent = 'Изображение';
+            wrap.appendChild(ph);
+          }
+          imageWrap = wrap;
+          bubble.appendChild(wrap);
+          if (item.caption) {
+            var cap = document.createElement('div');
+            cap.className = 'message__caption';
+            cap.textContent = item.caption;
+            bubble.appendChild(cap);
+          }
+          if (item.action != null && String(item.action).trim() !== '') {
+            var act = document.createElement('div');
+            act.className = 'message__action';
+            act.textContent = String(item.action);
+            bubble.appendChild(act);
+          }
+        }
+
+        var meta = document.createElement('span');
+        meta.className = 'meta';
+        meta.appendChild(document.createTextNode(item.time || ''));
+        if (outgoing) {
+          var ck = document.createElement('span');
+          ck.className = 'checks';
+          var ckImg = document.createElement('img');
+          ckImg.className = 'checks-img';
+          ckImg.src = '__MESSAGE_CHECKS_SRC__';
+          ckImg.alt = '';
+          ckImg.decoding = 'async';
+          ckImg.setAttribute('aria-hidden', 'true');
+          ck.appendChild(ckImg);
+          meta.appendChild(ck);
+        }
+        var hasImageCaption =
+          item.type === 'image' && item.caption != null && String(item.caption).trim() !== '';
+        if (item.type === 'image' && imageWrap && !hasImageCaption) {
+          imageWrap.classList.add('message__image-wrap--overlay');
+          imageWrap.appendChild(meta);
+        } else {
+          bubble.appendChild(meta);
+        }
+
+        if (item.type === 'text') {
+          var iosLen = [...String(item.text || '')].length;
+          var iosSeg =
+            iosLen <= 35
+              ? 'bubble--ios-a'
+              : iosLen <= 40
+                ? 'bubble--ios-b'
+                : iosLen <= 75
+                  ? 'bubble--ios-c'
+                  : iosLen <= 80
+                    ? 'bubble--ios-d'
+                    : 'bubble--ios-e';
+          bubble.classList.add(iosSeg);
+        }
+
+        col.appendChild(bubble);
+        row.appendChild(col);
+
+        chat.appendChild(row);
+      });
+
+      applyOutgoingBubbleVerticalGradient();
+      applyLightImageOverlayMeta();
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+          applyOutgoingBubbleVerticalGradient();
+          applyLightImageOverlayMeta();
+        });
+      });
+      window.addEventListener('load', function () {
+        applyOutgoingBubbleVerticalGradient();
+        applyLightImageOverlayMeta();
+      });
+    })();
+  </script>
+</body>
+</html>

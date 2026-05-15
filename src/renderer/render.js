@@ -443,7 +443,7 @@ export async function renderSceneToPng(scene, opts = {}) {
     }
 
     const html = raw
-    .replace('__IOS_FONT_FACES__', iosFontFaces)
+    .replace('__IOS_FONT_FACES__', platformKey === 'ios' ? iosFontFaces : '')
     .replace('__SCENE_JSON__', json)
     .replace(/__COMPOSITE_SCREENSHOT_SRC__/g, compositeInject)
     .replace(/__CHAT_WALLPAPER__/g, wallpaperInject)

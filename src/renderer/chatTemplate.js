@@ -4,29 +4,32 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.join(__dirname, '..', '..');
-const chatHtmlPath = path.join(projectRoot, 'templates', 'chat.html');
-const stylesDir = path.join(projectRoot, 'templates', 'styles');
+const templatesDir = path.join(projectRoot, 'templates');
+const stylesDir = path.join(templatesDir, 'styles');
 
 /**
- * Читает chat.html и подставляет CSS только выбранной платформы (iOS или Android),
- * плюс общий chat-shared.css. Правки iOS/Android не смешиваются в одном файле.
- * @param {object|null|undefined} [scene] сцена (используется только `platform`)
+ * Загружает только шаблон и CSS выбранной платформы (без общего chat-shared.css).
+ * iOS: templates/chat-ios.html + templates/styles/chat-ios.css
+ * Android: templates/chat-android.html + templates/styles/chat-android.css
+ *
+ * @param {object|null|undefined} [scene] — используется только `platform`
  */
 export async function loadChatHtmlWithStyles(scene) {
-  const raw = await fs.readFile(chatHtmlPath, 'utf8');
-  if (!raw.includes('__CHAT_CSS_SHARED__') || !raw.includes('__CHAT_CSS_PLATFORM__')) {
-    throw new Error(
-      'templates/chat.html: нужны плейсхолдеры __CHAT_CSS_SHARED__ и __CHAT_CSS_PLATFORM__'
-    );
-  }
   const platform = scene && scene.platform === 'ios' ? 'ios' : 'android';
-  const [shared, iosCss, androidCss] = await Promise.all([
-    fs.readFile(path.join(stylesDir, 'chat-shared.css'), 'utf8'),
-    fs.readFile(path.join(stylesDir, 'chat-ios.css'), 'utf8'),
-    fs.readFile(path.join(stylesDir, 'chat-android.css'), 'utf8'),
-  ]);
-  const platformCss = platform === 'ios' ? iosCss : androidCss;
-  return raw
-    .replace('__CHAT_CSS_SHARED__', shared)
-    .replace('__CHAT_CSS_PLATFORM__', platformCss);
+  const htmlPath =
+    platform === 'ios'
+      ? path.join(templatesDir, 'chat-ios.html')
+      : path.join(templatesDir, 'chat-android.html');
+  const cssPath =
+    platform === 'ios'
+      ? path.join(stylesDir, 'chat-ios.css')
+      : path.join(stylesDir, 'chat-android.css');
+
+  const [raw, css] = await Promise.all([fs.readFile(htmlPath, 'utf8'), fs.readFile(cssPath, 'utf8')]);
+
+  if (!raw.includes('__CHAT_CSS__')) {
+    throw new Error(`${path.basename(htmlPath)}: нужен плейсхолдер __CHAT_CSS__`);
+  }
+
+  return raw.replace('__CHAT_CSS__', css);
 }
