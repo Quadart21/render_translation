@@ -41,10 +41,10 @@ export const ETALON_IPHONE_16_PRO = Object.freeze({
   height: 2556,
 });
 
-/** Xiaomi 15 Ultra — эталон для platform: android */
+/** Android эталон: 720×1600 (портрет, HD+) */
 export const ETALON_XIAOMI_15_ULTRA = Object.freeze({
-  width: 3200,
-  height: 1440,
+  width: 720,
+  height: 1600,
 });
 
 /**

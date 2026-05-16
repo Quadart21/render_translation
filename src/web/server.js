@@ -191,7 +191,10 @@ function main() {
       console.warn('Предупреждение: TELEGRAM_BOT_USERNAME пуст — виджет входа не заработает.');
     }
     if (ALLOWED_IDS.size === 0) {
-      console.warn('Предупреждение: ALLOWED_TELEGRAM_IDS пуст — войти никто не сможет.');
+      console.error(
+        'При AUTH_ENABLED=1 обязательно задайте ALLOWED_TELEGRAM_IDS (через запятую), иначе доступ запрещён всем.'
+      );
+      process.exit(1);
     }
   }
 

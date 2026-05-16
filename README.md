@@ -50,7 +50,23 @@ npm start
 # POST /api/render/random — случайная сцена → PNG
 ```
 
-Опционально: авторизация через Telegram (`AUTH_ENABLED`, `BOT_TOKEN`, см. `src/web/server.js`).
+Авторизация панели через Telegram поддерживается из коробки и может работать строго по allowlist Telegram ID.
+
+### Строгий доступ по Telegram ID
+
+1. Создайте `.env` на базе `.env.example`.
+2. Укажите:
+   - `AUTH_ENABLED=1`
+   - `BOT_TOKEN=<токен бота>`
+   - `TELEGRAM_BOT_USERNAME=<username бота без @>`
+   - `ALLOWED_TELEGRAM_IDS=<id1,id2,...>`
+   - `SESSION_SECRET=<длинный случайный ключ>`
+3. Добавьте домен/URL панели в BotFather для Telegram Login Widget.
+
+Важно:
+- при `AUTH_ENABLED=1` сервер не запустится без `ALLOWED_TELEGRAM_IDS`;
+- доступ к `/api/render/*` есть только после входа Telegram и только для ID из allowlist;
+- если ID не в списке, возвращается `403`.
 
 ## Telegram-бот
 
