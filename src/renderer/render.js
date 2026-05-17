@@ -28,6 +28,12 @@ const chatWallpaperPath = wallpaperRaw
     ? wallpaperRaw
     : path.join(projectRoot, wallpaperRaw)
   : path.join(projectRoot, 'assets', 'chat-wallpaper.png');
+const iosWallpaperRaw = process.env.CHAT_WALLPAPER_IOS_PATH;
+const iosChatWallpaperPath = iosWallpaperRaw
+  ? path.isAbsolute(iosWallpaperRaw)
+    ? iosWallpaperRaw
+    : path.join(projectRoot, iosWallpaperRaw)
+  : path.join(projectRoot, 'assets', 'ios-chat-wallpaper.png');
 const iconPaperclipPath = path.join(projectRoot, 'assets', 'flaticon-paperclip.png');
 const iconMicrophonePath = path.join(projectRoot, 'assets', 'flaticon-microphone.png');
 const statusCellularPath = path.join(projectRoot, 'assets', 'status-cellular.png');
@@ -320,8 +326,17 @@ function resolveIosSuperSampleMultiplier() {
   const raw = process.env.RENDER_IOS_SUPER_SAMPLE;
   if (raw != null && /^(0|false|off|no)$/i.test(String(raw).trim())) return 1;
   const n = Number(raw);
-  if (Number.isFinite(n) && n >= 1 && n <= 3) return n;
-  return 1.72;
+  if (Number.isFinite(n) && n >= 1 && n <= 4) return n;
+  return 2.35;
+}
+
+/** Доп. множитель DPR для Android (делает даунскейл более качественным). */
+function resolveAndroidSuperSampleMultiplier() {
+  const raw = process.env.RENDER_ANDROID_SUPER_SAMPLE;
+  if (raw != null && /^(0|false|off|no)$/i.test(String(raw).trim())) return 1;
+  const n = Number(raw);
+  if (Number.isFinite(n) && n >= 1 && n <= 4) return n;
+  return 1.8;
 }
 
 /** Перед скрином: webfonts и два кадра раскладки — меньше «плывущего» текста и метрик. */
@@ -384,13 +399,22 @@ export async function renderSceneToPng(scene, opts = {}) {
   const platformKey = withAssets.platform === 'ios' ? 'ios' : 'android';
   const raw = await loadChatHtmlWithStyles(withAssets);
   const json = JSON.stringify(withAssets);
+  const wallpaperPathForPlatform =
+    platformKey === 'ios' ? iosChatWallpaperPath : chatWallpaperPath;
   let wallpaperInject =
     'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
   try {
-    const wBuf = await fs.readFile(chatWallpaperPath);
+    const wBuf = await fs.readFile(wallpaperPathForPlatform);
     wallpaperInject = `data:image/png;base64,${wBuf.toString('base64')}`;
   } catch {
-    /* 1×1 px fallback если файла нет */
+    if (wallpaperPathForPlatform !== chatWallpaperPath) {
+      try {
+        const fallbackBuf = await fs.readFile(chatWallpaperPath);
+        wallpaperInject = `data:image/png;base64,${fallbackBuf.toString('base64')}`;
+      } catch {
+        /* 1×1 px fallback если файла нет */
+      }
+    }
   }
   const [
     iconAttachInject,
@@ -457,9 +481,12 @@ export async function renderSceneToPng(scene, opts = {}) {
     .replace(/__MESSAGE_CHECKS_SRC__/g, messageChecksInject)
     .replace(/__IOS_STATUS_TRAY__/g, iosStatusTrayInject);
 
-    if (platformKey === 'ios') {
-      const mul = resolveIosSuperSampleMultiplier();
+    {
       const cap = maxRenderDeviceScaleFactor();
+      const mul =
+        platformKey === 'ios'
+          ? resolveIosSuperSampleMultiplier()
+          : resolveAndroidSuperSampleMultiplier();
       dpr = Math.min(cap, dpr * mul);
     }
 

@@ -1440,10 +1440,12 @@ body {
       --and-ref-sx: 1.091667; /* 393 / 360 */
       --and-ref-sy: 1.057072; /* 852 / 806 */
       --and-status-h: calc(28px * var(--and-ref-sy));
-      --and-header-h: calc(60px * var(--and-ref-sy));
+      --and-header-h: calc(62px * var(--and-ref-sy));
       --and-composer-h: calc(48px * var(--and-ref-sy));
       --and-side-gap: calc(10px * var(--and-ref-sx));
-      --and-msg-max-w: calc(280px * var(--and-ref-sx));
+      --and-msg-max-w: calc(286px * var(--and-ref-sx));
+      --and-time-in-w: calc(36px * var(--and-ref-sx));
+      --and-time-out-w: calc(54px * var(--and-ref-sx));
       --and-bubble-radius: calc(12px * var(--and-ref-sx));
       --and-bubble-bg: #2d4b72;
       --and-header-bg: #1f2c3d;
@@ -1474,17 +1476,23 @@ body {
       padding: calc(5px * var(--and-ref-sy)) calc(12px * var(--and-ref-sx)) 0;
       display: flex !important;
       justify-content: space-between;
-      align-items: flex-start;
+      align-items: center;
       font-size: calc(12px * var(--and-ref-sx));
       line-height: 1;
 }
 
-.theme-android .status-time {
+.theme-android #androidTime {
+      display: inline-flex;
+      align-items: center;
+      min-height: calc(18px * var(--and-ref-sy));
       font-weight: 600;
 }
 
 .theme-android .android-status-tray {
       --and-tray-gap: calc(2px * var(--and-ref-sx));
+      display: inline-flex;
+      align-items: center;
+      min-height: calc(18px * var(--and-ref-sy));
       gap: var(--and-tray-gap);
       padding-left: calc(8px * var(--and-ref-sx));
       font-size: calc(11px * var(--and-ref-sx));
@@ -1522,63 +1530,84 @@ body {
 .theme-android .telegram-header {
       min-height: 0;
       height: var(--and-header-h);
-      padding: calc(8px * var(--and-ref-sy)) calc(12px * var(--and-ref-sx)) calc(8px * var(--and-ref-sy))
-        calc(8px * var(--and-ref-sx));
+      padding: calc(6px * var(--and-ref-sy)) calc(12px * var(--and-ref-sx)) calc(6px * var(--and-ref-sy))
+        calc(10px * var(--and-ref-sx));
       display: grid;
-      grid-template-columns: calc(28px * var(--and-ref-sx)) calc(42px * var(--and-ref-sx)) 1fr auto;
+      grid-template-columns: calc(32px * var(--and-ref-sx)) minmax(0, 1fr) auto;
       column-gap: calc(8px * var(--and-ref-sx));
       align-items: center;
       background: transparent;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
 }
 
 .theme-android .back-button {
       grid-column: 1;
       min-width: 0;
-      width: calc(28px * var(--and-ref-sx));
-      height: calc(28px * var(--and-ref-sx));
+      width: calc(32px * var(--and-ref-sx));
+      height: calc(32px * var(--and-ref-sx));
       padding: 0;
       border-radius: 0;
       justify-self: center;
-      font-size: calc(20px * var(--and-ref-sx));
+      font-size: calc(19px * var(--and-ref-sx));
 }
 
 .theme-android .chat-info {
-      grid-column: 2 / 4;
+      grid-column: 2;
       margin-left: 0;
-      display: grid;
-      grid-template-columns: calc(42px * var(--and-ref-sx)) minmax(0, 1fr);
-      column-gap: calc(9px * var(--and-ref-sx));
+      display: flex;
+      column-gap: 0;
       align-items: center;
+      min-width: 0;
 }
 
 .theme-android .chat-avatar {
-      width: calc(42px * var(--and-ref-sx));
-      height: calc(42px * var(--and-ref-sx));
+      width: calc(44px * var(--and-ref-sx));
+      height: calc(44px * var(--and-ref-sx));
 }
 
 .theme-android .chat-meta {
-      margin-left: 0;
+      margin-left: calc(9px * var(--and-ref-sx));
       transform: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: calc(2px * var(--and-ref-sy));
+      min-width: 0;
 }
 
 .theme-android .chat-meta .name {
       font-size: calc(17px * var(--and-ref-sx));
       line-height: calc(20px * var(--and-ref-sy));
-      font-weight: 600;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
 }
 
 .theme-android .chat-meta .status {
-      margin-top: calc(2px * var(--and-ref-sy));
+      margin-top: 0;
       font-size: calc(13px * var(--and-ref-sx));
       line-height: calc(15px * var(--and-ref-sy));
       font-weight: 500;
+      color: rgba(255,255,255,0.42);
       transform: none;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+}
+
+.theme-android .chat-meta .status.status-online {
+      color: #6ea6ff;
+}
+
+.theme-android .chat-meta .status.status-gray {
+      color: rgba(255,255,255,0.42);
 }
 
 .theme-android .chat-verification {
       position: absolute;
-      left: calc(246px * var(--and-ref-sx));
-      top: calc(12px * var(--and-ref-sy));
+      left: calc(255px * var(--and-ref-sx));
+      top: calc(10px * var(--and-ref-sy));
       width: calc(16px * var(--and-ref-sx));
       height: calc(16px * var(--and-ref-sx));
       border-radius: 50%;
@@ -1586,19 +1615,23 @@ body {
 }
 
 .theme-android .header-actions {
-      grid-column: 4;
+      grid-column: 3;
+      display: grid;
+      grid-template-columns: calc(32px * var(--and-ref-sx)) calc(24px * var(--and-ref-sx));
       gap: 0;
       justify-self: end;
+      align-items: center;
 }
 
 .theme-android .header-actions > span {
-      min-width: calc(28px * var(--and-ref-sx));
-      min-height: calc(28px * var(--and-ref-sx));
+      min-width: 0;
+      min-height: calc(32px * var(--and-ref-sx));
+      width: 100%;
 }
 
 .theme-android .header-action-icon {
-      width: calc(20px * var(--and-ref-sx));
-      height: calc(20px * var(--and-ref-sx));
+      width: calc(19px * var(--and-ref-sx));
+      height: calc(19px * var(--and-ref-sx));
 }
 
 .theme-android .pinned-container {
@@ -1608,6 +1641,10 @@ body {
       background: rgba(34, 48, 66, 0.92);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
+}
+
+.theme-android .pinned-container[hidden] {
+      display: none !important;
 }
 
 .theme-android .pin-accent {
@@ -1626,17 +1663,21 @@ body {
 .theme-android .chat-wrap {
       position: absolute;
       inset: 0;
+      display: flex;
+      flex-direction: column;
       padding-left: var(--and-side-gap);
       padding-right: var(--and-side-gap);
       padding-top: calc(var(--and-status-h) + var(--and-header-h) + 70px * var(--and-ref-sy));
       padding-bottom: calc(var(--and-composer-h) + 20px * var(--and-ref-sy));
-      background: var(--and-chat-bg);
-      background-image:
-        radial-gradient(circle at 9% 11%, rgba(255,255,255,0.12) 1px, transparent 0),
-        radial-gradient(circle at 39% 31%, rgba(255,255,255,0.09) 1px, transparent 0),
-        radial-gradient(circle at 70% 69%, rgba(255,255,255,0.11) 1px, transparent 0);
-      background-size: calc(398px * var(--and-ref-sx)) calc(398px * var(--and-ref-sy));
-      background-repeat: repeat;
+      background-color: #000;
+      background-image: url("__CHAT_WALLPAPER__");
+      background-size: cover;
+      background-position: center top;
+      background-repeat: no-repeat;
+}
+
+.theme-android .chat-wrap > :first-child {
+      margin-top: auto;
 }
 
 .theme-android .chat-wrap::before {
@@ -1654,21 +1695,32 @@ body {
 
 .theme-android .row.in .bubble,
 .theme-android .row.out .bubble {
-      font-size: calc(15px * var(--and-ref-sx));
-      line-height: 1.28;
+      font-size: calc(15.5px * var(--and-ref-sx));
+      line-height: 1.22;
       border-radius: var(--and-bubble-radius);
       min-height: calc(42px * var(--and-ref-sy));
       max-width: var(--and-msg-max-w);
 }
 
+/* Android media bubble: keep image message at ~50% of regular max bubble width */
+.theme-android .row.in .bubble.message--media,
+.theme-android .row.out .bubble.message--media {
+      width: calc(var(--and-msg-max-w) * 0.5);
+      max-width: calc(var(--and-msg-max-w) * 0.5);
+}
+
 .theme-android .row.in .bubble {
       background: var(--and-bubble-bg);
-      padding: calc(9px * var(--and-ref-sy)) calc(14px * var(--and-ref-sx)) calc(18px * var(--and-ref-sy))
+      padding: calc(9px * var(--and-ref-sy))
+        calc(14px * var(--and-ref-sx))
+        calc(18px * var(--and-ref-sy))
         calc(13px * var(--and-ref-sx));
 }
 
 .theme-android .row.out .bubble {
-      padding: calc(9px * var(--and-ref-sy)) calc(14px * var(--and-ref-sx)) calc(18px * var(--and-ref-sy))
+      padding: calc(9px * var(--and-ref-sy))
+        calc(14px * var(--and-ref-sx))
+        calc(18px * var(--and-ref-sy))
         calc(13px * var(--and-ref-sx));
 }
 
@@ -1676,6 +1728,7 @@ body {
       display: block;
       white-space: pre-wrap;
       word-break: break-word;
+      overflow-wrap: break-word;
 }
 
 .theme-android .row.in .bubble:not(.message--media),
@@ -1686,26 +1739,120 @@ body {
       position: relative;
 }
 
-.theme-android .bubble:not(.message--media) .meta {
+/* iPhone-like meta logic for Android text bubbles */
+.theme-android .bubble.bubble--ios-a:not(.message--media),
+.theme-android .bubble.bubble--ios-b:not(.message--media),
+.theme-android .bubble.bubble--ios-c:not(.message--media),
+.theme-android .bubble.bubble--ios-d:not(.message--media),
+.theme-android .bubble.bubble--ios-e:not(.message--media) {
+      display: inline-block !important;
+      position: relative;
+      width: auto;
+      max-width: 100%;
+      vertical-align: top;
+      box-sizing: border-box;
+      overflow: hidden;
+}
+
+.theme-android .bubble.bubble--ios-a:not(.message--media) .bubble-text,
+.theme-android .bubble.bubble--ios-b:not(.message--media) .bubble-text {
+      display: block;
+      width: auto;
+      max-width: 100%;
+      white-space: pre-wrap;
+      word-break: break-word;
+      overflow-wrap: break-word;
+      padding-bottom: calc(3px * var(--and-ref-sy));
+      padding-right: calc(1px * var(--and-ref-sx));
+      box-sizing: border-box;
+}
+
+.theme-android .bubble.bubble--ios-c:not(.message--media) .bubble-text,
+.theme-android .bubble.bubble--ios-d:not(.message--media) .bubble-text,
+.theme-android .bubble.bubble--ios-e:not(.message--media) .bubble-text {
+      display: block;
+      width: auto;
+      max-width: 100%;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+      padding-bottom: calc(3px * var(--and-ref-sy));
+      padding-right: calc(1px * var(--and-ref-sx));
+      box-sizing: border-box;
+}
+
+.theme-android .bubble.bubble--ios-b:not(.message--media) .meta,
+.theme-android .bubble.bubble--ios-c:not(.message--media) .meta,
+.theme-android .bubble.bubble--ios-d:not(.message--media) .meta,
+.theme-android .bubble.bubble--ios-e:not(.message--media) .meta {
+      display: inline-flex;
       position: absolute;
       right: calc(10px * var(--and-ref-sx));
-      bottom: calc(4px * var(--and-ref-sy));
+      bottom: calc(5px * var(--and-ref-sy));
       margin: 0;
+      white-space: nowrap;
+      transform: translateY(calc(-2px * var(--and-ref-sy)));
+      float: none !important;
+      clear: none !important;
+}
+
+/* Multi-line bubbles: lift meta a bit higher */
+.theme-android .bubble.bubble--ios-c:not(.message--media) .meta,
+.theme-android .bubble.bubble--ios-d:not(.message--media) .meta,
+.theme-android .bubble.bubble--ios-e:not(.message--media) .meta {
+      bottom: calc(9px * var(--and-ref-sy));
+      transform: translateY(calc(-4px * var(--and-ref-sy)));
+}
+
+.theme-android .bubble:not(.message--media) .meta {
       font-size: calc(12px * var(--and-ref-sx));
       line-height: 1;
-      min-width: 0;
-      transform: none;
-      float: none;
-      clear: none;
+      text-align: right;
+      color: rgba(255,255,255,0.5);
 }
 
 .theme-android .row.out .bubble:not(.message--media) .meta {
-      gap: calc(3px * var(--and-ref-sx));
+      align-items: center;
+      justify-content: flex-end;
+      gap: calc(1px * var(--and-ref-sx));
+      color: rgba(255,255,255,0.68);
+}
+
+.theme-android .row.out .bubble .checks {
+      height: calc(11px * var(--and-ref-sy));
+      display: inline-flex;
+      align-items: center;
+      overflow: hidden;
 }
 
 .theme-android .checks-img {
-      width: calc(18px * var(--and-ref-sx));
-      height: calc(10px * var(--and-ref-sy));
+      width: calc(17px * var(--and-ref-sx));
+      height: calc(14px * var(--and-ref-sy));
+      object-fit: cover;
+      object-position: center;
+      clip-path: inset(calc(1.5px * var(--and-ref-sy)) 0 calc(1.5px * var(--and-ref-sy)) 0);
+      opacity: 1;
+      filter: brightness(1.2) contrast(1.15) saturate(1.08);
+      transform: translateY(calc(0.2px * var(--and-ref-sy)));
+}
+
+/* Image overlay time/checks should match iPhone behavior exactly (shared style baseline). */
+.theme-android .message__image-wrap--overlay .meta {
+      right: 5px;
+      bottom: 4px;
+      gap: 4px;
+      font-size: 8.25px;
+      line-height: 1;
+      color: rgba(255, 255, 255, 0.92);
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.75), 0 0 8px rgba(0, 0, 0, 0.45);
+}
+
+.theme-android .message__image-wrap--overlay .checks-img {
+      width: auto;
+      height: 1em;
+      object-fit: contain;
+      clip-path: none;
+      filter: none;
+      transform: none;
 }
 
 .theme-android .date-sep {

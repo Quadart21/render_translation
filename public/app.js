@@ -180,14 +180,6 @@ function createMessageRow(preset) {
           <img class="msg-img-preview" alt="Предпросмотр" />
         </div>
       </div>
-      <label class="field field-full">
-        <span class="field-label">Подпись под картинкой</span>
-        <textarea class="textarea textarea-sm msg-img-caption" rows="2" placeholder="Необязательно"></textarea>
-      </label>
-      <label class="field field-full">
-        <span class="field-label">Текст кнопки под медиа</span>
-        <input type="text" class="input input-sm msg-img-action" placeholder="Например: Открыть" />
-      </label>
     </div>
     <div class="msg-block msg-block-date hidden">
       <label class="field field-full">
@@ -210,8 +202,6 @@ function createMessageRow(preset) {
   }
   if (preset?.text) row.querySelector('.msg-text').value = preset.text;
   if (preset?.dateLabel) row.querySelector('.date-label').value = preset.dateLabel;
-  if (preset?.caption) row.querySelector('.msg-img-caption').value = preset.caption;
-  if (preset?.action) row.querySelector('.msg-img-action').value = preset.action;
 
   imageRowData.set(row, { dataUrl: null });
 
@@ -288,13 +278,9 @@ function collectItemsFromRows() {
     if (kind === 'image') {
       const from = row.querySelector('.msg-from-img').value;
       const time = row.querySelector('.msg-time-img').value.trim() || '12:00';
-      const caption = row.querySelector('.msg-img-caption').value.trim();
-      const action = row.querySelector('.msg-img-action').value.trim();
       const stored = imageRowData.get(row);
       const src = stored && stored.dataUrl ? stored.dataUrl : null;
       const item = { type: 'image', from, time, src };
-      if (caption) item.caption = caption;
-      if (action) item.action = action;
       items.push(item);
       return;
     }
@@ -424,8 +410,6 @@ function initFormDefaults() {
       kind: 'image',
       from: 'me',
       time: '14:30',
-      caption: 'Чек об оплате',
-      action: 'Открыть',
     })
   );
   messageRows.appendChild(
@@ -433,8 +417,6 @@ function initFormDefaults() {
       kind: 'image',
       from: 'me',
       time: '14:31',
-      caption: 'Второй файл (при необходимости)',
-      action: 'Открыть',
     })
   );
 
@@ -447,9 +429,7 @@ function initFormDefaults() {
     messageRows.appendChild(createMessageRow({ from: 'bank', time: '', text: '' }));
   });
   btnAddImage.addEventListener('click', () => {
-    messageRows.appendChild(
-      createMessageRow({ kind: 'image', from: 'me', time: '', caption: '', action: '' })
-    );
+    messageRows.appendChild(createMessageRow({ kind: 'image', from: 'me', time: '' }));
   });
 
   syncIosFields();

@@ -73,8 +73,6 @@
       </div>
     </div>
 
-    <div class="scroll-down" aria-hidden="true">&#8595;</div>
-
     <div class="input-panel">
       <div class="input-action clip-btn">
         <img class="composer-tool-icon" src="__ICON_ATTACH__" alt="" width="24" height="24" decoding="async" />
@@ -179,11 +177,15 @@
       var headerMetaA = scene.header || {};
       var subA = typeof headerMetaA.subtitle === 'string' ? headerMetaA.subtitle : '';
       var stA = document.getElementById('androidChatStatus');
+      if (stA) stA.classList.remove('status-online', 'status-gray');
       if (subA) {
         stA.textContent = subA;
         stA.style.display = 'block';
       } else {
-        stA.style.display = 'none';
+        var online = Math.random() < 0.5;
+        stA.textContent = online ? 'в сети' : 'был(а) недавно';
+        stA.style.display = 'block';
+        stA.classList.add(online ? 'status-online' : 'status-gray');
       }
 
       var imgPhA = document.getElementById('androidAvatarPh');
@@ -263,25 +265,25 @@
       }
 
       function applyOutgoingBubbleVerticalGradient() {
-        var purple = '#964BEC';
-        var blue = '#3F66FF';
+        var topColor = '#9F3DAA';
+        var bottomColor = '#288AE5';
         var bubbles = chat.querySelectorAll('.row.out .bubble:not(.message--media)');
         if (!bubbles.length) return;
-        var centers = [];
-        for (var i = 0; i < bubbles.length; i++) {
-          var row = bubbles[i].closest('.row');
-          centers.push(row ? row.offsetTop + row.offsetHeight / 2 : 0);
-        }
-        var minY = Math.min.apply(null, centers);
-        var maxY = Math.max.apply(null, centers);
+
+        // Continuous gradient should be mapped to the whole visible chat field,
+        // not only to the current outgoing bubbles range (prevents harsh gradient
+        // when there are just a few outgoing messages).
+        var minY = chat.scrollTop;
+        var maxY = chat.scrollTop + chat.clientHeight;
         var span = maxY - minY;
-        var angle = '165deg';
+        var angle = '180deg';
         for (var j = 0; j < bubbles.length; j++) {
           var rowJ = bubbles[j].closest('.row');
-          var cy = rowJ ? rowJ.offsetTop + rowJ.offsetHeight / 2 : minY;
-          var t = span <= 0 ? 1 : (cy - minY) / span;
-          var c1 = lerpHex(purple, blue, t);
-          var c2 = lerpHex(purple, blue, Math.min(1, t + 0.1));
+          if (!rowJ) continue;
+          var topT = span <= 0 ? 0 : (rowJ.offsetTop - minY) / span;
+          var bottomT = span <= 0 ? 1 : (rowJ.offsetTop + rowJ.offsetHeight - minY) / span;
+          var c1 = lerpHex(topColor, bottomColor, Math.max(0, Math.min(1, topT)));
+          var c2 = lerpHex(topColor, bottomColor, Math.max(0, Math.min(1, bottomT)));
           bubbles[j].style.background = 'linear-gradient(' + angle + ', ' + c1 + ', ' + c2 + ')';
         }
       }
@@ -390,10 +392,24 @@
         var imageWrap = null;
 
         if (item.type === 'text') {
+          var textValue = item.text || '';
           var bubbleText = document.createElement('span');
           bubbleText.className = 'bubble-text';
-          bubbleText.textContent = item.text || '';
+          bubbleText.textContent = textValue;
           bubble.appendChild(bubbleText);
+
+          var textLen = Array.from(textValue).length;
+          var bubbleClass =
+            textLen <= 35
+              ? 'bubble--ios-a'
+              : textLen <= 40
+                ? 'bubble--ios-b'
+                : textLen <= 75
+                  ? 'bubble--ios-c'
+                  : textLen <= 80
+                    ? 'bubble--ios-d'
+                    : 'bubble--ios-e';
+          bubble.classList.add(bubbleClass);
         } else if (item.type === 'image') {
           bubble.classList.add('message--media');
           var wrap = document.createElement('div');

@@ -6,7 +6,13 @@ import { listRootImagePaths, pickRandomImages } from '../lib/rootImages.js';
  * @param {string} projectRoot
  */
 export function applyRandomAvatars(scene, projectRoot) {
-  const paths = pickRandomImages(listRootImagePaths(projectRoot), 2);
+  const all = listRootImagePaths(projectRoot);
+  const paths = pickRandomImages(all, 2);
+  if (!all.length) {
+    console.warn(
+      `[randomAvatars] Не найдены изображения для аватаров в ${projectRoot} (корень или avatar/avatars/images/photos/uploads).`
+    );
+  }
   const [a, b] = paths;
   for (const p of scene.participants || []) {
     if (p.side === 'left') p.avatar = a ?? null;

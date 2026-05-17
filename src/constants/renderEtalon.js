@@ -59,11 +59,16 @@ export function deviceScaleFactorForEtalon(platform) {
   return etalonW / PHONE_LOGICAL_WIDTH_CSS_PX;
 }
 
-/** Верхняя граница clamp для RENDER_DPR / opts (не ниже Android-эталона ≈ 8.14) */
+/**
+ * Верхняя граница clamp для RENDER_DPR / opts.
+ * Можно переопределить через RENDER_DPR_MAX (1..16).
+ */
 export function maxRenderDeviceScaleFactor() {
-  const ios = iphoneEtalonExportWidthPx() / PHONE_LOGICAL_WIDTH_CSS_PX;
-  const android = ETALON_XIAOMI_15_ULTRA.width / PHONE_LOGICAL_WIDTH_CSS_PX;
-  return Math.min(16, Math.max(ios, android));
+  const envCap = Number(process.env.RENDER_DPR_MAX);
+  if (Number.isFinite(envCap) && envCap >= 1) {
+    return Math.min(16, envCap);
+  }
+  return 16;
 }
 
 /**
