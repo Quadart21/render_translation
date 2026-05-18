@@ -11,11 +11,14 @@ const btnRender = document.getElementById('btn-render');
 const btnRenderRandom = document.getElementById('btn-render-random');
 const btnAddMessage = document.getElementById('btn-add-message');
 const btnAddImage = document.getElementById('btn-add-image');
+const btnAddDate = document.getElementById('btn-add-date');
+const btnClearRows = document.getElementById('btn-clear-rows');
 const platformSel = document.getElementById('platform');
 const previewWrap = document.getElementById('preview-wrap');
 const previewImg = document.getElementById('preview-img');
 const downloadLink = document.getElementById('download-link');
 const messageRows = document.getElementById('message-rows');
+const feedStats = document.getElementById('feed-stats');
 const chkPinned = document.getElementById('chk-pinned');
 const pinnedText = document.getElementById('pinned-text');
 const chkRandomAvatar = document.getElementById('chk-random-avatar');
@@ -23,9 +26,42 @@ const chkCompositeScreen = document.getElementById('chk-composite-screen');
 const compositeScreenFile = document.getElementById('composite-screen-file');
 const btnCompositeClear = document.getElementById('btn-composite-clear');
 const compositeScreenStatus = document.getElementById('composite-screen-status');
+const accessManager = document.getElementById('access-manager');
+const accessSummary = document.getElementById('access-summary');
+const accessIdInput = document.getElementById('access-id-input');
+const accessMakeAdmin = document.getElementById('access-make-admin');
+const btnAccessGrant = document.getElementById('btn-access-grant');
+const accessError = document.getElementById('access-error');
+const accessList = document.getElementById('access-list');
+const btnSectionChat = document.getElementById('btn-section-chat');
+const btnSectionDocs = document.getElementById('btn-section-docs');
+const sectionChatBuilder = document.getElementById('section-chat-builder');
+const sectionDocsBuilder = document.getElementById('section-docs-builder');
+const docTemplate = document.getElementById('doc-template');
+const docDate = document.getElementById('doc-date');
+const docInspection = document.getElementById('doc-inspection');
+const docTaxpayerName = document.getElementById('doc-taxpayer-name');
+const docInn = document.getElementById('doc-inn');
+const docCertificateNumber = document.getElementById('doc-certificate-number');
+const docCertificateRandom = document.getElementById('doc-certificate-random');
+const docYear = document.getElementById('doc-year');
+const docIdSeriesNumber = document.getElementById('doc-id-series-number');
+const docAmount = document.getElementById('doc-amount');
+const docTaxRate = document.getElementById('doc-tax-rate');
+const docValidFrom = document.getElementById('doc-valid-from');
+const docValidTo = document.getElementById('doc-valid-to');
+const docPurpose = document.getElementById('doc-purpose');
+const btnDocRender = document.getElementById('btn-doc-render');
+const btnDocReset = document.getElementById('btn-doc-reset');
+const docRenderError = document.getElementById('doc-render-error');
+const docPreviewWrap = document.getElementById('doc-preview-wrap');
+const docPreviewFrame = document.getElementById('doc-preview-frame');
+const docDownloadLink = document.getElementById('doc-download-link');
 
 /** data URL полного скрина для compositeScreenshot (только iOS) */
 let compositeScreenshotDataUrl = null;
+let canManageAccess = false;
+let currentUserId = null;
 
 /** data URL выбранного файла по строке «Картинка» */
 const imageRowData = new WeakMap();
@@ -38,11 +74,177 @@ function hide(el) {
   el.classList.add('hidden');
 }
 
+function setActiveBuilderSection(section) {
+  const isDocs = section === 'docs';
+  sectionChatBuilder.classList.toggle('hidden', isDocs);
+  sectionDocsBuilder.classList.toggle('hidden', !isDocs);
+  btnSectionChat.classList.toggle('is-active', !isDocs);
+  btnSectionDocs.classList.toggle('is-active', isDocs);
+  btnSectionChat.setAttribute('aria-selected', String(!isDocs));
+  btnSectionDocs.setAttribute('aria-selected', String(isDocs));
+}
+
+function clearDocError() {
+  docRenderError.textContent = '';
+  hide(docRenderError);
+}
+
+function showDocError(msg) {
+  docRenderError.textContent = msg;
+  show(docRenderError);
+}
+
+async function renderPdfFromResponse(r, opts = {}) {
+  if (!r.ok) {
+    const ct = r.headers.get('content-type') || '';
+    if (ct.includes('application/json')) {
+      const err = await r.json().catch(() => ({}));
+      throw new Error(err.error || err.detail || `Ошибка ${r.status}`);
+    }
+    throw new Error(`Ошибка ${r.status}`);
+  }
+  const blob = await r.blob();
+  const url = URL.createObjectURL(blob);
+  const frame = opts.frame || docPreviewFrame;
+  const link = opts.link || docDownloadLink;
+  const wrap = opts.wrap || docPreviewWrap;
+  const filename = opts.filename || 'document.pdf';
+  frame.src = url;
+  link.href = url;
+  link.download = filename;
+  show(wrap);
+}
+
+function buildDocumentPayload() {
+  return {
+    template: docTemplate.value,
+    date: docDate.value.trim(),
+    inspection: docInspection.value.trim(),
+    taxpayerName: docTaxpayerName.value.trim(),
+    inn: docInn.value.trim(),
+    certificateNumber: docCertificateNumber.value.trim(),
+    randomizeCertificateNumber: docCertificateRandom.checked,
+    year: docYear.value.trim(),
+    idSeriesNumber: docIdSeriesNumber.value.trim(),
+    amount: docAmount.value.trim(),
+    taxRate: docTaxRate.value.trim(),
+    validFrom: docValidFrom.value.trim(),
+    validTo: docValidTo.value.trim(),
+    purpose: docPurpose.value.trim(),
+  };
+}
+
+function resetDocumentForm() {
+  docTemplate.value = 'npd-certificate';
+  docDate.value = new Date().toLocaleDateString('ru-RU');
+  docInspection.value = 'Инспекция Федеральной налоговой службы по г. Санкт-Петербургу';
+  docTaxpayerName.value = '';
+  docInn.value = '';
+  docCertificateNumber.value = '';
+  docCertificateRandom.checked = true;
+  docYear.value = String(new Date().getFullYear() - 1);
+  docIdSeriesNumber.value = '';
+  docAmount.value = '';
+  docTaxRate.value = '6';
+  docValidFrom.value = '';
+  docValidTo.value = '';
+  docPurpose.value = '';
+  docPreviewWrap.classList.add('hidden');
+  docPreviewFrame.removeAttribute('src');
+  clearDocError();
+}
+
 async function fetchMe() {
   const r = await fetch('/api/me', { credentials: 'same-origin' });
   if (!r.ok) return null;
-  const data = await r.json();
-  return data.user;
+  return r.json();
+}
+
+function clearAccessError() {
+  accessError.textContent = '';
+  hide(accessError);
+}
+
+function showAccessError(msg) {
+  accessError.textContent = msg;
+  show(accessError);
+}
+
+function renderAccessList(access) {
+  const allowed = Array.isArray(access?.allowedIds) ? access.allowedIds : [];
+  const admins = new Set(Array.isArray(access?.adminIds) ? access.adminIds : []);
+  accessSummary.textContent = `Доступов: ${allowed.length} · Админов: ${admins.size}`;
+  if (!allowed.length) {
+    accessList.innerHTML = '<p class="hint hint-tight">Список пуст. Добавьте первый Telegram ID.</p>';
+    return;
+  }
+  accessList.innerHTML = allowed
+    .map((id) => {
+      const isAdmin = admins.has(id);
+      const self = String(currentUserId || '') === String(id);
+      const disableRevoke = self && admins.size <= 1;
+      return `
+        <div class="access-row">
+          <div class="access-row-meta">
+            <code>${id}</code>
+            ${isAdmin ? '<span class="access-role">admin</span>' : '<span class="access-role access-role-user">user</span>'}
+            ${self ? '<span class="access-self">вы</span>' : ''}
+          </div>
+          <button type="button" class="btn btn-ghost btn-sm btn-access-revoke" data-id="${id}" ${disableRevoke ? 'disabled' : ''}>Удалить</button>
+        </div>
+      `;
+    })
+    .join('');
+}
+
+async function refreshAccessManager() {
+  if (!canManageAccess) return;
+  clearAccessError();
+  const r = await fetch('/api/access', { credentials: 'same-origin' });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) {
+    throw new Error(data.error || `Ошибка доступа: ${r.status}`);
+  }
+  renderAccessList(data.access || {});
+}
+
+async function grantAccessFromUi() {
+  clearAccessError();
+  const id = accessIdInput.value.trim();
+  if (!/^\d{5,20}$/.test(id)) {
+    showAccessError('Введите Telegram ID: только цифры (5-20 символов).');
+    return;
+  }
+  const r = await fetch('/api/access/grant', {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id, admin: accessMakeAdmin.checked }),
+  });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) {
+    showAccessError(data.error || `Ошибка ${r.status}`);
+    return;
+  }
+  accessIdInput.value = '';
+  accessMakeAdmin.checked = false;
+  renderAccessList(data.access || {});
+}
+
+async function revokeAccessFromUi(id) {
+  clearAccessError();
+  const r = await fetch('/api/access/revoke', {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id }),
+  });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) {
+    showAccessError(data.error || `Ошибка ${r.status}`);
+    return;
+  }
+  renderAccessList(data.access || {});
 }
 
 function mountTelegramWidget(botUsername) {
@@ -88,13 +290,14 @@ async function initUi() {
     hide(panelLogin);
     show(panelApp);
     hide(authToolbar);
+    hide(accessManager);
     return;
   }
 
-  const user = await fetchMe();
+  const me = await fetchMe();
   hide(panelLoading);
 
-  if (!user) {
+  if (!me?.user) {
     hide(panelApp);
     show(panelLogin);
     if (!cfg.telegramBotUsername) {
@@ -110,8 +313,17 @@ async function initUi() {
   hide(panelLogin);
   show(panelApp);
   show(authToolbar);
-  const uname = user.username ? `@${user.username}` : '';
-  userLabel.textContent = [user.first_name, uname, `(id ${user.id})`].filter(Boolean).join(' ');
+  currentUserId = me.user.id;
+  canManageAccess = Boolean(me?.access?.canManageAccess);
+  const uname = me.user.username ? `@${me.user.username}` : '';
+  const role = canManageAccess ? 'admin' : 'user';
+  userLabel.textContent = [me.user.first_name, uname, `(id ${me.user.id})`, `· ${role}`].filter(Boolean).join(' ');
+  if (canManageAccess) {
+    show(accessManager);
+    await refreshAccessManager();
+  } else {
+    hide(accessManager);
+  }
 }
 
 function syncIosFields() {
@@ -121,12 +333,52 @@ function syncIosFields() {
   });
 }
 
+function rowTypeLabel(kind) {
+  if (kind === 'image') return 'Картинка';
+  if (kind === 'date') return 'Дата';
+  return 'Сообщение';
+}
+
+function refreshRowsUi() {
+  const rows = [...messageRows.querySelectorAll('.msg-row')];
+  rows.forEach((row, i) => {
+    const idx = row.querySelector('.msg-row-index');
+    const kind = row.querySelector('.row-kind')?.value || 'message';
+    const kindEl = row.querySelector('.msg-row-kind-label');
+    const removeBtn = row.querySelector('.btn-remove-row');
+    if (idx) idx.textContent = `#${i + 1}`;
+    if (kindEl) kindEl.textContent = rowTypeLabel(kind);
+    if (removeBtn) removeBtn.disabled = rows.length <= 1;
+  });
+}
+
+function updateFeedStats() {
+  if (!feedStats) return;
+  let total = 0;
+  let text = 0;
+  let image = 0;
+  let date = 0;
+  messageRows.querySelectorAll('.msg-row').forEach((row) => {
+    total += 1;
+    const kind = row.querySelector('.row-kind')?.value;
+    if (kind === 'image') image += 1;
+    else if (kind === 'date') date += 1;
+    else text += 1;
+  });
+  const platform = platformSel.value === 'ios' ? 'iPhone' : 'Android';
+  feedStats.textContent = `${platform} · строк: ${total} · текст: ${text} · фото: ${image} · даты: ${date}`;
+}
+
 function createMessageRow(preset) {
   const kind = preset?.kind || 'message';
   const row = document.createElement('div');
   row.className = 'msg-row';
   row.innerHTML = `
     <div class="msg-row-top">
+      <div class="msg-row-meta">
+        <span class="msg-row-index">#1</span>
+        <span class="msg-row-kind-label">Сообщение</span>
+      </div>
       <label class="field field-inline">
         <span class="field-label">Тип</span>
         <select class="select select-sm row-kind">
@@ -256,13 +508,19 @@ function createMessageRow(preset) {
       row.querySelector('.msg-time').value = row.querySelector('.msg-time-img').value;
     }
     applyKind();
+    refreshRowsUi();
+    updateFeedStats();
   });
   row.querySelector('.btn-remove-row').addEventListener('click', () => {
     if (messageRows.querySelectorAll('.msg-row').length <= 1) return;
     row.remove();
+    refreshRowsUi();
+    updateFeedStats();
   });
 
   applyKind();
+  refreshRowsUi();
+  updateFeedStats();
   return row;
 }
 
@@ -399,40 +657,81 @@ function initFormDefaults() {
   });
 
   messageRows.innerHTML = '';
-  messageRows.appendChild(
-    createMessageRow({ from: 'bank', time: '14:28', text: 'Здравствуйте! Чем могу помочь?' })
-  );
-  messageRows.appendChild(
-    createMessageRow({ from: 'me', time: '14:29', text: 'Добрый день. Приложите скан чека.' })
-  );
-  messageRows.appendChild(
-    createMessageRow({
-      kind: 'image',
-      from: 'me',
-      time: '14:30',
-    })
-  );
-  messageRows.appendChild(
-    createMessageRow({
-      kind: 'image',
-      from: 'me',
-      time: '14:31',
-    })
-  );
+  const seedRows = [
+    { from: 'bank', time: '14:28', text: 'Здравствуйте! Чем могу помочь?' },
+    { from: 'me', time: '14:29', text: 'Добрый день. Приложите скан чека.' },
+    { kind: 'image', from: 'me', time: '14:30' },
+    { kind: 'image', from: 'me', time: '14:31' },
+  ];
+  seedRows.forEach((rowPreset) => messageRows.appendChild(createMessageRow(rowPreset)));
 
-  platformSel.addEventListener('change', syncIosFields);
+  platformSel.addEventListener('change', () => {
+    syncIosFields();
+    updateFeedStats();
+  });
   chkPinned.addEventListener('change', () => {
     pinnedText.disabled = !chkPinned.checked;
   });
 
   btnAddMessage.addEventListener('click', () => {
     messageRows.appendChild(createMessageRow({ from: 'bank', time: '', text: '' }));
+    refreshRowsUi();
+    updateFeedStats();
   });
   btnAddImage.addEventListener('click', () => {
     messageRows.appendChild(createMessageRow({ kind: 'image', from: 'me', time: '' }));
+    refreshRowsUi();
+    updateFeedStats();
   });
+  btnAddDate.addEventListener('click', () => {
+    messageRows.appendChild(createMessageRow({ kind: 'date', dateLabel: '' }));
+    refreshRowsUi();
+    updateFeedStats();
+  });
+  btnClearRows.addEventListener('click', () => {
+    messageRows.innerHTML = '';
+    messageRows.appendChild(createMessageRow({ from: 'bank', time: '', text: '' }));
+    refreshRowsUi();
+    updateFeedStats();
+  });
+  btnAccessGrant.addEventListener('click', async () => {
+    try {
+      await grantAccessFromUi();
+    } catch (e) {
+      showAccessError(String(e.message || e));
+    }
+  });
+  accessIdInput.addEventListener('keydown', async (e) => {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    try {
+      await grantAccessFromUi();
+    } catch (err) {
+      showAccessError(String(err.message || err));
+    }
+  });
+  accessList.addEventListener('click', async (e) => {
+    const target = e.target;
+    if (!(target instanceof HTMLElement)) return;
+    const btn = target.closest('.btn-access-revoke');
+    if (!btn) return;
+    const id = btn.getAttribute('data-id');
+    if (!id) return;
+    try {
+      await revokeAccessFromUi(id);
+    } catch (err) {
+      showAccessError(String(err.message || err));
+    }
+  });
+  btnSectionChat.addEventListener('click', () => setActiveBuilderSection('chat'));
+  btnSectionDocs.addEventListener('click', () => setActiveBuilderSection('docs'));
+  btnDocReset.addEventListener('click', () => resetDocumentForm());
 
   syncIosFields();
+  refreshRowsUi();
+  updateFeedStats();
+  resetDocumentForm();
+  setActiveBuilderSection('chat');
 }
 
 btnLogout.addEventListener('click', async () => {
@@ -441,7 +740,7 @@ btnLogout.addEventListener('click', async () => {
   window.location.reload();
 });
 
-async function renderPngFromResponse(r) {
+async function renderPngFromResponse(r, opts = {}) {
   if (!r.ok) {
     const ct = r.headers.get('content-type') || '';
     if (ct.includes('application/json')) {
@@ -452,9 +751,14 @@ async function renderPngFromResponse(r) {
   }
   const blob = await r.blob();
   const url = URL.createObjectURL(blob);
-  previewImg.src = url;
-  downloadLink.href = url;
-  show(previewWrap);
+  const img = opts.img || previewImg;
+  const link = opts.link || downloadLink;
+  const wrap = opts.wrap || previewWrap;
+  const filename = opts.filename || 'chat.png';
+  img.src = url;
+  link.href = url;
+  link.download = filename;
+  show(wrap);
 }
 
 btnRender.addEventListener('click', async () => {
@@ -500,6 +804,32 @@ btnRenderRandom.addEventListener('click', async () => {
   } finally {
     btnRender.disabled = false;
     btnRenderRandom.disabled = false;
+  }
+});
+
+btnDocRender.addEventListener('click', async () => {
+  clearDocError();
+  btnDocRender.disabled = true;
+  btnDocReset.disabled = true;
+  try {
+    const payload = buildDocumentPayload();
+    const r = await fetch('/api/render/document', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    await renderPdfFromResponse(r, {
+      frame: docPreviewFrame,
+      link: docDownloadLink,
+      wrap: docPreviewWrap,
+      filename: 'document.pdf',
+    });
+  } catch (e) {
+    showDocError(String(e.message || e));
+  } finally {
+    btnDocRender.disabled = false;
+    btnDocReset.disabled = false;
   }
 });
 

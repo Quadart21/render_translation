@@ -50,22 +50,23 @@ npm start
 # POST /api/render/random — случайная сцена → PNG
 ```
 
-Авторизация панели через Telegram поддерживается из коробки и может работать строго по allowlist Telegram ID.
+Авторизация панели через Telegram поддерживается из коробки, allowlist Telegram ID управляется прямо из GUI.
 
-### Строгий доступ по Telegram ID
+### Доступ по Telegram ID через GUI
 
 1. Создайте `.env` на базе `.env.example`.
 2. Укажите:
    - `AUTH_ENABLED=1`
    - `BOT_TOKEN=<токен бота>`
    - `TELEGRAM_BOT_USERNAME=<username бота без @>`
-   - `ALLOWED_TELEGRAM_IDS=<id1,id2,...>`
    - `SESSION_SECRET=<длинный случайный ключ>`
 3. Добавьте домен/URL панели в BotFather для Telegram Login Widget.
+4. Запустите сервер и войдите первым Telegram-аккаунтом — он станет администратором.
+5. В GUI откройте блок **Доступы Telegram** и выдайте доступ нужным ID.
 
 Важно:
-- при `AUTH_ENABLED=1` сервер не запустится без `ALLOWED_TELEGRAM_IDS`;
-- доступ к `/api/render/*` есть только после входа Telegram и только для ID из allowlist;
+- при `AUTH_ENABLED=1` доступ к `/api/render/*` есть только после входа Telegram и только для ID из allowlist;
+- если allowlist пуст, первый успешный вход автоматически инициализирует админа;
 - если ID не в списке, возвращается `403`.
 
 ## Telegram-бот

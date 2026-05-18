@@ -9,18 +9,22 @@
 <body>
   <div class="layout layout-wide">
     <header class="header">
-      <h1 class="title">Переписка для макета</h1>
-      <p class="subtitle">Соберите диалог: сообщения оппонента и свои, опционально закреп (макет iPhone).</p>
+      <h1 class="title">Генератор макетов</h1>
+      <p class="subtitle">Отрисовка переписок и подготовка раздела для рендера документов.</p>
     </header>
 
     <main class="main">
       <section id="panel-login" class="card hidden" aria-live="polite">
-        <h2 class="card-title">Вход</h2>
-        <p class="hint">
-          Включён режим <code>AUTH_ENABLED</code>. Нужен бот и домен в BotFather для виджета Telegram.
-        </p>
-        <div id="tg-widget-wrap" class="tg-widget-wrap"></div>
-        <p id="login-error" class="error hidden"></p>
+        <div class="login-shell">
+          <div class="login-window">
+            <h2 class="card-title login-title">Вход через Telegram</h2>
+            <p class="hint login-hint">
+              Доступ в панель выдаётся администратором через интерфейс. Войдите Telegram-аккаунтом для проверки доступа.
+            </p>
+            <div id="tg-widget-wrap" class="tg-widget-wrap"></div>
+            <p id="login-error" class="error hidden"></p>
+          </div>
+        </div>
       </section>
 
       <section id="panel-app" class="card hidden">
@@ -28,105 +32,247 @@
           <span id="user-label"></span>
           <button type="button" id="btn-logout" class="btn btn-ghost">Выйти</button>
         </div>
-
-        <h2 class="card-title card-title-spaced">Настройки чата</h2>
-
-        <div class="form-section">
-          <div class="form-grid form-grid-3">
-            <label class="field">
-              <span class="field-label">Оформление</span>
-              <select id="platform" class="select">
-                <option value="android">Android</option>
-                <option value="ios">iPhone (iOS)</option>
-              </select>
-            </label>
-            <label class="field">
-              <span class="field-label">Время в статус-баре</span>
-              <input type="text" id="status-time" class="input" placeholder="14:32" maxlength="8" />
-            </label>
-            <label class="field ios-only-row hidden">
-              <span class="field-label">Заряд (%, опционально)</span>
-              <input type="text" id="ios-battery" class="input" placeholder="17" maxlength="6" />
-            </label>
+        <section id="access-manager" class="access-manager hidden">
+          <div class="access-head">
+            <h3 class="section-heading step-title">Доступы Telegram</h3>
+            <span id="access-summary" class="feed-stats"></span>
           </div>
-
-          <div class="form-grid form-grid-2">
+          <p class="hint hint-tight">
+            Добавляйте ID пользователей, которым можно входить в панель. Первый вошедший пользователь автоматически становится админом.
+          </p>
+          <div class="access-controls">
             <label class="field">
-              <span class="field-label field-label-with-icon">
-                <svg class="field-label-icon" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>
-                <span>Имя оппонента</span>
-              </span>
-              <input type="text" id="name-opponent" class="input" placeholder="+7 … или имя" autocomplete="off" />
+              <span class="field-label">Telegram ID</span>
+              <input type="text" id="access-id-input" class="input" placeholder="Например: 123456789" />
             </label>
-            <label class="field">
-              <span class="field-label">Ваше имя в чате</span>
-              <input type="text" id="name-me" class="input" placeholder="Как в Telegram" autocomplete="off" />
+            <label class="checkbox-row access-admin-toggle">
+              <input type="checkbox" id="access-make-admin" />
+              <span>Сделать администратором</span>
             </label>
+            <button type="button" id="btn-access-grant" class="btn btn-secondary">Выдать доступ</button>
           </div>
+          <p id="access-error" class="error hidden"></p>
+          <div id="access-list" class="access-list"></div>
+        </section>
 
-          <div class="form-grid form-grid-2 ios-only-row hidden">
-            <label class="field">
-              <span class="field-label">Подпись под именем (только iOS)</span>
-              <input type="text" id="ios-subtitle" class="input" placeholder="Пусто → случайно Онлайн или был(а) недавно" />
-            </label>
-            <label class="field">
-              <span class="field-label">Число у стрелки «назад»</span>
-              <input type="text" id="ios-back-badge" class="input" placeholder="16549" />
-            </label>
+        <div class="builder-nav" role="tablist" aria-label="Разделы рендера">
+          <button type="button" id="btn-section-chat" class="btn btn-secondary builder-nav-btn is-active" data-section="chat" role="tab" aria-selected="true">Переписка</button>
+          <button type="button" id="btn-section-docs" class="btn btn-secondary builder-nav-btn" data-section="docs" role="tab" aria-selected="false">Документы</button>
+        </div>
+
+        <section id="section-chat-builder">
+          <h2 class="card-title card-title-spaced">Конструктор чата</h2>
+          <p class="hint builder-intro">
+            Заполняйте сверху вниз: <strong>1) параметры чата</strong>, <strong>2) лента сообщений</strong>, затем
+            нажмите <strong>Сгенерировать PNG</strong>.
+          </p>
+
+          <section class="builder-step">
+          <div class="step-head">
+            <h3 class="section-heading step-title">Шаг 1. Параметры чата</h3>
           </div>
+          <div class="form-section">
+            <div class="form-grid form-grid-3">
+              <label class="field">
+                <span class="field-label">Оформление</span>
+                <select id="platform" class="select">
+                  <option value="android">Android</option>
+                  <option value="ios">iPhone (iOS)</option>
+                </select>
+              </label>
+              <label class="field">
+                <span class="field-label">Время в статус-баре</span>
+                <input type="text" id="status-time" class="input" placeholder="14:32" maxlength="8" />
+              </label>
+              <label class="field ios-only-row hidden">
+                <span class="field-label">Заряд (%, опционально)</span>
+                <input type="text" id="ios-battery" class="input" placeholder="17" maxlength="6" />
+              </label>
+            </div>
 
-          <label class="checkbox-row">
-            <input type="checkbox" id="chk-pinned" />
-            <span>Показать закреплённое сообщение</span>
-          </label>
-          <label class="field field-full">
-            <span class="field-label muted-small">Текст закрепа (видно на макете iPhone)</span>
-            <textarea id="pinned-text" class="textarea" rows="2" placeholder="Краткий текст закрепа…" disabled></textarea>
-          </label>
+            <div class="form-grid form-grid-2">
+              <label class="field">
+                <span class="field-label field-label-with-icon">
+                  <svg class="field-label-icon" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>
+                  <span>Имя оппонента</span>
+                </span>
+                <input type="text" id="name-opponent" class="input" placeholder="+7 … или имя" autocomplete="off" />
+              </label>
+              <label class="field">
+                <span class="field-label">Ваше имя в чате</span>
+                <input type="text" id="name-me" class="input" placeholder="Как в Telegram" autocomplete="off" />
+              </label>
+            </div>
 
-          <label class="checkbox-row">
-            <input type="checkbox" id="chk-random-avatar" />
-            <span>Случайные аватарки из картинок в корне проекта</span>
-          </label>
+            <div class="form-grid form-grid-2 ios-only-row hidden">
+              <label class="field">
+                <span class="field-label">Подпись под именем (только iOS)</span>
+                <input type="text" id="ios-subtitle" class="input" placeholder="Пусто → случайно Онлайн или был(а) недавно" />
+              </label>
+              <label class="field">
+                <span class="field-label">Число у стрелки «назад»</span>
+                <input type="text" id="ios-back-badge" class="input" placeholder="16549" />
+              </label>
+            </div>
 
-          <div class="ios-only-row hidden composite-screen-section">
             <label class="checkbox-row">
-              <input type="checkbox" id="chk-composite-screen" />
-              <span>Подложка: полный скрин iPhone (поверх — время, ник, аватар, сообщения)</span>
+              <input type="checkbox" id="chk-pinned" />
+              <span>Показать закреплённое сообщение</span>
             </label>
-            <div class="field field-full composite-file-row">
-              <span class="field-label muted-small">PNG скрина чата (как с телефона)</span>
-              <div class="composite-file-actions">
-                <input type="file" id="composite-screen-file" class="input-file" accept="image/png,image/jpeg,image/webp" />
-                <button type="button" id="btn-composite-clear" class="btn btn-ghost btn-sm">Сбросить скрин</button>
+            <label class="field field-full">
+              <span class="field-label muted-small">Текст закрепа (видно на макете iPhone)</span>
+              <textarea id="pinned-text" class="textarea" rows="2" placeholder="Краткий текст закрепа…" disabled></textarea>
+            </label>
+
+            <label class="checkbox-row">
+              <input type="checkbox" id="chk-random-avatar" />
+              <span>Случайные аватарки из картинок в корне проекта</span>
+            </label>
+
+            <div class="ios-only-row hidden composite-screen-section">
+              <label class="checkbox-row">
+                <input type="checkbox" id="chk-composite-screen" />
+                <span>Подложка: полный скрин iPhone (поверх — время, ник, аватар, сообщения)</span>
+              </label>
+              <div class="field field-full composite-file-row">
+                <span class="field-label muted-small">PNG скрина чата (как с телефона)</span>
+                <div class="composite-file-actions">
+                  <input type="file" id="composite-screen-file" class="input-file" accept="image/png,image/jpeg,image/webp" />
+                  <button type="button" id="btn-composite-clear" class="btn btn-ghost btn-sm">Сбросить скрин</button>
+                </div>
+                <p id="composite-screen-status" class="hint hint-tight muted-small"></p>
               </div>
-              <p id="composite-screen-status" class="hint hint-tight muted-small"></p>
             </div>
           </div>
-        </div>
+        </section>
 
-        <h3 class="section-heading">Сообщения в ленте</h3>
-        <p class="hint hint-tight">
-          Порядок строк = порядок в чате сверху вниз. Можно чередовать текст и фото как угодно:
-          нажимайте <strong>+ Картинка</strong> для каждого нового медиа в переписке (сколько угодно).
-          В любой строке тип можно сменить на «Дата» — разделитель по центру ленты.
-        </p>
-        <div id="message-rows" class="message-rows"></div>
-        <div class="message-rows-toolbar">
-          <button type="button" id="btn-add-message" class="btn btn-secondary">+ Сообщение</button>
-          <button type="button" id="btn-add-image" class="btn btn-secondary">+ Картинка</button>
-        </div>
+        <section class="builder-step">
+          <div class="step-head">
+            <h3 class="section-heading step-title">Шаг 2. Лента сообщений</h3>
+            <div id="feed-stats" class="feed-stats" aria-live="polite"></div>
+          </div>
+          <p class="hint hint-tight">
+            Порядок карточек = порядок сообщений сверху вниз. Можно смешивать текст, фото и даты-разделители.
+          </p>
+          <div id="message-rows" class="message-rows"></div>
+          <div class="message-rows-toolbar">
+            <button type="button" id="btn-add-message" class="btn btn-secondary">+ Сообщение</button>
+            <button type="button" id="btn-add-image" class="btn btn-secondary">+ Картинка</button>
+            <button type="button" id="btn-add-date" class="btn btn-secondary">+ Дата</button>
+            <button type="button" id="btn-clear-rows" class="btn btn-ghost">Очистить ленту</button>
+          </div>
+        </section>
 
-        <div class="form-actions">
+        <section class="builder-step">
+          <div class="step-head">
+            <h3 class="section-heading step-title">Шаг 3. Рендер и экспорт</h3>
+          </div>
+          <div class="form-actions">
           <button type="button" id="btn-render" class="btn btn-primary">Сгенерировать PNG</button>
           <button type="button" id="btn-render-random" class="btn btn-ghost" title="Случайные имена, текст из примера и аватарки из корня">Случайный пример</button>
-        </div>
+          </div>
+          </section>
 
-        <p id="render-error" class="error hidden"></p>
-        <div id="preview-wrap" class="preview-wrap hidden">
-          <img id="preview-img" alt="Предпросмотр переписки" class="preview-img" />
-          <a id="download-link" class="link-download" href="#" download="chat.png">Скачать PNG</a>
-        </div>
+          <p id="render-error" class="error hidden"></p>
+          <div id="preview-wrap" class="preview-wrap hidden">
+            <img id="preview-img" alt="Предпросмотр переписки" class="preview-img" />
+            <a id="download-link" class="link-download" href="#" download="chat.png">Скачать PNG</a>
+          </div>
+        </section>
+
+        <section id="section-docs-builder" class="hidden">
+          <h2 class="card-title card-title-spaced">Отрисовка документов</h2>
+          
+
+          <section class="builder-step">
+            <div class="step-head">
+              <h3 class="section-heading step-title">Шаг 1. Тип документа</h3>
+            </div>
+            <div class="form-grid form-grid-2">
+              <label class="field">
+                <span class="field-label">Шаблон</span>
+                <select id="doc-template" class="select">
+                  <option value="npd-certificate">Справка НПД (КНД 1122036)</option>
+                </select>
+              </label>
+              <label class="field">
+                <span class="field-label">Дата документа</span>
+                <input type="text" id="doc-date" class="input" placeholder="18.05.2026" />
+              </label>
+            </div>
+          </section>
+
+          <section class="builder-step">
+            <div class="step-head">
+              <h3 class="section-heading step-title">Шаг 2. Реквизиты</h3>
+            </div>
+            <div class="form-grid form-grid-2">
+              <label class="field field-full">
+                <span class="field-label">Инспекция ФНС</span>
+                <input type="text" id="doc-inspection" class="input" placeholder="Инспекция Федеральной налоговой службы по г. Санкт-Петербургу" />
+              </label>
+              <label class="field">
+                <span class="field-label">ФИО налогоплательщика</span>
+                <input type="text" id="doc-taxpayer-name" class="input" placeholder="Иванов Иван Иванович" />
+              </label>
+              <label class="field">
+                <span class="field-label">ИНН</span>
+                <input type="text" id="doc-inn" class="input" placeholder="780627415124" />
+              </label>
+              <label class="field">
+                <span class="field-label">Справка №</span>
+                <input type="text" id="doc-certificate-number" class="input" placeholder="96773089" />
+              </label>
+              <label class="checkbox-row access-admin-toggle">
+                <input type="checkbox" id="doc-certificate-random" />
+                <span>Рандомизировать номер справки</span>
+              </label>
+              <label class="field">
+                <span class="field-label">За год</span>
+                <input type="text" id="doc-year" class="input" placeholder="2024" />
+              </label>
+              <label class="field">
+                <span class="field-label">Серия и номер документа</span>
+                <input type="text" id="doc-id-series-number" class="input" placeholder="40 21 870290" />
+              </label>
+              <label class="field">
+                <span class="field-label">Общая сумма дохода за год (руб.)</span>
+                <input type="text" id="doc-amount" class="input" placeholder="2106276.00" />
+              </label>
+              <label class="field">
+                <span class="field-label">Ставка налога, %</span>
+                <input type="text" id="doc-tax-rate" class="input" placeholder="6" />
+              </label>
+              <label class="field">
+                <span class="field-label">Печать действительна с</span>
+                <input type="text" id="doc-valid-from" class="input" placeholder="05.03.2025" />
+              </label>
+              <label class="field">
+                <span class="field-label">Печать действительна по</span>
+                <input type="text" id="doc-valid-to" class="input" placeholder="29.05.2026" />
+              </label>
+            </div>
+            <label class="field field-full">
+              <span class="field-label">Назначение платежа / комментарий</span>
+              <textarea id="doc-purpose" class="textarea" rows="3" placeholder="Оплата по договору..."></textarea>
+            </label>
+          </section>
+
+          <section class="builder-step">
+            <div class="step-head">
+              <h3 class="section-heading step-title">Шаг 3. Рендер и экспорт</h3>
+            </div>
+            <div class="form-actions">
+              <button type="button" id="btn-doc-render" class="btn btn-primary">Сгенерировать документ PDF</button>
+              <button type="button" id="btn-doc-reset" class="btn btn-ghost">Сбросить поля</button>
+            </div>
+            <p id="doc-render-error" class="error hidden"></p>
+            <div id="doc-preview-wrap" class="preview-wrap hidden">
+              <iframe id="doc-preview-frame" class="doc-preview-frame" title="Предпросмотр PDF документа"></iframe>
+              <a id="doc-download-link" class="link-download" href="#" download="document.pdf">Скачать PDF</a>
+            </div>
+          </section>
+        </section>
       </section>
 
       <section id="panel-loading" class="card">

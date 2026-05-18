@@ -89,6 +89,30 @@ body {
   min-height: 44px;
 }
 
+.login-shell {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.login-window {
+  width: min(100%, 520px);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.22);
+  padding: 18px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+}
+
+.login-title {
+  margin-bottom: 8px;
+}
+
+.login-hint {
+  margin-bottom: 14px;
+}
+
 .toolbar {
   display: flex;
   flex-direction: column;
@@ -196,6 +220,14 @@ body {
   border: 1px solid var(--border);
 }
 
+.doc-preview-frame {
+  width: 100%;
+  min-height: 720px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+}
+
 .link-download {
   display: inline-block;
   margin-top: 12px;
@@ -215,6 +247,135 @@ body {
 
 .card-title-spaced {
   margin-bottom: 18px;
+}
+
+.builder-intro {
+  margin-bottom: 18px;
+}
+
+.access-manager {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.02);
+  padding: 14px;
+  margin-bottom: 16px;
+}
+
+.access-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.access-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.access-controls .field {
+  min-width: min(320px, 100%);
+  flex: 1 1 260px;
+}
+
+.access-admin-toggle {
+  min-height: 40px;
+  padding-bottom: 6px;
+}
+
+.access-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.access-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 10px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.access-row-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.access-role {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #9ec9ff;
+  border: 1px solid rgba(158, 201, 255, 0.32);
+  border-radius: 999px;
+  padding: 2px 7px;
+}
+
+.access-role-user {
+  color: var(--muted);
+  border-color: rgba(139, 147, 165, 0.35);
+}
+
+.access-self {
+  font-size: 0.74rem;
+  color: var(--muted);
+}
+
+.builder-nav {
+  display: inline-flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.builder-nav-btn {
+  padding: 8px 14px;
+}
+
+.builder-nav-btn.is-active {
+  background: rgba(61, 143, 209, 0.24);
+  border-color: rgba(61, 143, 209, 0.45);
+}
+
+.builder-step {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.02);
+  margin-bottom: 14px;
+}
+
+.step-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.step-title {
+  margin: 0;
+}
+
+.feed-stats {
+  font-size: 0.82rem;
+  color: var(--muted);
+  background: rgba(0, 0, 0, 0.24);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px 10px;
 }
 
 .section-heading {
@@ -372,11 +533,40 @@ label.field.field-inline {
 }
 
 .msg-row-top {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: flex-start;
   gap: 10px;
   margin-bottom: 10px;
+}
+
+.msg-row-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: fit-content;
+}
+
+.msg-row-index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  height: 22px;
+  font-size: 0.78rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.msg-row-kind-label {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.msg-row-top .field-inline {
+  justify-self: start;
 }
 
 .msg-img-file-row {
@@ -429,10 +619,26 @@ label.field.field-inline {
   background: rgba(255, 255, 255, 0.1);
 }
 
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .form-actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 12px;
   margin-top: 20px;
+}
+
+@media (max-width: 720px) {
+  .msg-row-top {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .msg-row-top .field-inline {
+    justify-self: stretch;
+  }
 }
