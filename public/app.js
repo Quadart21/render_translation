@@ -50,7 +50,6 @@ const docAmount = document.getElementById('doc-amount');
 const docTaxRate = document.getElementById('doc-tax-rate');
 const docValidFrom = document.getElementById('doc-valid-from');
 const docValidTo = document.getElementById('doc-valid-to');
-const docPurpose = document.getElementById('doc-purpose');
 const btnDocRender = document.getElementById('btn-doc-render');
 const btnDocReset = document.getElementById('btn-doc-reset');
 const docRenderError = document.getElementById('doc-render-error');
@@ -130,7 +129,6 @@ function buildDocumentPayload() {
     taxRate: docTaxRate.value.trim(),
     validFrom: docValidFrom.value.trim(),
     validTo: docValidTo.value.trim(),
-    purpose: docPurpose.value.trim(),
   };
 }
 
@@ -148,7 +146,6 @@ function resetDocumentForm() {
   docTaxRate.value = '6';
   docValidFrom.value = '';
   docValidTo.value = '';
-  docPurpose.value = '';
   docPreviewWrap.classList.add('hidden');
   docPreviewFrame.removeAttribute('src');
   clearDocError();
