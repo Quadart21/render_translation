@@ -58,13 +58,13 @@ function yFromTop(pageHeight, top, fontSize = 10) {
   return pageHeight - top - fontSize;
 }
 
-function drawTextAtTop(page, pageHeight, text, x, top, size, font) {
+function drawTextAtTop(page, pageHeight, text, x, top, size, font, color = rgb(0, 0, 0)) {
   page.drawText(String(text), {
     x,
     y: yFromTop(pageHeight, top, size),
     size,
     font,
-    color: rgb(0, 0, 0),
+    color,
   });
 }
 
@@ -250,10 +250,36 @@ export async function renderDocumentToPdf(payload = {}) {
   drawLeft(page, width, height, formatMoney(totalIncome), totalIncomeStart, totalsTop, 42, font);
   drawLeft(page, width, height, formatMoney(totalTax), totalTaxStart, totalsTop, 42, font);
 
-  /*
   // 7) Срок действия подписи
-  drawLeft(page, width, height, `${validFrom} по ${validTo}`, LAYOUT.signatureInfo.x, LAYOUT.signatureInfo.top + 52, 28, font);
-  */
+  const signatureLeftDate = String(validFrom).trim();
+  const signatureRightDate = String(validTo).trim();
+  const signatureY = scaleTop(height, 3122);
+  const signatureFontSize = scaleSize(height, 34);
+  const signatureColor = rgb(0x42 / 255, 0x44 / 255, 0xB5 / 255);
+  const signatureLeftX = scaleX(width, LAYOUT.signatureInfo.x + 986);
+  const signatureGap = scaleX(width, 150);
+  const leftDateWidth = fontBold.widthOfTextAtSize(signatureLeftDate, signatureFontSize);
+  const signatureRightX = signatureLeftX + leftDateWidth + signatureGap + scaleX(width, -100);
+  drawTextAtTop(
+    page,
+    height,
+    signatureLeftDate,
+    signatureLeftX,
+    signatureY,
+    signatureFontSize,
+    fontBold,
+    signatureColor
+  );
+  drawTextAtTop(
+    page,
+    height,
+    signatureRightDate,
+    signatureRightX,
+    signatureY,
+    signatureFontSize,
+    fontBold,
+    signatureColor
+  );
 
   const bytes = await pdf.save();
   return Buffer.from(bytes);
