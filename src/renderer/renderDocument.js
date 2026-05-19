@@ -230,26 +230,29 @@ export async function renderDocumentToPdf(payload = {}) {
   // 5) Серия и номер документа
   drawLeft(page, width, height, `${idSeriesNumber}`, LAYOUT.passport.x + 1770, LAYOUT.passport.top - 353, 42, font);
 
-  /*
-
-  // 6) Ð”Ð¾Ñ…Ð¾Ð´ Ð¿Ð¾ Ð¼ÐµÑÑÑ†Ð°Ð¼ + Ð½Ð°Ð»Ð¾Ð³ Ð¿Ð¾ Ñ‚Ð°Ð±Ð»Ð¸Ñ†Ðµ
-  const monthTopStart = LAYOUT.incomeTable.top + 142;
+  // 6) Доход по месяцам + налог по таблице
+  const monthTopStart = LAYOUT.incomeTable.top - 258;
   const monthStep = LAYOUT.incomeTable.rowH;
-  const leftAmountRight = LAYOUT.incomeTable.x + 1010;
-  const rightAmountRight = LAYOUT.incomeTable.x + 2110;
+  // Fixed-start anchors: first digit stays in place, number grows to the right.
+  const leftAmountStart = LAYOUT.incomeTable.x + 520;
+  const rightAmountStart = LAYOUT.incomeTable.x + 1620;
   for (let i = 0; i < 6; i += 1) {
     const top = monthTopStart + i * monthStep;
-    drawRight(page, width, height, formatMoney(monthly[i]), leftAmountRight, top, 30, font);
+    drawLeft(page, width, height, formatMoney(monthly[i]), leftAmountStart, top, 42, font);
   }
   for (let i = 0; i < 6; i += 1) {
     const top = monthTopStart + i * monthStep;
-    drawRight(page, width, height, formatMoney(monthly[i + 6]), rightAmountRight, top, 30, font);
+    drawLeft(page, width, height, formatMoney(monthly[i + 6]), rightAmountStart, top, 42, font);
   }
-  drawRight(page, width, height, formatMoney(totalIncome), LAYOUT.summary.x + 980, LAYOUT.summary.top + 58, 40, fontBold);
-  drawRight(page, width, height, formatMoney(totalTax), LAYOUT.summary.x + LAYOUT.summary.width, LAYOUT.summary.top + 58, 40, fontBold);
+  const totalsTop = LAYOUT.summary.top - 962;
+  const totalIncomeStart = LAYOUT.summary.x + 620;
+  const totalTaxStart = LAYOUT.summary.x + 1650;
+  drawLeft(page, width, height, formatMoney(totalIncome), totalIncomeStart, totalsTop, 42, font);
+  drawLeft(page, width, height, formatMoney(totalTax), totalTaxStart, totalsTop, 42, font);
 
-  // 7) Ð¡Ñ€Ð¾Ðº Ð´ÐµÐ¹ÑÑ‚Ð²Ð¸Ñ Ð¿Ð¾Ð´Ð¿Ð¸ÑÐ¸
-  drawLeft(page, width, height, `${validFrom} Ð¿Ð¾ ${validTo}`, LAYOUT.signatureInfo.x, LAYOUT.signatureInfo.top + 52, 28, font);
+  /*
+  // 7) Срок действия подписи
+  drawLeft(page, width, height, `${validFrom} по ${validTo}`, LAYOUT.signatureInfo.x, LAYOUT.signatureInfo.top + 52, 28, font);
   */
 
   const bytes = await pdf.save();
