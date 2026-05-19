@@ -227,10 +227,10 @@ export async function renderDocumentToPdf(payload = {}) {
     underlineOffsetY: 3,
   });
 
-  /*
+  // 5) Серия и номер документа
+  drawLeft(page, width, height, `${idSeriesNumber}`, LAYOUT.passport.x + 1770, LAYOUT.passport.top - 353, 42, font);
 
-  // 5) Ð¡ÐµÑ€Ð¸Ñ Ð¸ Ð½Ð¾Ð¼ÐµÑ€ Ð´Ð¾ÐºÑƒÐ¼ÐµÐ½Ñ‚Ð°
-  drawLeft(page, width, height, `Ð¡ÐµÑ€Ð¸Ñ Ð¸ Ð½Ð¾Ð¼ÐµÑ€ Ð´Ð¾ÐºÑƒÐ¼ÐµÐ½Ñ‚Ð° ${idSeriesNumber}`, LAYOUT.passport.x, LAYOUT.passport.top + 62, 34, font);
+  /*
 
   // 6) Ð”Ð¾Ñ…Ð¾Ð´ Ð¿Ð¾ Ð¼ÐµÑÑÑ†Ð°Ð¼ + Ð½Ð°Ð»Ð¾Ð³ Ð¿Ð¾ Ñ‚Ð°Ð±Ð»Ð¸Ñ†Ðµ
   const monthTopStart = LAYOUT.incomeTable.top + 142;
