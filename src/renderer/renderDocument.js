@@ -41,17 +41,29 @@ function randomDigits(len) {
 
 function splitIntoMonths(total) {
   const cents = Math.max(0, Math.round(total * 100));
-  const base = Math.floor(cents / 12);
-  let rest = cents - base * 12;
-  const arr = Array.from({ length: 12 }, () => base);
-  let i = 11;
+  if (cents === 0) return Array.from({ length: 12 }, () => 0);
+
+  // Разные месяцы: случайные веса, затем нормализация к общей сумме.
+  const weights = Array.from({ length: 12 }, () => 0.65 + Math.random() * 0.9);
+  const sumWeights = weights.reduce((a, b) => a + b, 0);
+  const scaled = weights.map((w) => (cents * w) / sumWeights);
+  const floors = scaled.map((v) => Math.floor(v));
+  let rest = cents - floors.reduce((a, b) => a + b, 0);
+
+  // Добрасываем остаток по убыванию дробной части, чтобы итог совпал копейка в копейку.
+  const order = scaled
+    .map((v, i) => ({ i, frac: v - floors[i] }))
+    .sort((a, b) => b.frac - a.frac)
+    .map((x) => x.i);
+
+  let p = 0;
   while (rest > 0) {
-    arr[i] += 1;
+    floors[order[p % order.length]] += 1;
     rest -= 1;
-    i -= 1;
-    if (i < 0) i = 11;
+    p += 1;
   }
-  return arr.map((c) => c / 100);
+
+  return floors.map((c) => c / 100);
 }
 
 function yFromTop(pageHeight, top, fontSize = 10) {
@@ -83,6 +95,7 @@ const LAYOUT = Object.freeze({
   incomeTable: { x: 150, top: 1660, width: 2150, rowH: 78 },
   summary: { x: 150, top: 3028, width: 2150 },
   debt: { x: 150, top: 3338 },
+  taxpayerName: { centerX: 1250, top: 621 },
 });
 
 function scaleX(pageWidth, x) {
@@ -226,6 +239,19 @@ export async function renderDocumentToPdf(payload = {}) {
     underlineOffsetX: -26,
     underlineOffsetY: 3,
   });
+
+  // 4.1) ФИО — фиксированная горизонтальная ось центра (все значения центрируются от нее)
+  const fioCenterX = LAYOUT.taxpayerName.centerX;
+  drawCenter(
+    page,
+    width,
+    height,
+    `${taxpayerName}`,
+    fioCenterX,
+    LAYOUT.taxpayerName.top,
+    53.2,
+    font
+  );
 
   // 5) Серия и номер документа
   drawLeft(page, width, height, `${idSeriesNumber}`, LAYOUT.passport.x + 1770, LAYOUT.passport.top - 353, 42, font);
