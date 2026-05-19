@@ -123,6 +123,26 @@ function drawRight(page, pageWidth, pageHeight, text, rightX, top, size, font) {
   drawTextAtTop(page, pageHeight, text, px - w, scaleTop(pageHeight, top), ps, font);
 }
 
+function drawUnderlinedLeft(page, pageWidth, pageHeight, text, x, top, size, font, opts = {}) {
+  const px = scaleX(pageWidth, x);
+  const pTop = scaleTop(pageHeight, top);
+  const pSize = scaleSize(pageHeight, size);
+  drawTextAtTop(page, pageHeight, text, px, pTop, pSize, font);
+  const fixedUnderlineWidth = Number(opts.fixedUnderlineWidth || 0);
+  const underlineOffsetX = Number(opts.underlineOffsetX || 0);
+  const underlineOffsetY = Number(opts.underlineOffsetY || 0);
+  const textWidth = fixedUnderlineWidth > 0
+    ? scaleX(pageWidth, fixedUnderlineWidth)
+    : font.widthOfTextAtSize(String(text), pSize);
+  const y = yFromTop(pageHeight, pTop, pSize) - Math.max(1, pSize * 0.12) - 0.6 - underlineOffsetY;
+  page.drawLine({
+    start: { x: px + scaleX(pageWidth, underlineOffsetX), y },
+    end: { x: px + scaleX(pageWidth, underlineOffsetX) + textWidth, y },
+    thickness: Math.max(0.45, pSize * 0.02),
+    color: rgb(0, 0, 0),
+  });
+}
+
 async function readFirstExisting(paths) {
   for (const p of paths) {
     try {
@@ -192,15 +212,22 @@ export async function renderDocumentToPdf(payload = {}) {
   // 1) Ð˜Ð½ÑÐ¿ÐµÐºÑ†Ð¸Ñ Ð¤ÐÐ¡ (Ð¾ÑÑ‚Ð°Ð²Ð»ÐµÐ½Ð¾ Ð´Ð»Ñ Ñ‚ÐµÐºÑƒÑ‰ÐµÐ¹ Ð½Ð°ÑÑ‚Ñ€Ð¾Ð¹ÐºÐ¸)
   drawCenter(page, width, height, inspection, DESIGN_W / 2, LAYOUT.taxOffice.top, 37, font);
 
+  // 2) Номер справки
+  drawCenter(page, width, height, `${certificateNumber}`, LAYOUT.documentTitle.centerX + 190, LAYOUT.documentTitle.top - 190, 55, fontBold);
+
+  // 3) Год и дата
+  drawCenter(page, width, height, `${year}`, LAYOUT.documentTitle.centerX - 190, LAYOUT.documentTitle.top - 57, 55, fontBold);
+  drawCenter(page, width, height, `${issueDate}`, LAYOUT.documentTitle.centerX + 185, LAYOUT.documentTitle.top - 57, 55, fontBold);
+
+  // 4) ИНН (только цифры + подчёркивание)
+  const innDigits = String(inn).replace(/\D/g, '');
+  drawUnderlinedLeft(page, width, height, innDigits, LAYOUT.inn.x + 235, LAYOUT.inn.top - 42, 42, font, {
+    fixedUnderlineWidth: 286,
+    underlineOffsetX: -26,
+    underlineOffsetY: 3,
+  });
+
   /*
-  // 2) ÐÐ¾Ð¼ÐµÑ€ ÑÐ¿Ñ€Ð°Ð²ÐºÐ¸
-  drawCenter(page, width, height, `Ð¡Ð¿Ñ€Ð°Ð²ÐºÐ° No ${certificateNumber}`, LAYOUT.documentTitle.centerX, LAYOUT.documentTitle.top, 40, fontBold);
-
-  // 3) Ð“Ð¾Ð´ Ð¸ Ð´Ð°Ñ‚Ð°
-  drawCenter(page, width, height, `Ð·Ð° ${year} Ð³Ð¾Ð´ Ð¾Ñ‚ ${issueDate} Ð³.`, LAYOUT.documentTitle.centerX, LAYOUT.documentTitle.top + 116, 34, font);
-
-  // 4) Ð˜ÐÐ
-  drawLeft(page, width, height, `Ð˜ÐÐ ${inn}`, LAYOUT.inn.x, LAYOUT.inn.top, 34, fontBold);
 
   // 5) Ð¡ÐµÑ€Ð¸Ñ Ð¸ Ð½Ð¾Ð¼ÐµÑ€ Ð´Ð¾ÐºÑƒÐ¼ÐµÐ½Ñ‚Ð°
   drawLeft(page, width, height, `Ð¡ÐµÑ€Ð¸Ñ Ð¸ Ð½Ð¾Ð¼ÐµÑ€ Ð´Ð¾ÐºÑƒÐ¼ÐµÐ½Ñ‚Ð° ${idSeriesNumber}`, LAYOUT.passport.x, LAYOUT.passport.top + 62, 34, font);
