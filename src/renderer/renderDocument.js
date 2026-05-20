@@ -260,8 +260,8 @@ export async function renderDocumentToPdf(payload = {}) {
   const monthTopStart = LAYOUT.incomeTable.top - 258;
   const monthStep = LAYOUT.incomeTable.rowH;
   // Fixed-start anchors: first digit stays in place, number grows to the right.
-  const leftAmountStart = LAYOUT.incomeTable.x + 520;
-  const rightAmountStart = LAYOUT.incomeTable.x + 1620;
+  const leftAmountStart = LAYOUT.incomeTable.x + 490;
+  const rightAmountStart = LAYOUT.incomeTable.x + 1547;
   for (let i = 0; i < 6; i += 1) {
     const top = monthTopStart + i * monthStep;
     drawLeft(page, width, height, formatMoney(monthly[i]), leftAmountStart, top, 42, font);
