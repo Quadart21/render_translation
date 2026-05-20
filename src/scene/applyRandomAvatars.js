@@ -15,7 +15,8 @@ export function applyRandomAvatars(scene, projectRoot) {
   }
   const [a, b] = paths;
   for (const p of scene.participants || []) {
-    if (p.side === 'left') p.avatar = a ?? null;
-    if (p.side === 'right') p.avatar = b ?? a ?? null;
+    // Не затираем явно заданные аватарки из payload.
+    if (p.side === 'left' && !p.avatar) p.avatar = a ?? null;
+    if (p.side === 'right' && !p.avatar) p.avatar = b ?? a ?? null;
   }
 }

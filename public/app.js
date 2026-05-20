@@ -22,10 +22,9 @@ const feedStats = document.getElementById('feed-stats');
 const chkPinned = document.getElementById('chk-pinned');
 const pinnedText = document.getElementById('pinned-text');
 const chkRandomAvatar = document.getElementById('chk-random-avatar');
-const chkCompositeScreen = document.getElementById('chk-composite-screen');
-const compositeScreenFile = document.getElementById('composite-screen-file');
-const btnCompositeClear = document.getElementById('btn-composite-clear');
-const compositeScreenStatus = document.getElementById('composite-screen-status');
+const avatarOpponentFile = document.getElementById('avatar-opponent-file');
+const btnAvatarOpponentClear = document.getElementById('btn-avatar-opponent-clear');
+const avatarOpponentStatus = document.getElementById('avatar-opponent-status');
 const accessManager = document.getElementById('access-manager');
 const accessSummary = document.getElementById('access-summary');
 const accessIdInput = document.getElementById('access-id-input');
@@ -57,8 +56,7 @@ const docPreviewWrap = document.getElementById('doc-preview-wrap');
 const docPreviewFrame = document.getElementById('doc-preview-frame');
 const docDownloadLink = document.getElementById('doc-download-link');
 
-/** data URL полного скрина для compositeScreenshot (только iOS) */
-let compositeScreenshotDataUrl = null;
+let avatarOpponentDataUrl = null;
 let canManageAccess = false;
 let currentUserId = null;
 
@@ -91,6 +89,41 @@ function clearDocError() {
 function showDocError(msg) {
   docRenderError.textContent = msg;
   show(docRenderError);
+}
+
+function bindAvatarInput(inputEl, clearBtnEl, statusEl, setValue) {
+  inputEl.addEventListener('change', () => {
+    const f = inputEl.files && inputEl.files[0];
+    if (!f) {
+      setValue(null);
+      statusEl.textContent = '';
+      return;
+    }
+    if (!f.type.startsWith('image/')) {
+      inputEl.value = '';
+      setValue(null);
+      statusEl.textContent = 'Нужен файл изображения.';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      setValue(reader.result);
+      // Пользователь явно задал аватарку, поэтому случайные аватары выключаем.
+      chkRandomAvatar.checked = false;
+      statusEl.textContent = `Загружено: ${f.name} (${Math.round(f.size / 1024)} KB)`;
+    };
+    reader.onerror = () => {
+      setValue(null);
+      statusEl.textContent = 'Не удалось прочитать файл.';
+    };
+    reader.readAsDataURL(f);
+  });
+
+  clearBtnEl.addEventListener('click', () => {
+    inputEl.value = '';
+    setValue(null);
+    statusEl.textContent = '';
+  });
 }
 
 async function renderPdfFromResponse(r, opts = {}) {
@@ -567,7 +600,7 @@ function buildScenePayload() {
     },
     meta: {},
     participants: [
-      { id: 'bank', name: nameOpponent, side: 'left', avatar: null },
+      { id: 'bank', name: nameOpponent, side: 'left', avatar: avatarOpponentDataUrl || null },
       { id: 'me', name: nameMe, side: 'right', avatar: null },
     ],
     items,
@@ -592,15 +625,6 @@ function buildScenePayload() {
   const payload = { ...scene };
   if (chkRandomAvatar.checked) payload.randomAvatars = true;
 
-  if (platform === 'ios') {
-    if (chkCompositeScreen.checked && !compositeScreenshotDataUrl) {
-      throw new Error('Включена подложка скрина: загрузите файл скрина (PNG или JPEG).');
-    }
-    if (chkCompositeScreen.checked && compositeScreenshotDataUrl) {
-      payload.compositeScreenshot = compositeScreenshotDataUrl;
-    }
-  }
-
   return payload;
 }
 
@@ -615,42 +639,12 @@ function initFormDefaults() {
   pinnedText.value = '';
   pinnedText.disabled = true;
   chkRandomAvatar.checked = false;
-  chkCompositeScreen.checked = false;
-  compositeScreenshotDataUrl = null;
-  compositeScreenFile.value = '';
-  compositeScreenStatus.textContent = '';
+  avatarOpponentDataUrl = null;
+  avatarOpponentFile.value = '';
+  avatarOpponentStatus.textContent = '';
 
-  compositeScreenFile.addEventListener('change', () => {
-    const f = compositeScreenFile.files && compositeScreenFile.files[0];
-    if (!f) {
-      compositeScreenshotDataUrl = null;
-      compositeScreenStatus.textContent = '';
-      return;
-    }
-    if (!f.type.startsWith('image/')) {
-      compositeScreenFile.value = '';
-      compositeScreenshotDataUrl = null;
-      compositeScreenStatus.textContent = 'Нужен файл изображения.';
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = () => {
-      compositeScreenshotDataUrl = reader.result;
-      chkCompositeScreen.checked = true;
-      compositeScreenStatus.textContent = `Загружено: ${f.name} (${Math.round(f.size / 1024)} KB)`;
-    };
-    reader.onerror = () => {
-      compositeScreenshotDataUrl = null;
-      compositeScreenStatus.textContent = 'Не удалось прочитать файл.';
-    };
-    reader.readAsDataURL(f);
-  });
-
-  btnCompositeClear.addEventListener('click', () => {
-    compositeScreenFile.value = '';
-    compositeScreenshotDataUrl = null;
-    chkCompositeScreen.checked = false;
-    compositeScreenStatus.textContent = '';
+  bindAvatarInput(avatarOpponentFile, btnAvatarOpponentClear, avatarOpponentStatus, (v) => {
+    avatarOpponentDataUrl = v;
   });
 
   messageRows.innerHTML = '';

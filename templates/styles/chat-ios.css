@@ -1694,6 +1694,23 @@ body {
       transform: translateY(-4px);
     }
 
+/* Fallback: если time/meta пересекает текст, уводим meta на отдельную строку */
+.theme-ios .bubble.meta-on-new-line:not(.message--media) .bubble-text {
+      padding-right: 0 !important;
+      padding-bottom: 0 !important;
+    }
+
+.theme-ios .bubble.meta-on-new-line:not(.message--media) .meta {
+      position: static !important;
+      right: auto !important;
+      top: auto !important;
+      bottom: auto !important;
+      transform: none !important;
+      margin-top: -3px !important;
+      margin-left: 0 !important;
+      align-self: flex-end;
+    }
+
 .theme-ios .bubble {
       padding: 8px 11px 9px 11px;
       font-size: 13.5px;

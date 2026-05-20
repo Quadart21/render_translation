@@ -360,6 +360,34 @@
       }
       window.applyLightImageOverlayMeta = applyLightImageOverlayMeta;
 
+      function fixIosMetaOverlap() {
+        var sel =
+          '.bubble.bubble--ios-b:not(.message--media), ' +
+          '.bubble.bubble--ios-c:not(.message--media), ' +
+          '.bubble.bubble--ios-d:not(.message--media), ' +
+          '.bubble.bubble--ios-e:not(.message--media)';
+        var bubbles = chat.querySelectorAll(sel);
+        for (var i = 0; i < bubbles.length; i++) {
+          var bubble = bubbles[i];
+          var textEl = bubble.querySelector('.bubble-text');
+          var metaEl = bubble.querySelector('.meta');
+          if (!textEl || !metaEl) continue;
+          bubble.classList.remove('meta-on-new-line');
+          var tr = textEl.getBoundingClientRect();
+          var mr = metaEl.getBoundingClientRect();
+          var intersects = !(
+            mr.left >= tr.right ||
+            mr.right <= tr.left ||
+            mr.top >= tr.bottom ||
+            mr.bottom <= tr.top
+          );
+          if (intersects) {
+            bubble.classList.add('meta-on-new-line');
+          }
+        }
+      }
+      window.fixIosMetaOverlap = fixIosMetaOverlap;
+
       (scene.items || []).forEach(function (item) {
         if (item.type === 'date') {
           var ds = document.createElement('div');
@@ -468,15 +496,18 @@
 
       applyOutgoingBubbleVerticalGradient();
       applyLightImageOverlayMeta();
+      fixIosMetaOverlap();
       requestAnimationFrame(function () {
         requestAnimationFrame(function () {
           applyOutgoingBubbleVerticalGradient();
           applyLightImageOverlayMeta();
+          fixIosMetaOverlap();
         });
       });
       window.addEventListener('load', function () {
         applyOutgoingBubbleVerticalGradient();
         applyLightImageOverlayMeta();
+        fixIosMetaOverlap();
       });
     })();
   </script>
