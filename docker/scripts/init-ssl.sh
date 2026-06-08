@@ -19,27 +19,39 @@ fi
 CONF_DIR="$ROOT_DIR/docker/certbot/conf"
 WWW_DIR="$ROOT_DIR/docker/certbot/www"
 
-mkdir -p "$CONF_DIR" "$WWW_DIR/live/$DOMAIN"
+mkdir -p "$CONF_DIR" "$WWW_DIR"
 
-if [[ -f "$CONF_DIR/live/$DOMAIN/fullchain.pem" ]]; then
-  echo "Сертификат уже есть: $CONF_DIR/live/$DOMAIN/fullchain.pem"
+if [[ -f "$CONF_DIR/renewal/${DOMAIN}.conf" ]]; then
+  echo "Сертификат Let's Encrypt уже есть: $DOMAIN"
   exit 0
 fi
 
-echo "==> Временный самоподписанный сертификат (чтобы nginx мог стартовать)"
-docker compose --profile certbot run --rm --entrypoint /bin/sh certbot -c "
-  mkdir -p /etc/letsencrypt/live/$DOMAIN
-  openssl req -x509 -nodes -newkey rsa:2048 -days 1 \
-    -keyout /etc/letsencrypt/live/$DOMAIN/privkey.pem \
-    -out /etc/letsencrypt/live/$DOMAIN/fullchain.pem \
-    -subj '/CN=$DOMAIN'
-"
+remove_dummy_cert() {
+  rm -rf \
+    "$CONF_DIR/live/$DOMAIN" \
+    "$CONF_DIR/archive/$DOMAIN" \
+    "$CONF_DIR/renewal/${DOMAIN}.conf"
+}
+
+if [[ ! -f "$CONF_DIR/live/$DOMAIN/fullchain.pem" ]]; then
+  echo "==> Временный самоподписанный сертификат (чтобы nginx мог стартовать)"
+  docker compose --profile certbot run --rm --entrypoint /bin/sh certbot -c "
+    mkdir -p /etc/letsencrypt/live/$DOMAIN
+    openssl req -x509 -nodes -newkey rsa:2048 -days 1 \
+      -keyout /etc/letsencrypt/live/$DOMAIN/privkey.pem \
+      -out /etc/letsencrypt/live/$DOMAIN/fullchain.pem \
+      -subj '/CN=$DOMAIN'
+  "
+fi
 
 echo "==> Сборка и запуск приложения"
 docker compose up -d --build app
 
 echo "==> Запуск nginx"
 docker compose up -d nginx
+
+echo "==> Удаление временного сертификата перед Let's Encrypt"
+remove_dummy_cert
 
 echo "==> Запрос сертификата Let's Encrypt"
 docker compose --profile certbot run --rm --entrypoint certbot certbot certonly \
