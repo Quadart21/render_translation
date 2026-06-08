@@ -7,6 +7,8 @@ cd "$ROOT_DIR"
 
 # shellcheck disable=SC1091
 source "$ROOT_DIR/docker/scripts/load-env.sh"
+# shellcheck disable=SC1091
+source "$ROOT_DIR/docker/scripts/ssl-common.sh"
 
 DOMAIN="${DOMAIN:-screen.norenvpn.com}"
 EMAIL="${LETSENCRYPT_EMAIL:-}"
@@ -18,22 +20,16 @@ fi
 
 CONF_DIR="$ROOT_DIR/docker/certbot/conf"
 WWW_DIR="$ROOT_DIR/docker/certbot/www"
+CERT_FILE="$CONF_DIR/live/$DOMAIN/fullchain.pem"
 
 mkdir -p "$CONF_DIR" "$WWW_DIR"
 
-if [[ -f "$CONF_DIR/renewal/${DOMAIN}.conf" ]]; then
+if is_letsencrypt_cert "$CERT_FILE"; then
   echo "Сертификат Let's Encrypt уже есть: $DOMAIN"
   exit 0
 fi
 
-remove_dummy_cert() {
-  rm -rf \
-    "$CONF_DIR/live/$DOMAIN" \
-    "$CONF_DIR/archive/$DOMAIN" \
-    "$CONF_DIR/renewal/${DOMAIN}.conf"
-}
-
-if [[ ! -f "$CONF_DIR/live/$DOMAIN/fullchain.pem" ]]; then
+if [[ ! -f "$CERT_FILE" ]]; then
   echo "==> Временный самоподписанный сертификат (чтобы nginx мог стартовать)"
   docker compose --profile certbot run --rm --entrypoint /bin/sh certbot -c "
     mkdir -p /etc/letsencrypt/live/$DOMAIN
@@ -51,7 +47,7 @@ echo "==> Запуск nginx"
 docker compose up -d nginx
 
 echo "==> Удаление временного сертификата перед Let's Encrypt"
-remove_dummy_cert
+remove_domain_cert "$DOMAIN" "$CONF_DIR"
 
 echo "==> Запрос сертификата Let's Encrypt"
 docker compose --profile certbot run --rm --entrypoint certbot certbot certonly \
@@ -60,7 +56,12 @@ docker compose --profile certbot run --rm --entrypoint certbot certbot certonly 
   --agree-tos --no-eff-email \
   -d "$DOMAIN"
 
-echo "==> Перезагрузка nginx с реальным сертификатом"
-docker compose exec nginx nginx -s reload
+if ! is_letsencrypt_cert "$CERT_FILE"; then
+  echo "Ошибка: certbot не выдал Let's Encrypt сертификат."
+  exit 1
+fi
+
+echo "==> Перезапуск nginx с реальным сертификатом"
+docker compose restart nginx
 
 echo "Готово. HTTPS: https://$DOMAIN"
