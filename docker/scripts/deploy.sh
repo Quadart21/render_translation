@@ -13,8 +13,8 @@ echo "==> Проверка Docker"
 if ! command -v docker >/dev/null 2>&1; then
   echo "Устанавливаю Docker..."
   curl -fsSL https://get.docker.com | sh
-  systemctl enable --now docker
 fi
+systemctl enable --now docker 2>/dev/null || true
 
 if ! docker compose version >/dev/null 2>&1; then
   echo "Docker Compose plugin не найден. Обновите Docker до актуальной версии."

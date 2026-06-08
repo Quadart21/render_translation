@@ -55,7 +55,7 @@ npm start
 Полная инструкция: **[DEPLOY.md](./DEPLOY.md)**
 
 ```bash
-cp .env.docker.example .env && nano .env && bash docker/scripts/deploy.sh
+cd /opt/render-screen && chmod +x docker/scripts/*.sh && bash docker/scripts/deploy.sh
 ```
 
 Стек: Playwright-контейнер + nginx (HTTPS) + certbot. Домен по умолчанию: **https://screen.norenvpn.com**

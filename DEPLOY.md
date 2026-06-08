@@ -19,14 +19,16 @@ git clone https://github.com/Quadart21/render_translation.git /opt/render-screen
 
 В `.env` заполните: `BOT_TOKEN`, `TELEGRAM_BOT_USERNAME`, `SESSION_SECRET`, `LETSENCRYPT_EMAIL`.
 
+**Docker уже установлен** (как на вашем сервере):
+
 ```bash
-curl -fsSL https://get.docker.com | sh && sudo systemctl enable --now docker && chmod +x docker/scripts/*.sh && bash docker/scripts/deploy.sh
+cd /opt/render-screen && chmod +x docker/scripts/*.sh && bash docker/scripts/deploy.sh
 ```
 
-Или одной установкой (если `.env` уже готов):
+**Docker ещё нет** — сначала установка, потом деплой:
 
 ```bash
-git clone https://github.com/Quadart21/render_translation.git /opt/render-screen && cd /opt/render-screen && cp .env.docker.example .env && curl -fsSL https://get.docker.com | sh && sudo systemctl enable --now docker && chmod +x docker/scripts/*.sh && bash docker/scripts/deploy.sh
+curl -fsSL https://get.docker.com | sh && systemctl enable --now docker && cd /opt/render-screen && chmod +x docker/scripts/*.sh && bash docker/scripts/deploy.sh
 ```
 
 ## Перед первым входом
