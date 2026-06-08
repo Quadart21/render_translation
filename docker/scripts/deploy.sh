@@ -34,7 +34,7 @@ if [[ ! -f "$ROOT_DIR/.env" ]]; then
 fi
 
 # shellcheck disable=SC1091
-source "$ROOT_DIR/.env" 2>/dev/null || true
+source "$ROOT_DIR/docker/scripts/load-env.sh"
 
 if [[ -z "${LETSENCRYPT_EMAIL:-}" ]]; then
   echo "В .env задайте LETSENCRYPT_EMAIL=your@email.com"
