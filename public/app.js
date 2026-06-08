@@ -17,6 +17,7 @@ const platformSel = document.getElementById('platform');
 const previewWrap = document.getElementById('preview-wrap');
 const previewImg = document.getElementById('preview-img');
 const downloadLink = document.getElementById('download-link');
+const previewPages = document.getElementById('preview-pages');
 const messageRows = document.getElementById('message-rows');
 const feedStats = document.getElementById('feed-stats');
 const chkPinned = document.getElementById('chk-pinned');
@@ -728,12 +729,56 @@ function initFormDefaults() {
 btnLogout.addEventListener('click', async () => {
   await fetch('/api/logout', { method: 'POST', credentials: 'same-origin' });
   previewWrap.classList.add('hidden');
+  previewPages.classList.add('hidden');
+  previewPages.innerHTML = '';
   window.location.reload();
 });
 
-async function renderPngFromResponse(r, opts = {}) {
+function renderScenePages(pages, opts = {}) {
+  const img = opts.img || previewImg;
+  const link = opts.link || downloadLink;
+  const wrap = opts.wrap || previewWrap;
+  const pagesEl = opts.pagesEl || previewPages;
+  const list = Array.isArray(pages) ? pages : [];
+  if (!list.length) {
+    throw new Error('Рендер не вернул изображения.');
+  }
+  const first = list[0];
+  img.src = first.dataUrl;
+  link.href = first.dataUrl;
+  link.download = first.name || 'chat-1.png';
+  if (list.length <= 1) {
+    pagesEl.innerHTML = '';
+    pagesEl.classList.add('hidden');
+    show(wrap);
+    return;
+  }
+  const tail = list.slice(1);
+  pagesEl.innerHTML = tail
+    .map((p, i) => `
+      <article class="preview-page-card">
+        <p class="preview-page-title">Скрин ${i + 2}</p>
+        <img class="preview-page-img" src="${p.dataUrl}" alt="Скрин ${i + 2}" />
+        <a class="link-download" href="${p.dataUrl}" download="${p.name || `chat-${i + 2}.png`}">Скачать ${i + 2}</a>
+      </article>
+    `)
+    .join('');
+  pagesEl.classList.remove('hidden');
+  show(wrap);
+}
+
+async function renderSceneFromResponse(r, opts = {}) {
+  const ct = r.headers.get('content-type') || '';
+  if (ct.includes('application/json')) {
+    const payload = await r.json().catch(() => ({}));
+    if (!r.ok) {
+      throw new Error(payload.error || payload.detail || `Ошибка ${r.status}`);
+    }
+    const images = Array.isArray(payload.images) ? payload.images : [];
+    renderScenePages(images, opts);
+    return;
+  }
   if (!r.ok) {
-    const ct = r.headers.get('content-type') || '';
     if (ct.includes('application/json')) {
       const err = await r.json().catch(() => ({}));
       throw new Error(err.error || err.detail || `Ошибка ${r.status}`);
@@ -746,9 +791,12 @@ async function renderPngFromResponse(r, opts = {}) {
   const link = opts.link || downloadLink;
   const wrap = opts.wrap || previewWrap;
   const filename = opts.filename || 'chat.png';
+  const pagesEl = opts.pagesEl || previewPages;
   img.src = url;
   link.href = url;
   link.download = filename;
+  pagesEl.innerHTML = '';
+  pagesEl.classList.add('hidden');
   show(wrap);
 }
 
@@ -765,7 +813,7 @@ btnRender.addEventListener('click', async () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
-    await renderPngFromResponse(r);
+    await renderSceneFromResponse(r);
   } catch (e) {
     renderError.textContent = String(e.message || e);
     show(renderError);
@@ -788,7 +836,7 @@ btnRenderRandom.addEventListener('click', async () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ platform }),
     });
-    await renderPngFromResponse(r);
+    await renderSceneFromResponse(r);
   } catch (e) {
     renderError.textContent = String(e.message || e);
     show(renderError);

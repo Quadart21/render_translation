@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import cookieSession from 'cookie-session';
 import dotenv from 'dotenv';
 import express from 'express';
-import { renderSceneToPng } from '../renderer/render.js';
+import { renderSceneToPngPages } from '../renderer/render.js';
 import { renderDocumentToPdf } from '../renderer/renderDocument.js';
 import { applyRandomAvatars } from '../scene/applyRandomAvatars.js';
 import { buildRandomScene } from '../scene/buildRandomScene.js';
@@ -186,6 +186,10 @@ function accessPayloadFor(userId) {
   };
 }
 
+app.get('/api/health', (_req, res) => {
+  res.json({ ok: true, service: 'render-screen' });
+});
+
 app.get('/api/config', (_req, res) => {
   res.json({
     authEnabled: AUTH_ENABLED,
@@ -296,10 +300,12 @@ app.post('/api/render/random', requireAuth, async (req, res) => {
       projectRoot: AVATAR_IMAGE_ROOT,
       platform,
     });
-    const png = await renderSceneToPng(scene);
-    res.setHeader('Content-Type', 'image/png');
-    res.setHeader('Content-Disposition', 'inline; filename="chat.png"');
-    res.send(png);
+    const pages = await renderSceneToPngPages(scene);
+    const images = pages.map((buf, i) => ({
+      name: `chat-${i + 1}.png`,
+      dataUrl: `data:image/png;base64,${buf.toString('base64')}`,
+    }));
+    res.json({ ok: true, images });
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: 'Ошибка рендера', detail: String(e?.message || e) });
@@ -334,10 +340,12 @@ app.post('/api/render/scene', requireAuth, async (req, res) => {
       applyRandomAvatars(scene, AVATAR_IMAGE_ROOT);
     }
 
-    const png = await renderSceneToPng(scene);
-    res.setHeader('Content-Type', 'image/png');
-    res.setHeader('Content-Disposition', 'inline; filename="chat.png"');
-    res.send(png);
+    const pages = await renderSceneToPngPages(scene);
+    const images = pages.map((buf, i) => ({
+      name: `chat-${i + 1}.png`,
+      dataUrl: `data:image/png;base64,${buf.toString('base64')}`,
+    }));
+    res.json({ ok: true, images });
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: 'Ошибка рендера', detail: String(e?.message || e) });
@@ -382,8 +390,8 @@ function main() {
     }
   }
 
-  const server = app.listen(PORT, () => {
-    console.log(`Веб-интерфейс: http://localhost:${PORT}`);
+  const server = app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Веб-интерфейс: http://0.0.0.0:${PORT}`);
     console.log(
       AUTH_ENABLED
         ? 'Авторизация Telegram: включена (управление доступом через GUI)'

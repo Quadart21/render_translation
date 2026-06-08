@@ -40,6 +40,10 @@ const statusCellularPath = path.join(projectRoot, 'assets', 'status-cellular.png
 const statusWifiPath = path.join(projectRoot, 'assets', 'status-wifi.png');
 const composerSmileyPath = path.join(projectRoot, 'assets', 'composer-smiley.png');
 const iconPhonePath = path.join(projectRoot, 'assets', 'flaticon-phone.png');
+const androidBackIconRaw = process.env.ANDROID_BACK_ICON_PATH;
+const androidBackIconPath = androidBackIconRaw
+  ? (path.isAbsolute(androidBackIconRaw) ? androidBackIconRaw : path.join(projectRoot, androidBackIconRaw))
+  : 'C:/Users/Administrator/.cursor/projects/c-Users-Administrator-Desktop/assets/c__Users_Administrator_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_arrow-up-svgrepo-com-263156d1-382d-4924-933e-097b5789d605.png';
 const telegramPlaquePath = path.join(projectRoot, 'assets', 'telegram-plaque.png');
 const messageChecksPath = path.join(projectRoot, 'assets', 'message-checks-read.png');
 const iosStatusTrayStripPath = path.join(projectRoot, 'assets', 'ios-status-tray-strip.png');
@@ -75,6 +79,11 @@ const FALLBACK_ICON_PHONE =
   'data:image/svg+xml,' +
   encodeURIComponent(
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>'
+  );
+const FALLBACK_ICON_BACK =
+  'data:image/svg+xml,' +
+  encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l-8 8 8 8"/><path d="M20 12H4"/></svg>'
   );
 /** Плашка TELEGRAM в строке статуса (полноцветный PNG). */
 const FALLBACK_TELEGRAM_PLAQUE =
@@ -127,6 +136,25 @@ async function readComposerIconDataUrl(absPath, fallbackDataUrl) {
   try {
     const buf = await fs.readFile(absPath);
     return await pngToWhiteSilhouetteDataUrl(buf);
+  } catch {
+    return fallbackDataUrl;
+  }
+}
+
+/** Back icon: предварительно апскейлим/центрируем для более гладкого контура. */
+async function readBackIconDataUrl(absPath, fallbackDataUrl) {
+  try {
+    const buf = await fs.readFile(absPath);
+    const upscaled = await sharp(buf)
+      .ensureAlpha()
+      .resize(144, 144, {
+        fit: 'contain',
+        kernel: sharp.kernel.lanczos3,
+        background: { r: 0, g: 0, b: 0, alpha: 0 },
+      })
+      .png()
+      .toBuffer();
+    return await pngToWhiteSilhouetteDataUrl(upscaled);
   } catch {
     return fallbackDataUrl;
   }
@@ -336,7 +364,7 @@ function resolveAndroidSuperSampleMultiplier() {
   if (raw != null && /^(0|false|off|no)$/i.test(String(raw).trim())) return 1;
   const n = Number(raw);
   if (Number.isFinite(n) && n >= 1 && n <= 4) return n;
-  return 1.8;
+  return 2.4;
 }
 
 /** Перед скрином: webfonts и два кадра раскладки — меньше «плывущего» текста и метрик. */
@@ -373,14 +401,17 @@ async function normalizePngToEtalonDisplay(buf, platform) {
   const targetH = Math.round((meta.height * targetW) / meta.width);
   const upscaled = meta.width < targetW - 2;
   let pipe = sharp(buf).resize(targetW, targetH, { kernel: sharp.kernel.lanczos3 });
-  if (upscaled) {
-    pipe = pipe.sharpen({ sigma: 0.65, m1: 0.5, m2: 2.5, x1: 3, y2: 12, y3: 14 });
+  // Усиленную резкость применяем только для Android.
+  if (platform === 'android') {
+    pipe = upscaled
+      ? pipe.sharpen({ sigma: 0.72, m1: 0.5, m2: 2.6, x1: 3, y2: 12, y3: 14 })
+      : pipe.sharpen({ sigma: 0.38, m1: 0.45, m2: 1.45, x1: 2, y2: 9, y3: 13 });
   }
   return pipe.png().toBuffer();
 }
 
 /**
- * Рендер сцены в PNG (буфер).
+ * Рендер сцены в один или несколько PNG-скринов (страницы истории чата).
  * @param {object} scene — см. data/sample-scene.json
  * @param {{
  *   embedExif?: boolean,
@@ -388,9 +419,9 @@ async function normalizePngToEtalonDisplay(buf, platform) {
  *   viewportHeight?: number,
  *   deviceScaleFactor?: number,
  * }} [opts]
- * @returns {Promise<Buffer>}
+ * @returns {Promise<Buffer[]>}
  */
-export async function renderSceneToPng(scene, opts = {}) {
+export async function renderSceneToPngPages(scene, opts = {}) {
   const embedExif = opts.embedExif !== false;
   let dpr = resolveDeviceScaleFactor(scene, opts);
   const viewportWidth = opts.viewportWidth ?? 640;
@@ -423,6 +454,7 @@ export async function renderSceneToPng(scene, opts = {}) {
     iconWifiInject,
     iconSmileyInject,
     iconPhoneInject,
+    iconBackInject,
     telegramPlaqueInject,
     messageChecksInject,
     iosFontFaces,
@@ -433,6 +465,7 @@ export async function renderSceneToPng(scene, opts = {}) {
     readComposerIconDataUrl(statusWifiPath, FALLBACK_ICON_WIFI),
     readComposerIconDataUrl(composerSmileyPath, FALLBACK_ICON_SMILEY),
     readComposerIconDataUrl(iconPhonePath, FALLBACK_ICON_PHONE),
+    readBackIconDataUrl(androidBackIconPath, FALLBACK_ICON_BACK),
     readPngDataUrlRaw(telegramPlaquePath, FALLBACK_TELEGRAM_PLAQUE),
     readComposerIconDataUrl(messageChecksPath, FALLBACK_MESSAGE_CHECKS),
     buildIosFontFaceCss(projectRoot),
@@ -477,6 +510,7 @@ export async function renderSceneToPng(scene, opts = {}) {
     .replace(/__ICON_WIFI__/g, iconWifiInject)
     .replace(/__ICON_SMILEY__/g, iconSmileyInject)
     .replace(/__ICON_PHONE__/g, iconPhoneInject)
+    .replace(/__ICON_BACK__/g, iconBackInject)
     .replace(/__TELEGRAM_PLAQUE__/g, telegramPlaqueInject)
     .replace(/__MESSAGE_CHECKS_SRC__/g, messageChecksInject)
     .replace(/__IOS_STATUS_TRAY__/g, iosStatusTrayInject);
@@ -499,35 +533,73 @@ export async function renderSceneToPng(scene, opts = {}) {
     });
     await page.emulateMedia({ colorScheme: 'dark' });
     await page.setContent(html, { waitUntil: 'load' });
-    await page.evaluate(() => {
+    const scrollPositions = await page.evaluate(() => {
       var chat = document.getElementById('chat');
-      if (chat) chat.scrollTop = chat.scrollHeight;
-      if (typeof window.applyOutgoingBubbleVerticalGradient === 'function') {
-        window.applyOutgoingBubbleVerticalGradient();
+      if (!chat) return [0];
+      var maxScroll = Math.max(0, chat.scrollHeight - chat.clientHeight);
+      if (maxScroll <= 0) return [0];
+      var overlap = 72;
+      var step = Math.max(1, chat.clientHeight - overlap);
+      var out = [0];
+      var pos = 0;
+      while (pos < maxScroll) {
+        pos = Math.min(maxScroll, pos + step);
+        if (pos !== out[out.length - 1]) out.push(pos);
       }
-      if (typeof window.applyLightImageOverlayMeta === 'function') {
-        window.applyLightImageOverlayMeta();
-      }
+      return out;
     });
     await waitForFontsAndPaintStable(page);
     const phone = await page.$('.phone');
     if (!phone) throw new Error('.phone not found in template');
-    let buf = await phone.screenshot({
-      type: 'png',
-      scale: 'device',
-      animations: 'disabled',
-      caret: 'hide',
-    });
-
-    const platform = platformKey;
-    buf = await normalizePngToEtalonDisplay(buf, platform);
-
-    if (embedExif) {
-      const truth = resolveTruthMeta(withAssets);
-      buf = await embedPngExif(buf, truth);
+    /** @type {Buffer[]} */
+    const pages = [];
+    for (let i = 0; i < scrollPositions.length; i += 1) {
+      const top = scrollPositions[i];
+      await page.evaluate((scrollTop) => {
+        var chat = document.getElementById('chat');
+        if (chat) chat.scrollTop = scrollTop;
+        if (typeof window.applyOutgoingBubbleVerticalGradient === 'function') {
+          window.applyOutgoingBubbleVerticalGradient();
+        }
+        if (typeof window.applyLightImageOverlayMeta === 'function') {
+          window.applyLightImageOverlayMeta();
+        }
+        if (typeof window.fixIosMetaOverlap === 'function') {
+          window.fixIosMetaOverlap();
+        }
+      }, top);
+      await waitForFontsAndPaintStable(page);
+      let buf = await phone.screenshot({
+        type: 'png',
+        scale: 'device',
+        animations: 'disabled',
+        caret: 'hide',
+      });
+      buf = await normalizePngToEtalonDisplay(buf, platformKey);
+      if (embedExif) {
+        const truth = resolveTruthMeta(withAssets);
+        buf = await embedPngExif(buf, truth);
+      }
+      pages.push(buf);
     }
-    return buf;
+    return pages;
   } finally {
     await browser.close();
   }
+}
+
+/**
+ * Рендер сцены в один PNG (совместимость: последний экран как раньше).
+ * @param {object} scene
+ * @param {{
+ *   embedExif?: boolean,
+ *   viewportWidth?: number,
+ *   viewportHeight?: number,
+ *   deviceScaleFactor?: number,
+ * }} [opts]
+ * @returns {Promise<Buffer>}
+ */
+export async function renderSceneToPng(scene, opts = {}) {
+  const pages = await renderSceneToPngPages(scene, opts);
+  return pages[pages.length - 1];
 }

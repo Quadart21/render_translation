@@ -50,6 +50,16 @@ npm start
 # POST /api/render/random — случайная сцена → PNG
 ```
 
+### Production (Docker) — screen.norenvpn.com
+
+Полная инструкция: **[DEPLOY.md](./DEPLOY.md)**
+
+```bash
+cp .env.docker.example .env && nano .env && bash docker/scripts/deploy.sh
+```
+
+Стек: Playwright-контейнер + nginx (HTTPS) + certbot. Домен по умолчанию: **https://screen.norenvpn.com**
+
 Авторизация панели через Telegram поддерживается из коробки, allowlist Telegram ID управляется прямо из GUI.
 
 ### Доступ по Telegram ID через GUI

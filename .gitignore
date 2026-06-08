@@ -6,8 +6,14 @@ avatar/
 .env
 .env.*
 !.env.example
+!.env.docker.example
 *.log
 .DS_Store
 Thumbs.db
 .playwright/
 coverage/
+# Docker: локальные сертификаты Let's Encrypt
+docker/certbot/conf/*
+!docker/certbot/conf/.gitkeep
+# Локальный allowlist (на сервере — в Docker volume)
+data/telegram-access.json

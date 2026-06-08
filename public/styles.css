@@ -240,6 +240,37 @@ body {
   text-decoration: underline;
 }
 
+.preview-pages {
+  margin-top: 14px;
+  display: grid;
+  gap: 14px;
+}
+
+.preview-pages.hidden {
+  display: none;
+}
+
+.preview-page-card {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.preview-page-title {
+  margin: 0 0 8px;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.preview-page-img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
 .muted {
   margin: 0;
   color: var(--muted);

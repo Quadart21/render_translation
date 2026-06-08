@@ -1,0 +1,80 @@
+name: render-screen
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: render-screen-app:latest
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      PORT: "3000"
+      TRUST_SECURE_COOKIES: "1"
+      AUTH_ACCESS_FILE: /app/data/telegram-access.json
+      AVATAR_IMAGE_ROOT: /app/avatar
+    volumes:
+      - app-data:/app/data
+      - app-avatars:/app/avatar
+    expose:
+      - "3000"
+    shm_size: "1gb"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+
+  bot:
+    profiles:
+      - bot
+    image: render-screen-app:latest
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      AVATAR_IMAGE_ROOT: /app/avatar
+    command: ["node", "src/index.js"]
+    volumes:
+      - app-data:/app/data
+      - app-avatars:/app/avatar
+    depends_on:
+      app:
+        condition: service_healthy
+
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    depends_on:
+      app:
+        condition: service_healthy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./docker/certbot/conf:/etc/letsencrypt:ro
+      - ./docker/certbot/www:/var/www/certbot:ro
+    command: /bin/sh -c "nginx -g 'daemon off;'"
+
+  certbot:
+    image: certbot/certbot:v3.0.1
+    profiles:
+      - certbot
+    volumes:
+      - ./docker/certbot/conf:/etc/letsencrypt
+      - ./docker/certbot/www:/var/www/certbot
+    entrypoint: /bin/sh
+    command: -c "trap exit TERM; while :; do certbot renew --webroot -w /var/www/certbot --quiet; sleep 12h & wait $${!}; done"
+
+volumes:
+  app-data:
+  app-avatars:
