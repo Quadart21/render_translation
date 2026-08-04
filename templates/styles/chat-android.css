@@ -1289,7 +1289,8 @@ body {
     }
 
 .theme-android .chat-wrap {
-      padding: 188px 12px 16px;
+      /* fallback; финальный padding-top — в Android geometry override ниже */
+      padding: 110px 12px 16px;
       background-color: #000;
       background-image: url("__CHAT_WALLPAPER__");
       background-size: cover;
@@ -1679,7 +1680,7 @@ body {
       flex-direction: column;
       padding-left: var(--and-side-gap);
       padding-right: var(--and-side-gap);
-      padding-top: calc(var(--and-status-h) + var(--and-header-h) + 70px * var(--and-ref-sy));
+      padding-top: calc(var(--and-status-h) + var(--and-header-h) + 10px * var(--and-ref-sy));
       padding-bottom: calc(var(--and-composer-h) + 20px * var(--and-ref-sy));
       background-color: #000;
       background-image: url("__CHAT_WALLPAPER__");
