@@ -507,8 +507,7 @@ export async function renderSceneToPngPages(scene, opts = {}) {
     buildIosFontFaceCss(projectRoot),
   ]);
   const compositeLocalPath = resolveLocalAssetPath(withAssets.compositeScreenshot);
-  const useNativeComposite =
-    platformKey === 'android' && Boolean(compositeLocalPath);
+  const useNativeComposite = Boolean(compositeLocalPath);
   let compositeMeta = null;
   let compositeSourceBuf = null;
   if (useNativeComposite) {
@@ -529,7 +528,7 @@ export async function renderSceneToPngPages(scene, opts = {}) {
       String(withAssets.compositeScreenshot).slice(0, 120)
     );
   }
-  /* Нативный композит: в браузере только прозрачный оверлей (пузыри/ник), фон не переснимаем. */
+  /* Нативный композит: в браузере только прозрачный оверлей (пузыри), фон не переснимаем. */
   const compositeInject = useNativeComposite
     ? 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'
     : resolvedComposite ||
@@ -547,12 +546,14 @@ export async function renderSceneToPngPages(scene, opts = {}) {
   });
   try {
     let iosStatusTrayInject = FALLBACK_IOS_STATUS_TRAY;
-    if (platformKey === 'ios') {
+    if (platformKey === 'ios' && !useNativeComposite) {
       iosStatusTrayInject = await buildIosStatusTrayDataUrl(withAssets, browser);
     }
 
     const nativeW = compositeMeta?.width || 0;
     const nativeH = compositeMeta?.height || 0;
+    const themeSel =
+      platformKey === 'ios' ? '.theme-ios.phone.composite-screen-on' : '.theme-android.phone.composite-screen-on';
     const nativeSizeCss =
       useNativeComposite && nativeW > 0 && nativeH > 0
         ? `<style id="native-composite-size">
@@ -560,7 +561,7 @@ html, body {
   background: transparent !important;
   margin: 0 !important;
 }
-.theme-android.phone.composite-screen-on{
+${themeSel}{
   width:${nativeW}px !important;
   height:${nativeH}px !important;
   max-height:${nativeH}px !important;
@@ -570,18 +571,33 @@ html, body {
   --and-ref-sx:${(nativeW / 360).toFixed(6)};
   --and-ref-sy:${(nativeH / 806).toFixed(6)};
 }
-.theme-android.phone.composite-screen-on .phone-main,
-.theme-android.phone.composite-screen-on .chat-wrap,
-.theme-android.phone.composite-screen-on .chat-wrap::before {
+${themeSel} .phone-main,
+${themeSel} .chat-wrap,
+${themeSel} .chat-wrap::before {
   background:transparent !important;
   background-image:none !important;
   box-shadow:none !important;
 }
-.theme-android.phone.composite-screen-on .composite-screen-bg{display:none !important;}
-.theme-android.phone.composite-screen-on .phone-chrome,
-.theme-android.phone.composite-screen-on .input-panel,
-.theme-android.phone.composite-screen-on .android-home-indicator {
+${themeSel} .composite-screen-bg{display:none !important;}
+${themeSel} .phone-chrome,
+${themeSel} .input-panel,
+${themeSel} .android-home-indicator,
+${themeSel} .ios-composer-row,
+${themeSel} .ios-home-indicator,
+${themeSel} .chrome-header-stack,
+${themeSel} .pinned-container {
   display:none !important;
+}
+${themeSel} .chat-wrap {
+  inset: unset !important;
+  top: ${Math.round(nativeH * 0.085)}px !important;
+  right: 0 !important;
+  bottom: ${Math.round(nativeH * 0.095)}px !important;
+  left: 0 !important;
+  height: auto !important;
+  padding-top: 8px !important;
+  padding-bottom: 8px !important;
+  overflow: hidden !important;
 }
 </style>`
         : '';

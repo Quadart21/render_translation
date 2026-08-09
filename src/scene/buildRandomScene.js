@@ -109,10 +109,15 @@ export async function buildRandomScene(opts = {}) {
     return rest;
   });
 
-  // Android: готовый скрин-подложка — только переписка поверх исходных пикселей.
+  // Подложка 1:1: Android = 113305, iPhone = 111458. Только переписка поверх.
   if (scene.platform === 'android') {
-    const pick = Math.random() < 0.5 ? 'a' : 'b';
-    scene.compositeScreenshot = `assets/android-substrate-${pick}.jpg`;
+    scene.compositeScreenshot = 'assets/android-substrate.jpg';
+    delete scene.pinned;
+    if (Array.isArray(scene.items) && scene.items.length > 12) {
+      scene.items = scene.items.slice(0, 12);
+    }
+  } else if (scene.platform === 'ios') {
+    scene.compositeScreenshot = 'assets/ios-substrate.jpg';
     delete scene.pinned;
     if (Array.isArray(scene.items) && scene.items.length > 12) {
       scene.items = scene.items.slice(0, 12);

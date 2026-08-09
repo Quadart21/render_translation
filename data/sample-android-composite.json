@@ -1,6 +1,6 @@
 {
   "platform": "android",
-  "compositeScreenshot": "assets/android-substrate-b.jpg",
+  "compositeScreenshot": "assets/android-substrate.jpg",
   "statusBar": { "time": "14:32" },
   "header": { "subtitle": "" },
   "participants": [
