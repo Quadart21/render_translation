@@ -41,11 +41,14 @@ export const ETALON_IPHONE_16_PRO = Object.freeze({
   height: 2556,
 });
 
-/** Android эталон: 720×1600 (портрет, HD+) */
+/** Android эталон: 1370×3500 @ 96 DPI */
 export const ETALON_XIAOMI_15_ULTRA = Object.freeze({
-  width: 720,
-  height: 1600,
+  width: 1370,
+  height: 3500,
 });
+
+/** Плотность итогового Android PNG (точек на дюйм). */
+export const ANDROID_EXPORT_DPI = 96;
 
 /**
  * DPR Chromium так, чтобы ширина скриншота ≈ эталонной ширине дисплея при заданной логической ширине макета.
@@ -79,4 +82,15 @@ export function etalonDisplayWidthPx(platform) {
   return platform === 'ios'
     ? iphoneEtalonExportWidthPx()
     : ETALON_XIAOMI_15_ULTRA.width;
+}
+
+/**
+ * Целевая высота PNG в пикселях (эталон дисплея).
+ * Для iOS — пропорционально ширине от логической высоты макета.
+ * @param {'ios'|'android'} platform
+ */
+export function etalonDisplayHeightPx(platform) {
+  if (platform === 'android') return ETALON_XIAOMI_15_ULTRA.height;
+  const w = iphoneEtalonExportWidthPx();
+  return Math.round((PHONE_LOGICAL_HEIGHT_CSS_PX * w) / PHONE_LOGICAL_WIDTH_CSS_PX);
 }

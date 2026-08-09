@@ -35,5 +35,10 @@ export async function embedPngExif(pngBuffer, meta) {
     },
   };
 
-  return sharp(pngBuffer).withExif(exif).png().toBuffer();
+  const inputMeta = await sharp(pngBuffer).metadata();
+  let pipe = sharp(pngBuffer).withExif(exif);
+  if (inputMeta.density) {
+    pipe = pipe.withMetadata({ density: inputMeta.density });
+  }
+  return pipe.png().toBuffer();
 }

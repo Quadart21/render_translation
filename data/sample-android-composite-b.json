@@ -1,0 +1,18 @@
+{
+  "platform": "android",
+  "compositeScreenshot": "assets/android-substrate-b.jpg",
+  "statusBar": { "time": "14:32" },
+  "header": { "subtitle": "" },
+  "participants": [
+    { "id": "bank", "name": "Кирюша", "side": "left", "avatar": null },
+    { "id": "me", "name": "Вы", "side": "right", "avatar": null }
+  ],
+  "items": [
+    { "type": "date", "label": "сегодня" },
+    { "type": "text", "from": "bank", "time": "14:20", "text": "Добрый день! Подскажите, актуален ещё прайс?" },
+    { "type": "text", "from": "me", "time": "14:21", "text": "Да, актуальный. Могу скинуть условия и примеры." },
+    { "type": "text", "from": "bank", "time": "14:22", "text": "Ок, давайте. Нужен формат на завтра." },
+    { "type": "text", "from": "me", "time": "14:23", "text": "Принял. Сейчас отправлю креатив и ТЗ в этот чат." },
+    { "type": "text", "from": "bank", "time": "14:24", "text": "Супер, жду." }
+  ]
+}

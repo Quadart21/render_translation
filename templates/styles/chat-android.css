@@ -2060,3 +2060,357 @@ body {
       height: calc(36px * var(--and-ref-sy));
       font-size: calc(18px * var(--and-ref-sx));
 }
+
+/* ===================================================================
+   Floating pill chrome (Figma / reference-final-android.png)
+   back circle + title pill + actions pill; composer: smiley | text | clip | mic
+   =================================================================== */
+.theme-android {
+      --and-pill-bg: #1e2a36;
+      --and-pill-bg-solid: #1e2a36;
+      --and-mic-blue: #2598e9;
+      --and-safe-top: 10px;
+      --and-home-h: 14px;
+}
+
+.theme-android .status-bar {
+      display: none !important;
+}
+
+.theme-android .chrome-header-stack {
+      height: auto;
+      min-height: 0;
+      padding: calc(12px * var(--and-ref-sy)) calc(10px * var(--and-ref-sx)) 0;
+      background: transparent;
+      pointer-events: none;
+}
+
+.theme-android .chrome-header-stack::before {
+      display: none !important;
+}
+
+.theme-android .telegram-header {
+      height: auto;
+      min-height: 0;
+      padding: 0;
+      display: grid;
+      grid-template-columns:
+        calc(40px * var(--and-ref-sx))
+        minmax(0, 1fr)
+        auto;
+      column-gap: calc(8px * var(--and-ref-sx));
+      align-items: center;
+      border-bottom: none;
+      background: transparent;
+}
+
+.theme-android .back-button {
+      width: calc(40px * var(--and-ref-sx));
+      height: calc(40px * var(--and-ref-sx));
+      border-radius: 50%;
+      background: var(--and-pill-bg-solid);
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      display: grid;
+      place-items: center;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.28);
+}
+
+.theme-android .back-button .android-back-arrow {
+      width: calc(18px * var(--and-ref-sx));
+      height: calc(18px * var(--and-ref-sx));
+      opacity: 1;
+      filter: none;
+}
+
+.theme-android .header-title-pill {
+      grid-column: 2;
+      margin: 0;
+      min-width: 0;
+      height: calc(40px * var(--and-ref-sx));
+      padding: 0 calc(6px * var(--and-ref-sx)) 0 calc(14px * var(--and-ref-sx));
+      border-radius: 999px;
+      background: var(--and-pill-bg-solid);
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      display: flex;
+      align-items: center;
+      column-gap: calc(8px * var(--and-ref-sx));
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.28);
+      overflow: hidden;
+}
+
+.theme-android .header-title-pill .chat-avatar {
+      width: calc(28px * var(--and-ref-sx));
+      height: calc(28px * var(--and-ref-sx));
+      border-radius: 50%;
+      flex: 0 0 auto;
+      order: 2;
+      margin-left: auto;
+}
+
+.theme-android .header-title-pill .chat-meta {
+      margin: 0;
+      min-width: 0;
+      flex: 1 1 auto;
+      gap: 0;
+      transform: none;
+      order: 1;
+}
+
+.theme-android .header-title-pill .chat-meta .name {
+      font-size: calc(15px * var(--and-ref-sx));
+      line-height: calc(18px * var(--and-ref-sy));
+      font-weight: 600;
+}
+
+.theme-android .header-title-pill .chat-meta .status,
+.theme-android .header-title-pill #androidChatStatus {
+      display: none !important;
+}
+
+.theme-android .back-button .android-back-count,
+.theme-android #androidBackBadge {
+      display: none !important;
+}
+
+.theme-android .header-actions-pill {
+      grid-column: 3;
+      height: calc(40px * var(--and-ref-sx));
+      padding: 0 calc(12px * var(--and-ref-sx));
+      border-radius: 999px;
+      background: var(--and-pill-bg-solid);
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: calc(14px * var(--and-ref-sx));
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.28);
+}
+
+.theme-android .header-actions-pill > span {
+      min-width: 0;
+      min-height: 0;
+      width: auto;
+      height: auto;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255, 255, 255, 0.96);
+      font-size: calc(18px * var(--and-ref-sx));
+      line-height: 1;
+}
+
+.theme-android .header-actions-pill .header-action-icon {
+      width: calc(18px * var(--and-ref-sx));
+      height: calc(18px * var(--and-ref-sx));
+      opacity: 1;
+      filter: none;
+}
+
+.theme-android .pinned-container {
+      margin-top: calc(10px * var(--and-ref-sy));
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      background: #1e2a36;
+}
+
+.theme-android .chat-wrap {
+      padding-top: calc(64px * var(--and-ref-sy));
+      padding-bottom: calc(64px * var(--and-ref-sy) + var(--and-home-h));
+      background-color: #0f1b28;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: geometricPrecision;
+}
+
+.theme-android .chat-wrap .bubble,
+.theme-android .chat-wrap .bubble-text,
+.theme-android .chat-wrap .meta,
+.theme-android .header-title-pill .chat-meta .name,
+.theme-android .input-panel .message-input {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: geometricPrecision;
+}
+
+.theme-android .input-panel {
+      left: calc(10px * var(--and-ref-sx));
+      right: calc(10px * var(--and-ref-sx));
+      bottom: calc(10px * var(--and-ref-sy) + var(--and-home-h));
+      height: calc(42px * var(--and-ref-sy));
+      --and-composer-field-h: calc(42px * var(--and-ref-sy));
+      --and-composer-field-r: calc(21px * var(--and-ref-sx));
+      --and-composer-mic-size: calc(42px * var(--and-ref-sx));
+      --and-composer-field-gap: calc(8px * var(--and-ref-sx));
+      --and-composer-icon-size: calc(22px * var(--and-ref-sx));
+      --and-composer-right-pack-w: calc(
+        var(--and-composer-mic-size) + var(--and-composer-field-gap)
+      );
+}
+
+.theme-android .input-panel::before {
+      background: var(--and-pill-bg-solid);
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      border: none;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.28);
+}
+
+.theme-android .input-panel .gift-btn {
+      display: none !important;
+}
+
+.theme-android .input-panel .emoji-btn {
+      width: calc(40px * var(--and-ref-sx));
+      left: calc(4px * var(--and-ref-sx));
+}
+
+.theme-android .input-panel .emoji-btn .composer-tool-icon,
+.theme-android .input-panel .emoji-btn .composer-smiley-svg {
+      width: var(--and-composer-icon-size);
+      height: var(--and-composer-icon-size);
+      opacity: 1;
+      display: block;
+      color: rgba(255, 255, 255, 0.92);
+}
+
+.theme-android .input-panel .message-input {
+      left: calc(42px * var(--and-ref-sx));
+      right: calc(
+        var(--and-composer-right-pack-w) + 40px * var(--and-ref-sx)
+      );
+      font-size: calc(16px * var(--and-ref-sx));
+      color: rgba(255, 255, 255, 0.42);
+}
+
+.theme-android .input-panel .clip-btn {
+      right: calc(var(--and-composer-right-pack-w) + 6px * var(--and-ref-sx));
+      width: calc(34px * var(--and-ref-sx));
+}
+
+.theme-android .input-panel .clip-btn .composer-tool-icon {
+      opacity: 1;
+}
+
+.theme-android .input-panel .voice-button {
+      background: var(--and-mic-blue);
+      box-shadow:
+        0 2px 10px rgba(37, 152, 233, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.theme-android .android-home-indicator {
+      position: absolute;
+      left: 50%;
+      bottom: calc(6px * var(--and-ref-sy));
+      transform: translateX(-50%);
+      width: calc(120px * var(--and-ref-sx));
+      height: calc(4px * var(--and-ref-sy));
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.92);
+      z-index: 12;
+      pointer-events: none;
+}
+
+/* Playwright PNG: blur/glass = муть. Держим Android-хром без backdrop-filter. */
+.theme-android .chrome-header-stack,
+.theme-android .chrome-header-stack::before,
+.theme-android .telegram-header,
+.theme-android .back-button,
+.theme-android .header-title-pill,
+.theme-android .header-actions-pill,
+.theme-android .pinned-container,
+.theme-android .input-panel::before,
+.theme-android .date-sep span.date-divider {
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+}
+
+/* ===================================================================
+   compositeScreenshot: готовый скрин = весь UI.
+   Рисуем только переписку + ник/аватар поверх центральной пилюли.
+   =================================================================== */
+.theme-android.phone.composite-screen-on {
+      background: #000;
+}
+
+.theme-android.phone.composite-screen-on .composite-screen-bg {
+      display: block !important;
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+}
+
+.theme-android.phone.composite-screen-on .composite-screen-bg img {
+      width: 100%;
+      height: 100%;
+      object-fit: fill;
+      display: block;
+}
+
+.theme-android.phone.composite-screen-on .phone-main {
+      background: transparent;
+}
+
+.theme-android.phone.composite-screen-on .chat-wrap {
+      background-image: none !important;
+      background-color: transparent !important;
+      /* Жёсткая полоса между chrome шапки и composer на подложке */
+      inset: unset !important;
+      top: calc(64px * var(--and-ref-sy)) !important;
+      right: 0 !important;
+      bottom: calc(66px * var(--and-ref-sy)) !important;
+      left: 0 !important;
+      height: auto !important;
+      padding-top: calc(6px * var(--and-ref-sy));
+      padding-bottom: calc(6px * var(--and-ref-sy));
+      padding-left: var(--and-side-gap);
+      padding-right: var(--and-side-gap);
+      z-index: 1;
+      overflow: hidden;
+}
+
+.theme-android.phone.composite-screen-on .chat-wrap::before {
+      display: none !important;
+}
+
+.theme-android.phone.composite-screen-on .phone-chrome {
+      z-index: 2;
+      pointer-events: none;
+}
+
+.theme-android.phone.composite-screen-on .chrome-header-stack {
+      padding: calc(12px * var(--and-ref-sy)) calc(10px * var(--and-ref-sx)) 0;
+      background: transparent !important;
+      height: calc(56px * var(--and-ref-sy));
+}
+
+.theme-android.phone.composite-screen-on .chrome-header-stack::before {
+      display: none !important;
+}
+
+.theme-android.phone.composite-screen-on .status-bar {
+      display: none !important;
+}
+
+/* Подложка уже содержит назад / звонок / меню / ник — свои элементы не рисуем */
+.theme-android.phone.composite-screen-on .phone-chrome,
+.theme-android.phone.composite-screen-on .back-button,
+.theme-android.phone.composite-screen-on .header-actions-pill,
+.theme-android.phone.composite-screen-on .header-title-pill {
+      display: none !important;
+}
+
+.theme-android.phone.composite-screen-on .header-title-pill .chat-meta .status,
+.theme-android.phone.composite-screen-on .header-title-pill #androidChatStatus {
+      display: none !important;
+}
+
+.theme-android.phone.composite-screen-on .pinned-container,
+.theme-android.phone.composite-screen-on .input-panel,
+.theme-android.phone.composite-screen-on .android-home-indicator {
+      display: none !important;
+}

@@ -1,0 +1,17 @@
+{
+  "platform": "android",
+  "compositeScreenshot": "assets/android-substrate-a.jpg",
+  "statusBar": { "time": "14:32" },
+  "header": { "subtitle": "" },
+  "participants": [
+    { "id": "bank", "name": "Ромчик", "side": "left", "avatar": null },
+    { "id": "me", "name": "Вы", "side": "right", "avatar": null }
+  ],
+  "items": [
+    { "type": "date", "label": "сегодня" },
+    { "type": "text", "from": "me", "time": "14:18", "text": "Привет! По рекламе ещё свободно окно на сегодня?" },
+    { "type": "text", "from": "bank", "time": "14:19", "text": "Да, есть. Пришлите креатив и условия оплаты." },
+    { "type": "text", "from": "me", "time": "14:20", "text": "Ок, скину сейчас. Оплата после согласования." },
+    { "type": "text", "from": "bank", "time": "14:21", "text": "Договорились." }
+  ]
+}

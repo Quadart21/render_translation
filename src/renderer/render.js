@@ -4,14 +4,16 @@ import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 import sharp from 'sharp';
 import {
+  ANDROID_EXPORT_DPI,
   deviceScaleFactorForEtalon,
+  etalonDisplayHeightPx,
   etalonDisplayWidthPx,
   maxRenderDeviceScaleFactor,
   PHONE_LOGICAL_HEIGHT_CSS_PX,
 } from '../constants/renderEtalon.js';
 import { embedPngExif } from '../lib/embedPngExif.js';
 import { resolveTruthMeta } from '../lib/truthMeta.js';
-import { embedSceneAssets, resolveImageSrc } from './resolveAssets.js';
+import { embedSceneAssets, resolveImageSrc, resolveLocalAssetPath } from './resolveAssets.js';
 import {
   buildIosFontFaceCss,
   resolveSfProTextFontForWeight,
@@ -364,7 +366,7 @@ function resolveAndroidSuperSampleMultiplier() {
   if (raw != null && /^(0|false|off|no)$/i.test(String(raw).trim())) return 1;
   const n = Number(raw);
   if (Number.isFinite(n) && n >= 1 && n <= 4) return n;
-  return 2.4;
+  return 2.85;
 }
 
 /** Перед скрином: webfonts и два кадра раскладки — меньше «плывущего» текста и метрик. */
@@ -387,7 +389,10 @@ async function waitForFontsAndPaintStable(page) {
  * Итоговая ширина файла приводится к эталону дисплея (Sharp): Playwright на части окружений
  * даёт скрин в CSS-пикселях без учёта DPR — поэтому нормализация по ширине обязательна.
  */
-async function normalizePngToEtalonDisplay(buf, platform) {
+async function normalizePngToEtalonDisplay(buf, platform, opts = {}) {
+  /* Подложка: не трогаем разрешение/резкость — пиксели исходника как есть. */
+  if (opts.preserveNative) return buf;
+
   const skip = /^(0|false)$/i.test(String(process.env.RENDER_ETALON ?? ''));
   if (skip) return buf;
 
@@ -395,19 +400,40 @@ async function normalizePngToEtalonDisplay(buf, platform) {
   const meta = await sharp(buf).metadata();
   if (!meta.width || !meta.height) return buf;
 
-  /* Один шаг Lanczos без численного шума: Playwright часто даёт 1294/1296 вместо 1295 */
-  if (Math.abs(meta.width - targetW) <= 2) return buf;
+  const resolvedH =
+    platform === 'android'
+      ? etalonDisplayHeightPx(platform)
+      : Math.round((meta.height * targetW) / meta.width);
 
-  const targetH = Math.round((meta.height * targetW) / meta.width);
-  const upscaled = meta.width < targetW - 2;
-  let pipe = sharp(buf).resize(targetW, targetH, { kernel: sharp.kernel.lanczos3 });
+  const applyAndroidDpi = (pipe) =>
+    platform === 'android'
+      ? pipe.withMetadata({ density: ANDROID_EXPORT_DPI })
+      : pipe;
+
+  /* Один шаг Lanczos без численного шума: Playwright часто даёт ±1–2 px */
+  if (
+    Math.abs(meta.width - targetW) <= 2 &&
+    Math.abs(meta.height - resolvedH) <= 2
+  ) {
+    return applyAndroidDpi(sharp(buf)).png({ compressionLevel: 6, effort: 8 }).toBuffer();
+  }
+
+  const upscaled = meta.width < targetW - 2 || meta.height < resolvedH - 2;
+  let pipe = sharp(buf).resize(targetW, resolvedH, {
+    fit: 'fill',
+    kernel: sharp.kernel.lanczos3,
+  });
   // Усиленную резкость применяем только для Android.
   if (platform === 'android') {
     pipe = upscaled
-      ? pipe.sharpen({ sigma: 0.72, m1: 0.5, m2: 2.6, x1: 3, y2: 12, y3: 14 })
-      : pipe.sharpen({ sigma: 0.38, m1: 0.45, m2: 1.45, x1: 2, y2: 9, y3: 13 });
+      ? pipe
+          .sharpen({ sigma: 1.05, m1: 0.85, m2: 3.2, x1: 2.5, y2: 14, y3: 16 })
+          .modulate({ brightness: 1.02, saturation: 1.06 })
+      : pipe
+          .sharpen({ sigma: 0.85, m1: 0.75, m2: 2.4, x1: 2, y2: 12, y3: 14 })
+          .modulate({ brightness: 1.01, saturation: 1.04 });
   }
-  return pipe.png().toBuffer();
+  return applyAndroidDpi(pipe).png({ compressionLevel: 6, effort: 8 }).toBuffer();
 }
 
 /**
@@ -434,14 +460,24 @@ export async function renderSceneToPngPages(scene, opts = {}) {
     platformKey === 'ios' ? iosChatWallpaperPath : chatWallpaperPath;
   let wallpaperInject =
     'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+  const wallpaperToDataUrl = (filePath, buf) => {
+    const ext = path.extname(filePath).toLowerCase();
+    const mime =
+      ext === '.jpg' || ext === '.jpeg'
+        ? 'image/jpeg'
+        : ext === '.webp'
+          ? 'image/webp'
+          : 'image/png';
+    return `data:${mime};base64,${buf.toString('base64')}`;
+  };
   try {
     const wBuf = await fs.readFile(wallpaperPathForPlatform);
-    wallpaperInject = `data:image/png;base64,${wBuf.toString('base64')}`;
+    wallpaperInject = wallpaperToDataUrl(wallpaperPathForPlatform, wBuf);
   } catch {
     if (wallpaperPathForPlatform !== chatWallpaperPath) {
       try {
         const fallbackBuf = await fs.readFile(chatWallpaperPath);
-        wallpaperInject = `data:image/png;base64,${fallbackBuf.toString('base64')}`;
+        wallpaperInject = wallpaperToDataUrl(chatWallpaperPath, fallbackBuf);
       } catch {
         /* 1×1 px fallback если файла нет */
       }
@@ -470,10 +506,22 @@ export async function renderSceneToPngPages(scene, opts = {}) {
     readComposerIconDataUrl(messageChecksPath, FALLBACK_MESSAGE_CHECKS),
     buildIosFontFaceCss(projectRoot),
   ]);
-  const resolvedComposite = resolveImageSrc(withAssets.compositeScreenshot);
+  const compositeLocalPath = resolveLocalAssetPath(withAssets.compositeScreenshot);
+  const useNativeComposite =
+    platformKey === 'android' && Boolean(compositeLocalPath);
+  let compositeMeta = null;
+  let compositeSourceBuf = null;
+  if (useNativeComposite) {
+    compositeSourceBuf = await fs.readFile(compositeLocalPath);
+    compositeMeta = await sharp(compositeSourceBuf).metadata();
+  }
+  const resolvedComposite = useNativeComposite
+    ? null
+    : resolveImageSrc(withAssets.compositeScreenshot);
   if (
     withAssets.compositeScreenshot &&
     String(withAssets.compositeScreenshot).trim() &&
+    !useNativeComposite &&
     !resolvedComposite
   ) {
     console.warn(
@@ -481,16 +529,20 @@ export async function renderSceneToPngPages(scene, opts = {}) {
       String(withAssets.compositeScreenshot).slice(0, 120)
     );
   }
-  const compositeInject =
-    resolvedComposite ||
-    'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+  /* Нативный композит: в браузере только прозрачный оверлей (пузыри/ник), фон не переснимаем. */
+  const compositeInject = useNativeComposite
+    ? 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'
+    : resolvedComposite ||
+      'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 
   const browser = await chromium.launch({
     headless: true,
     args: [
       '--force-color-profile=srgb',
       /* iOS PNG: slight тоньше, чем medium/full, для Light (300) */
-      `--font-render-hinting=${platformKey === 'ios' ? 'slight' : 'full'}`,
+      `--font-render-hinting=${platformKey === 'ios' ? 'slight' : 'none'}`,
+      '--disable-lcd-text',
+      '--disable-font-subpixel-positioning',
     ],
   });
   try {
@@ -498,6 +550,41 @@ export async function renderSceneToPngPages(scene, opts = {}) {
     if (platformKey === 'ios') {
       iosStatusTrayInject = await buildIosStatusTrayDataUrl(withAssets, browser);
     }
+
+    const nativeW = compositeMeta?.width || 0;
+    const nativeH = compositeMeta?.height || 0;
+    const nativeSizeCss =
+      useNativeComposite && nativeW > 0 && nativeH > 0
+        ? `<style id="native-composite-size">
+html, body {
+  background: transparent !important;
+  margin: 0 !important;
+}
+.theme-android.phone.composite-screen-on{
+  width:${nativeW}px !important;
+  height:${nativeH}px !important;
+  max-height:${nativeH}px !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  --and-ref-sx:${(nativeW / 360).toFixed(6)};
+  --and-ref-sy:${(nativeH / 806).toFixed(6)};
+}
+.theme-android.phone.composite-screen-on .phone-main,
+.theme-android.phone.composite-screen-on .chat-wrap,
+.theme-android.phone.composite-screen-on .chat-wrap::before {
+  background:transparent !important;
+  background-image:none !important;
+  box-shadow:none !important;
+}
+.theme-android.phone.composite-screen-on .composite-screen-bg{display:none !important;}
+.theme-android.phone.composite-screen-on .phone-chrome,
+.theme-android.phone.composite-screen-on .input-panel,
+.theme-android.phone.composite-screen-on .android-home-indicator {
+  display:none !important;
+}
+</style>`
+        : '';
 
     const html = raw
     .replace('__IOS_FONT_FACES__', platformKey === 'ios' ? iosFontFaces : '')
@@ -513,9 +600,12 @@ export async function renderSceneToPngPages(scene, opts = {}) {
     .replace(/__ICON_BACK__/g, iconBackInject)
     .replace(/__TELEGRAM_PLAQUE__/g, telegramPlaqueInject)
     .replace(/__MESSAGE_CHECKS_SRC__/g, messageChecksInject)
-    .replace(/__IOS_STATUS_TRAY__/g, iosStatusTrayInject);
+    .replace(/__IOS_STATUS_TRAY__/g, iosStatusTrayInject)
+    .replace('</head>', `${nativeSizeCss}</head>`);
 
-    {
+    if (useNativeComposite) {
+      dpr = 1;
+    } else {
       const cap = maxRenderDeviceScaleFactor();
       const mul =
         platformKey === 'ios'
@@ -524,10 +614,17 @@ export async function renderSceneToPngPages(scene, opts = {}) {
       dpr = Math.min(cap, dpr * mul);
     }
 
+    const pageViewportW = useNativeComposite
+      ? Math.max(viewportWidth, nativeW + 40)
+      : viewportWidth;
+    const pageViewportH = useNativeComposite
+      ? Math.max(viewportHeight, nativeH + 40)
+      : viewportHeight;
+
     const page = await browser.newPage({
       viewport: {
-        width: viewportWidth,
-        height: viewportHeight,
+        width: pageViewportW,
+        height: pageViewportH,
         deviceScaleFactor: dpr,
       },
     });
@@ -574,8 +671,32 @@ export async function renderSceneToPngPages(scene, opts = {}) {
         scale: 'device',
         animations: 'disabled',
         caret: 'hide',
+        omitBackground: useNativeComposite,
       });
-      buf = await normalizePngToEtalonDisplay(buf, platformKey);
+      if (useNativeComposite && compositeSourceBuf) {
+        const ovMeta = await sharp(buf).metadata();
+        let overlayBuf = buf;
+        if (ovMeta.width !== nativeW || ovMeta.height !== nativeH) {
+          overlayBuf = await sharp(buf)
+            .resize(nativeW, nativeH, { fit: 'fill', kernel: sharp.kernel.lanczos3 })
+            .ensureAlpha()
+            .png()
+            .toBuffer();
+        } else {
+          overlayBuf = await sharp(buf).ensureAlpha().png().toBuffer();
+        }
+        let pipe = sharp(compositeSourceBuf).composite([
+          { input: overlayBuf, left: 0, top: 0, blend: 'over' },
+        ]);
+        if (compositeMeta?.density) {
+          pipe = pipe.withMetadata({ density: compositeMeta.density });
+        }
+        buf = await pipe.png().toBuffer();
+      } else {
+        buf = await normalizePngToEtalonDisplay(buf, platformKey, {
+          preserveNative: false,
+        });
+      }
       if (embedExif) {
         const truth = resolveTruthMeta(withAssets);
         buf = await embedPngExif(buf, truth);

@@ -109,5 +109,15 @@ export async function buildRandomScene(opts = {}) {
     return rest;
   });
 
+  // Android: готовый скрин-подложка — только переписка поверх исходных пикселей.
+  if (scene.platform === 'android') {
+    const pick = Math.random() < 0.5 ? 'a' : 'b';
+    scene.compositeScreenshot = `assets/android-substrate-${pick}.jpg`;
+    delete scene.pinned;
+    if (Array.isArray(scene.items) && scene.items.length > 12) {
+      scene.items = scene.items.slice(0, 12);
+    }
+  }
+
   return scene;
 }

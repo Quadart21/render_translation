@@ -29,6 +29,18 @@ export function resolveImageSrc(src) {
 }
 
 /**
+ * Абсолютный путь к локальному файлу ассета (data:/http — null).
+ * @param {string|null|undefined} src
+ * @returns {string|null}
+ */
+export function resolveLocalAssetPath(src) {
+  if (src == null || src === '') return null;
+  if (src.startsWith('data:') || /^https?:\/\//i.test(src)) return null;
+  const abs = path.isAbsolute(src) ? src : path.join(rootDir, src);
+  return fs.existsSync(abs) ? abs : null;
+}
+
+/**
  * Подставляет в сцену data URL для всех avatar и image src.
  * @param {object} scene
  * @returns {object}
