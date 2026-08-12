@@ -2,7 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const IMAGE_EXT = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp']);
-const FALLBACK_DIRS = ['avatar', 'avatars', 'images', 'photos', 'uploads'];
+const AVATAR_DIRS = ['avatar', 'avatars'];
+const CHAT_PHOTO_DIRS = ['photos', 'images', 'uploads', 'assets/chat-photos'];
 
 /**
  * Рекурсивно собирает картинки из каталога (и подпапок).
@@ -31,7 +32,29 @@ function collectImagePathsRecursive(dir) {
 }
 
 /**
- * Только файлы в корне projectRoot (без подпапок).
+ * Картинки из первого непустого каталога.
+ * @param {string} projectRoot
+ * @param {string[]} dirNames
+ * @returns {string[]}
+ */
+function listFromDirs(projectRoot, dirNames) {
+  for (const dirName of dirNames) {
+    const dirPath = path.join(projectRoot, dirName);
+    let st;
+    try {
+      st = fs.statSync(dirPath);
+    } catch {
+      continue;
+    }
+    if (!st.isDirectory()) continue;
+    const nested = collectImagePathsRecursive(dirPath);
+    if (nested.length > 0) return nested;
+  }
+  return [];
+}
+
+/**
+ * Аватарки: корень проекта, иначе avatar/avatars.
  * @param {string} projectRoot
  * @returns {string[]} абсолютные пути
  */
@@ -46,19 +69,23 @@ export function listRootImagePaths(projectRoot) {
     .filter((e) => e.isFile() && IMAGE_EXT.has(path.extname(e.name).toLowerCase()))
     .map((e) => path.join(projectRoot, e.name));
   if (rootFiles.length > 0) return rootFiles;
+  return listFromDirs(projectRoot, AVATAR_DIRS);
+}
 
-  // Fallback for server setups: allow common avatar/image folders.
-  for (const dirName of FALLBACK_DIRS) {
-    const dirPath = path.join(projectRoot, dirName);
-    let st;
-    try {
-      st = fs.statSync(dirPath);
-    } catch {
-      continue;
-    }
-    if (!st.isDirectory()) continue;
-    const nested = collectImagePathsRecursive(dirPath);
-    if (nested.length > 0) return nested;
+/**
+ * Фото для тела переписки: photos/images/uploads/assets/chat-photos.
+ * Не берём avatar/ — там часто лица/чужой контент не для сообщений.
+ * @param {string} projectRoot
+ * @returns {string[]}
+ */
+export function listChatPhotoPaths(projectRoot) {
+  const fromDirs = listFromDirs(projectRoot, CHAT_PHOTO_DIRS);
+  if (fromDirs.length > 0) return fromDirs;
+  const fallback = path.join(projectRoot, 'out', 'test-chat-photo.jpg');
+  try {
+    if (fs.statSync(fallback).isFile()) return [fallback];
+  } catch {
+    /* no fallback */
   }
   return [];
 }

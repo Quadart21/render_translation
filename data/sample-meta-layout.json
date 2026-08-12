@@ -1,0 +1,42 @@
+{
+  "platform": "android",
+  "compositeScreenshot": "assets/android-substrate.jpg",
+  "statusBar": { "time": "14:32" },
+  "header": { "subtitle": "" },
+  "participants": [
+    { "id": "bank", "name": "Кирюша", "side": "left", "avatar": null },
+    { "id": "me", "name": "Вы", "side": "right", "avatar": null }
+  ],
+  "items": [
+    { "type": "date", "label": "сегодня" },
+    { "type": "text", "from": "me", "time": "03:53", "text": "M" },
+    { "type": "text", "from": "me", "time": "03:53", "text": "ок" },
+    { "type": "text", "from": "me", "time": "03:53", "text": "Привет" },
+    { "type": "text", "from": "me", "time": "03:14", "text": "У нас есть тут москвичи?" },
+    {
+      "type": "text",
+      "from": "me",
+      "time": "03:53",
+      "text": "займись этим но сделай предварительно копию текущего проекта."
+    },
+    {
+      "type": "text",
+      "from": "me",
+      "time": "03:54",
+      "text": "Nsjsjehehdbsnsnsnanandnfjdjejsnsns\nnsnsnsjdjfjf\nещё текст"
+    },
+    {
+      "type": "text",
+      "from": "me",
+      "time": "03:55",
+      "text": "строка 1\nстрока 2\nстрока 3\nстрока 4"
+    },
+    {
+      "type": "text",
+      "from": "me",
+      "time": "03:54",
+      "edited": true,
+      "text": "текст текст текст"
+    }
+  ]
+}

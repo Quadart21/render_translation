@@ -296,16 +296,21 @@ if (AUTH_ENABLED) {
 app.post('/api/render/random', requireAuth, async (req, res) => {
   try {
     const platform = req.body?.platform === 'ios' ? 'ios' : undefined;
+    const multiPage = req.body?.multiPage !== false;
+    const pagesRaw = Number(req.body?.pages);
+    const pages = Number.isFinite(pagesRaw) ? pagesRaw : undefined;
     const scene = await buildRandomScene({
       projectRoot: AVATAR_IMAGE_ROOT,
       platform,
+      multiPage,
+      pages,
     });
-    const pages = await renderSceneToPngPages(scene);
-    const images = pages.map((buf, i) => ({
+    const pngPages = await renderSceneToPngPages(scene);
+    const images = pngPages.map((buf, i) => ({
       name: `chat-${i + 1}.png`,
       dataUrl: `data:image/png;base64,${buf.toString('base64')}`,
     }));
-    res.json({ ok: true, images });
+    res.json({ ok: true, images, pages: images.length, multiPage });
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: 'Ошибка рендера', detail: String(e?.message || e) });

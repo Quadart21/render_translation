@@ -48,9 +48,8 @@
       "type": "image",
       "from": "me",
       "time": "14:30",
-      "src": null,
-      "caption": "Чек об оплате",
-      "action": "Открыть"
+      "src": "assets/chat-photos/creative-1.jpg",
+      "caption": "Чек об оплате"
     }
   ]
 }

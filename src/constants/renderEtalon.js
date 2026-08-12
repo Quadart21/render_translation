@@ -41,10 +41,14 @@ export const ETALON_IPHONE_16_PRO = Object.freeze({
   height: 2556,
 });
 
-/** Android эталон: 1370×3500 @ 96 DPI */
+/**
+ * Android эталон: ширина 1370 @ 96 DPI.
+ * Высота — пропорционально логическому макету `.phone` (393×852), иначе fit:fill
+ * растягивает круги в овалы (как было при жёстких 1370×3500).
+ */
 export const ETALON_XIAOMI_15_ULTRA = Object.freeze({
   width: 1370,
-  height: 3500,
+  height: Math.round((1370 * PHONE_LOGICAL_HEIGHT_CSS_PX) / PHONE_LOGICAL_WIDTH_CSS_PX),
 });
 
 /** Плотность итогового Android PNG (точек на дюйм). */
@@ -86,11 +90,10 @@ export function etalonDisplayWidthPx(platform) {
 
 /**
  * Целевая высота PNG в пикселях (эталон дисплея).
- * Для iOS — пропорционально ширине от логической высоты макета.
+ * Всегда пропорционально логическому макету — без растяжения по осям.
  * @param {'ios'|'android'} platform
  */
 export function etalonDisplayHeightPx(platform) {
-  if (platform === 'android') return ETALON_XIAOMI_15_ULTRA.height;
-  const w = iphoneEtalonExportWidthPx();
+  const w = etalonDisplayWidthPx(platform);
   return Math.round((PHONE_LOGICAL_HEIGHT_CSS_PX * w) / PHONE_LOGICAL_WIDTH_CSS_PX);
 }

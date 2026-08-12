@@ -1,440 +1,84 @@
+/**
+ * Scene → PNG orchestrator (Playwright + pagination).
+ *
+ * Split modules (maintainability):
+ * - paths.js / fallbackIcons.js / uiAssets.js — asset paths & icon data-URLs
+ * - iosStatusTray.js — iOS status tray + battery digits
+ * - renderScale.js — DPR / paint-stable waits
+ * - androidComposite.js — Sharp frost / chrome strip / densify
+ * - nativeCompositeCss.js — injected native composite CSS
+ * - normalizeExport.js — etalon display resize
+ * - compositeCss.js — Light text CSS snippet
+ */
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 import sharp from 'sharp';
 import {
-  ANDROID_EXPORT_DPI,
-  deviceScaleFactorForEtalon,
-  etalonDisplayHeightPx,
-  etalonDisplayWidthPx,
   maxRenderDeviceScaleFactor,
   PHONE_LOGICAL_HEIGHT_CSS_PX,
+  PHONE_LOGICAL_WIDTH_CSS_PX,
 } from '../constants/renderEtalon.js';
 import { embedPngExif } from '../lib/embedPngExif.js';
 import { resolveTruthMeta } from '../lib/truthMeta.js';
-import { embedSceneAssets, resolveImageSrc, resolveLocalAssetPath } from './resolveAssets.js';
-import {
-  buildIosFontFaceCss,
-  resolveSfProTextFontForWeight,
-  buildTrayBatteryFontFaceCss,
-  trayBatterySvgFontFamily,
-} from './iosFontFaces.js';
+import { embedSceneAssets, resolveLocalAssetPath, resolveImageSrc } from './resolveAssets.js';
+import { buildIosFontFaceCss } from './iosFontFaces.js';
 import { loadChatHtmlWithStyles } from './chatTemplate.js';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const projectRoot = path.join(__dirname, '..', '..');
-const wallpaperRaw = process.env.CHAT_WALLPAPER_PATH;
-const chatWallpaperPath = wallpaperRaw
-  ? path.isAbsolute(wallpaperRaw)
-    ? wallpaperRaw
-    : path.join(projectRoot, wallpaperRaw)
-  : path.join(projectRoot, 'assets', 'chat-wallpaper.png');
-const iosWallpaperRaw = process.env.CHAT_WALLPAPER_IOS_PATH;
-const iosChatWallpaperPath = iosWallpaperRaw
-  ? path.isAbsolute(iosWallpaperRaw)
-    ? iosWallpaperRaw
-    : path.join(projectRoot, iosWallpaperRaw)
-  : path.join(projectRoot, 'assets', 'ios-chat-wallpaper.png');
-const iconPaperclipPath = path.join(projectRoot, 'assets', 'flaticon-paperclip.png');
-const iconMicrophonePath = path.join(projectRoot, 'assets', 'flaticon-microphone.png');
-const statusCellularPath = path.join(projectRoot, 'assets', 'status-cellular.png');
-const statusWifiPath = path.join(projectRoot, 'assets', 'status-wifi.png');
-const composerSmileyPath = path.join(projectRoot, 'assets', 'composer-smiley.png');
-const iconPhonePath = path.join(projectRoot, 'assets', 'flaticon-phone.png');
-const androidBackIconRaw = process.env.ANDROID_BACK_ICON_PATH;
-const androidBackIconPath = androidBackIconRaw
-  ? (path.isAbsolute(androidBackIconRaw) ? androidBackIconRaw : path.join(projectRoot, androidBackIconRaw))
-  : 'C:/Users/Administrator/.cursor/projects/c-Users-Administrator-Desktop/assets/c__Users_Administrator_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_arrow-up-svgrepo-com-263156d1-382d-4924-933e-097b5789d605.png';
-const telegramPlaquePath = path.join(projectRoot, 'assets', 'telegram-plaque.png');
-const messageChecksPath = path.join(projectRoot, 'assets', 'message-checks-read.png');
-const iosStatusTrayStripPath = path.join(projectRoot, 'assets', 'ios-status-tray-strip.png');
-
-/** Запасные SVG (не 1×1 px): если PNG из assets недоступны, не будет «квадратиков». */
-const FALLBACK_ICON_CLIP =
-  'data:image/svg+xml,' +
-  encodeURIComponent(
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>'
-  );
-const FALLBACK_ICON_MIC =
-  'data:image/svg+xml,' +
-  encodeURIComponent(
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M12 14a3 3 0 003-3V5a3 3 0 10-6 0v6a3 3 0 003 3zm7-3a7 7 0 01-14 0H3a9 9 0 0018 0h-2z"/><path d="M12 19v3"/></svg>'
-  );
-const FALLBACK_ICON_SIGNAL =
-  'data:image/svg+xml,' +
-  encodeURIComponent(
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 11" fill="white"><rect x="0" y="7" width="3" height="4" rx="0.5"/><rect x="5" y="5" width="3" height="6" rx="0.5"/><rect x="10" y="3" width="3" height="8" rx="0.5"/><rect x="15" y="0" width="3" height="11" rx="0.5"/></svg>'
-  );
-const FALLBACK_ICON_WIFI =
-  'data:image/svg+xml,' +
-  encodeURIComponent(
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 11" fill="none" stroke="white" stroke-width="1.4" stroke-linecap="round"><path d="M7 9.5h.01"/><path d="M3.5 7a4 4 0 017 0"/><path d="M1.5 5a7 7 0 0111 0"/><path d="M0 3a9 9 0 0114 0"/></svg>'
-  );
-const FALLBACK_ICON_SMILEY =
-  'data:image/svg+xml,' +
-  encodeURIComponent(
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><circle cx="9" cy="10" r="1.3" fill="white" stroke="none"/><circle cx="15" cy="10" r="1.3" fill="white" stroke="none"/><path d="M8.5 14.5c1.3 1.6 3.7 2 5.5 1"/></svg>'
-  );
-/** Звонок в шапке Android — контур трубки, белый силуэт после Sharp как у остальных иконок */
-const FALLBACK_ICON_PHONE =
-  'data:image/svg+xml,' +
-  encodeURIComponent(
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>'
-  );
-const FALLBACK_ICON_BACK =
-  'data:image/svg+xml,' +
-  encodeURIComponent(
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l-8 8 8 8"/><path d="M20 12H4"/></svg>'
-  );
-/** Плашка TELEGRAM в строке статуса (полноцветный PNG). */
-const FALLBACK_TELEGRAM_PLAQUE =
-  'data:image/svg+xml,' +
-  encodeURIComponent(
-    '<svg xmlns="http://www.w3.org/2000/svg" width="140" height="32" viewBox="0 0 140 32"><rect width="140" height="32" rx="16" fill="#3390ec"/></svg>'
-  );
-/** Две галочки «прочитано» у исходящих (если нет PNG — упрощённый SVG). */
-const FALLBACK_MESSAGE_CHECKS =
-  'data:image/svg+xml,' +
-  encodeURIComponent(
-    '<svg xmlns="http://www.w3.org/2000/svg" width="26" height="12" viewBox="0 0 26 12"><path fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" d="M1 6l3.5 3.5L12 2m4 4l3.5 3.5L25 2"/></svg>'
-  );
-/** iOS: справа в статус-баре одним PNG (сигнал + Wi‑Fi + батарея). */
-const FALLBACK_IOS_STATUS_TRAY =
-  'data:image/svg+xml,' +
-  encodeURIComponent(
-    '<svg xmlns="http://www.w3.org/2000/svg" width="78" height="18" viewBox="0 0 78 18"><rect width="78" height="18" rx="4" fill="rgba(255,255,255,0.14)"/></svg>'
-  );
-/**
- * Белые силуэты на тёмной панели без CSS filter (иначе в Chromium часто «пустые» img).
- * Сохраняем альфу исходной иконки.
- */
-async function pngToWhiteSilhouetteDataUrl(buf) {
-  try {
-    const { data, info } = await sharp(buf).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
-    if (info.channels !== 4 || !info.width || !info.height) {
-      return `data:image/png;base64,${buf.toString('base64')}`;
-    }
-    const out = Buffer.from(data);
-    for (let i = 0; i < out.length; i += 4) {
-      const a = out[i + 3];
-      out[i] = 255;
-      out[i + 1] = 255;
-      out[i + 2] = 255;
-      out[i + 3] = a;
-    }
-    const pngOut = await sharp(out, {
-      raw: { width: info.width, height: info.height, channels: 4 },
-    })
-      .png()
-      .toBuffer();
-    return `data:image/png;base64,${pngOut.toString('base64')}`;
-  } catch {
-    return `data:image/png;base64,${buf.toString('base64')}`;
-  }
-}
-
-async function readComposerIconDataUrl(absPath, fallbackDataUrl) {
-  try {
-    const buf = await fs.readFile(absPath);
-    return await pngToWhiteSilhouetteDataUrl(buf);
-  } catch {
-    return fallbackDataUrl;
-  }
-}
-
-/** Back icon: предварительно апскейлим/центрируем для более гладкого контура. */
-async function readBackIconDataUrl(absPath, fallbackDataUrl) {
-  try {
-    const buf = await fs.readFile(absPath);
-    const upscaled = await sharp(buf)
-      .ensureAlpha()
-      .resize(144, 144, {
-        fit: 'contain',
-        kernel: sharp.kernel.lanczos3,
-        background: { r: 0, g: 0, b: 0, alpha: 0 },
-      })
-      .png()
-      .toBuffer();
-    return await pngToWhiteSilhouetteDataUrl(upscaled);
-  } catch {
-    return fallbackDataUrl;
-  }
-}
-
-async function readPngDataUrlRaw(absPath, fallbackDataUrl) {
-  try {
-    const buf = await fs.readFile(absPath);
-    return `data:image/png;base64,${buf.toString('base64')}`;
-  } catch {
-    return fallbackDataUrl;
-  }
-}
-
-function escapeSvgText(s) {
-  return String(s)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
-}
-
-function escapeHtmlTextPlain(s) {
-  return String(s)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/"/g, '&quot;');
-}
-
-/** Общая геометрия текста заряда на PNG-трее (Sharp или Chromium). */
-function computeIosTrayBatteryLayout(trayW, trayH, scene) {
-  const label = extractIosBatteryDigits(scene);
-  const xFrac = Number(process.env.IOS_TRAY_BATTERY_TEXT_X_FRAC);
-  const yFrac = Number(process.env.IOS_TRAY_BATTERY_TEXT_Y_FRAC);
-  const fontFrac = Number(process.env.IOS_TRAY_BATTERY_FONT_FRAC);
-  const trimPxRaw = Number(process.env.IOS_TRAY_BATTERY_FONT_TRIM_PX);
-  const trimPx = Number.isFinite(trimPxRaw) ? trimPxRaw : 3;
-  const scaleRaw = Number(process.env.IOS_TRAY_BATTERY_FONT_SCALE);
-  const fsScale = Number.isFinite(scaleRaw) ? scaleRaw : 0.93;
-  const xf = Number.isFinite(xFrac) ? xFrac : 0.81;
-  const yf = Number.isFinite(yFrac) ? yFrac : 0.48;
-  const w = trayW;
-  const h = trayH;
-  let fs = Number.isFinite(fontFrac)
-    ? Math.max(8, Math.round(h * fontFrac))
-    : Math.max(8, Math.round(h - trimPx));
-  fs = Math.max(8, Math.round(fs * fsScale));
-  const cx = Math.round(w * xf);
-  const cy = Math.round(h * yf);
-  return { label, w, h, fs, cx, cy };
-}
-
-/**
- * Растеризация цифр через Chromium: Sharp/librsvg часто не применяют @font-face в SVG.
- * Синтетическое семейство TrayIosBat + data: URL к шрифту — как в основном HTML-моке.
- */
-async function renderIosTrayBatteryTextPng(browser, layout, fontWeight) {
-  const { label, w, h, fs, cx, cy, embed } = layout;
-  if (!embed) throw new Error('renderIosTrayBatteryTextPng: embed required');
-  const src = `url('${embed.dataUrl}') format('${embed.format}')`;
-  const page = await browser.newPage({
-    viewport: { width: w, height: h },
-    deviceScaleFactor: 1,
-  });
-  try {
-    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>
-      @font-face{font-family:'TrayIosBat';src:${src};font-weight:100 900;font-style:normal;font-display:block;}
-      html,body{margin:0;padding:0;width:${w}px;height:${h}px;background:transparent!important;overflow:hidden;}
-      #t{position:absolute;left:${cx}px;top:${cy}px;transform:translate(-50%,-50%);
-        font-family:'TrayIosBat',sans-serif;font-size:${fs}px;font-weight:${fontWeight};color:#ffffff;
-        line-height:1;white-space:nowrap;-webkit-font-smoothing:antialiased;}
-    </style></head><body><div id="t">${escapeHtmlTextPlain(label)}</div></body></html>`;
-    await page.setContent(html, { waitUntil: 'load' });
-    await page.evaluate(async () => {
-      if (typeof document !== 'undefined' && document.fonts && document.fonts.ready) {
-        await document.fonts.ready;
-      }
-      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
-    });
-    return await page.screenshot({
-      type: 'png',
-      omitBackground: true,
-      clip: { x: 0, y: 0, width: w, height: h },
-    });
-  } finally {
-    await page.close();
-  }
-}
-
-/** Цифры заряда на PNG-трее iOS: случайно [3..15] без суффикса %. Поле scene.statusBar.battery на оверлей трея не влияет. */
-function extractIosBatteryDigits(_scene) {
-  return String(Math.floor(Math.random() * 13) + 3);
-}
-
-/**
- * Fallback: цифры через Sharp SVG (librsvg может игнорировать встроенный шрифт — см. buildIosStatusTrayDataUrl + Chromium).
- */
-async function composeIosStatusTrayWithBattery(trayPngBuf, scene, projectRoot) {
-  const meta = await sharp(trayPngBuf).metadata();
-  const w = meta.width || 197;
-  const h = meta.height || 33;
-  const { label, fs, cx, cy } = computeIosTrayBatteryLayout(w, h, scene);
-
-  let fontFaceBlock = '';
-  let fontFamily = trayBatterySvgFontFamily(null);
-  let fontWeight = 600;
-  if (projectRoot) {
-    let embed = null;
-    for (const wgt of [600, 500, 400]) {
-      embed = await resolveSfProTextFontForWeight(projectRoot, wgt);
-      if (embed) {
-        fontWeight = wgt;
-        break;
-      }
-    }
-    if (embed) {
-      fontFamily = trayBatterySvgFontFamily(embed);
-      fontFaceBlock = `<defs><style type="text/css"><![CDATA[${buildTrayBatteryFontFaceCss(embed)}]]></style></defs>`;
-    } else {
-      console.warn(
-        '[render] Цифры заряда на PNG-трее: нет файлов SF Pro / SF UI Text в assets/fonts/sf-pro-text/ — Sharp рисует SVG системным sans-serif (на Windows это не San Francisco). Положите .ttf/.otf/.woff2 из developer.apple.com/fonts/ или задайте IOS_FONT_DIR.'
-      );
-    }
-  }
-
-  const svg = Buffer.from(
-    `<?xml version="1.0" encoding="UTF-8"?>
-<svg width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg">
-  ${fontFaceBlock}
-  <text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="central"
-    font-family="${fontFamily}"
-    font-size="${fs}" font-weight="${fontWeight}" fill="#ffffff">${escapeSvgText(label)}</text>
-</svg>`
-  );
-  return sharp(trayPngBuf).composite([{ input: svg, left: 0, top: 0 }]).png().toBuffer();
-}
-
-/** @param {import('playwright').Browser} browser — уже запущенный Chromium (те же аргументы, что и у основного рендера). */
-async function buildIosStatusTrayDataUrl(scene, browser) {
-  try {
-    const buf = await fs.readFile(iosStatusTrayStripPath);
-    const meta = await sharp(buf).metadata();
-    const w = meta.width || 197;
-    const h = meta.height || 33;
-    const layoutBase = computeIosTrayBatteryLayout(w, h, scene);
-
-    let embed = null;
-    let fontWeight = 600;
-    for (const wgt of [600, 500, 400]) {
-      embed = await resolveSfProTextFontForWeight(projectRoot, wgt);
-      if (embed) {
-        fontWeight = wgt;
-        break;
-      }
-    }
-
-    const layout = { ...layoutBase, embed };
-
-    if (embed && browser) {
-      try {
-        const overlay = await renderIosTrayBatteryTextPng(browser, layout, fontWeight);
-        const composed = await sharp(buf).composite([{ input: overlay, left: 0, top: 0 }]).png().toBuffer();
-        return `data:image/png;base64,${composed.toString('base64')}`;
-      } catch (e) {
-        console.warn('[render] Цифры трея через Chromium не удались, fallback Sharp SVG:', e?.message || e);
-      }
-    }
-
-    const composed = await composeIosStatusTrayWithBattery(buf, scene, projectRoot);
-    return `data:image/png;base64,${composed.toString('base64')}`;
-  } catch {
-    return FALLBACK_IOS_STATUS_TRAY;
-  }
-}
-
-/**
- * Масштаб пикселей: по умолчанию под эталон (iOS — ширина из PPI×мм, Android — Xiaomi 15 Ultra),
- * см. src/constants/renderEtalon.js. Переопределение: RENDER_DPR или opts.deviceScaleFactor.
- */
-function resolveDeviceScaleFactor(scene, opts) {
-  const cap = maxRenderDeviceScaleFactor();
-  const clamp = (v) => Math.min(cap, Math.max(1, v));
-
-  if (opts.deviceScaleFactor != null && Number.isFinite(Number(opts.deviceScaleFactor))) {
-    return clamp(Number(opts.deviceScaleFactor));
-  }
-  const env = Number(process.env.RENDER_DPR);
-  if (Number.isFinite(env) && env >= 1) return clamp(env);
-
-  const platform = scene && scene.platform === 'ios' ? 'ios' : 'android';
-  return clamp(deviceScaleFactorForEtalon(platform));
-}
-
-/** Доп. множитель DPR только для iOS: снимаем крупнее, затем Sharp даунскейлит к эталону — контур текста заметно резче. */
-function resolveIosSuperSampleMultiplier() {
-  const raw = process.env.RENDER_IOS_SUPER_SAMPLE;
-  if (raw != null && /^(0|false|off|no)$/i.test(String(raw).trim())) return 1;
-  const n = Number(raw);
-  if (Number.isFinite(n) && n >= 1 && n <= 4) return n;
-  return 2.35;
-}
-
-/** Доп. множитель DPR для Android (делает даунскейл более качественным). */
-function resolveAndroidSuperSampleMultiplier() {
-  const raw = process.env.RENDER_ANDROID_SUPER_SAMPLE;
-  if (raw != null && /^(0|false|off|no)$/i.test(String(raw).trim())) return 1;
-  const n = Number(raw);
-  if (Number.isFinite(n) && n >= 1 && n <= 4) return n;
-  return 2.85;
-}
-
-/** Перед скрином: webfonts и два кадра раскладки — меньше «плывущего» текста и метрик. */
-async function waitForFontsAndPaintStable(page) {
-  await page.evaluate(async () => {
-    try {
-      if (typeof document !== 'undefined' && document.fonts && document.fonts.ready) {
-        await document.fonts.ready;
-      }
-    } catch {
-      /* ignore */
-    }
-    await new Promise((resolve) => {
-      requestAnimationFrame(() => requestAnimationFrame(resolve));
-    });
-  });
-}
-
-/**
- * Итоговая ширина файла приводится к эталону дисплея (Sharp): Playwright на части окружений
- * даёт скрин в CSS-пикселях без учёта DPR — поэтому нормализация по ширине обязательна.
- */
-async function normalizePngToEtalonDisplay(buf, platform, opts = {}) {
-  /* Подложка: не трогаем разрешение/резкость — пиксели исходника как есть. */
-  if (opts.preserveNative) return buf;
-
-  const skip = /^(0|false)$/i.test(String(process.env.RENDER_ETALON ?? ''));
-  if (skip) return buf;
-
-  const targetW = etalonDisplayWidthPx(platform);
-  const meta = await sharp(buf).metadata();
-  if (!meta.width || !meta.height) return buf;
-
-  const resolvedH =
-    platform === 'android'
-      ? etalonDisplayHeightPx(platform)
-      : Math.round((meta.height * targetW) / meta.width);
-
-  const applyAndroidDpi = (pipe) =>
-    platform === 'android'
-      ? pipe.withMetadata({ density: ANDROID_EXPORT_DPI })
-      : pipe;
-
-  /* Один шаг Lanczos без численного шума: Playwright часто даёт ±1–2 px */
-  if (
-    Math.abs(meta.width - targetW) <= 2 &&
-    Math.abs(meta.height - resolvedH) <= 2
-  ) {
-    return applyAndroidDpi(sharp(buf)).png({ compressionLevel: 6, effort: 8 }).toBuffer();
-  }
-
-  const upscaled = meta.width < targetW - 2 || meta.height < resolvedH - 2;
-  let pipe = sharp(buf).resize(targetW, resolvedH, {
-    fit: 'fill',
-    kernel: sharp.kernel.lanczos3,
-  });
-  // Усиленную резкость применяем только для Android.
-  if (platform === 'android') {
-    pipe = upscaled
-      ? pipe
-          .sharpen({ sigma: 1.05, m1: 0.85, m2: 3.2, x1: 2.5, y2: 14, y3: 16 })
-          .modulate({ brightness: 1.02, saturation: 1.06 })
-      : pipe
-          .sharpen({ sigma: 0.85, m1: 0.75, m2: 2.4, x1: 2, y2: 12, y3: 14 })
-          .modulate({ brightness: 1.01, saturation: 1.04 });
-  }
-  return applyAndroidDpi(pipe).png({ compressionLevel: 6, effort: 8 }).toBuffer();
-}
+import {
+  projectRoot,
+  chatWallpaperPath,
+  iosChatWallpaperPath,
+  iconPaperclipPath,
+  iconMicrophonePath,
+  statusCellularPath,
+  statusWifiPath,
+  composerSmileyPath,
+  iconPhonePath,
+  androidBackIconPath,
+  androidTitlePillPath,
+  androidInputPillPath,
+  telegramPlaquePath,
+  messageChecksPath,
+} from './paths.js';
+import {
+  FALLBACK_ICON_CLIP,
+  FALLBACK_ICON_MIC,
+  FALLBACK_ICON_SIGNAL,
+  FALLBACK_ICON_WIFI,
+  FALLBACK_ICON_SMILEY,
+  FALLBACK_ICON_PHONE,
+  FALLBACK_ICON_BACK,
+  FALLBACK_TELEGRAM_PLAQUE,
+  FALLBACK_MESSAGE_CHECKS,
+  FALLBACK_IOS_STATUS_TRAY,
+} from './fallbackIcons.js';
+import {
+  readComposerIconDataUrl,
+  readStatusTrayIconDataUrl,
+  readPngDataUrlRaw,
+  readUiChromeDataUrl,
+  readMessageChecksDataUrl,
+} from './uiAssets.js';
+import { buildIosStatusTrayDataUrl } from './iosStatusTray.js';
+import {
+  resolveDeviceScaleFactor,
+  resolveIosSuperSampleMultiplier,
+  resolveAndroidSuperSampleMultiplier,
+  waitForFontsAndPaintStable,
+} from './renderScale.js';
+import {
+  maskAndroidSubstrateChrome,
+  applyAndroidHeaderBlurZone,
+  clearOverlayBand,
+  paintWallpaperWhereMask,
+  stripOverlayMessagesInHeaderBand,
+  densifyOverlayGlyphs,
+} from './androidComposite.js';
+import {
+  buildAndroidNativeCompositeCss,
+  buildIosNativeCompositeCss,
+} from './nativeCompositeCss.js';
+import { normalizePngToEtalonDisplay } from './normalizeExport.js';
 
 /**
  * Рендер сцены в один или несколько PNG-скринов (страницы истории чата).
@@ -483,6 +127,7 @@ export async function renderSceneToPngPages(scene, opts = {}) {
       }
     }
   }
+  const useAndroidChromeIcons = platformKey === 'android';
   const [
     iconAttachInject,
     iconMicInject,
@@ -491,28 +136,51 @@ export async function renderSceneToPngPages(scene, opts = {}) {
     iconSmileyInject,
     iconPhoneInject,
     iconBackInject,
+    androidTitlePillInject,
+    androidInputPillInject,
     telegramPlaqueInject,
     messageChecksInject,
     iosFontFaces,
   ] = await Promise.all([
-    readComposerIconDataUrl(iconPaperclipPath, FALLBACK_ICON_CLIP),
-    readComposerIconDataUrl(iconMicrophonePath, FALLBACK_ICON_MIC),
-    readComposerIconDataUrl(statusCellularPath, FALLBACK_ICON_SIGNAL),
-    readComposerIconDataUrl(statusWifiPath, FALLBACK_ICON_WIFI),
-    readComposerIconDataUrl(composerSmileyPath, FALLBACK_ICON_SMILEY),
-    readComposerIconDataUrl(iconPhonePath, FALLBACK_ICON_PHONE),
-    readBackIconDataUrl(androidBackIconPath, FALLBACK_ICON_BACK),
+    useAndroidChromeIcons
+      ? readPngDataUrlRaw(iconPaperclipPath, FALLBACK_ICON_CLIP)
+      : readComposerIconDataUrl(iconPaperclipPath, FALLBACK_ICON_CLIP),
+    useAndroidChromeIcons
+      ? readPngDataUrlRaw(iconMicrophonePath, FALLBACK_ICON_MIC)
+      : Promise.resolve(FALLBACK_ICON_MIC),
+    readStatusTrayIconDataUrl(statusCellularPath, FALLBACK_ICON_SIGNAL),
+    readStatusTrayIconDataUrl(statusWifiPath, FALLBACK_ICON_WIFI),
+    useAndroidChromeIcons
+      ? readPngDataUrlRaw(composerSmileyPath, FALLBACK_ICON_SMILEY)
+      : readComposerIconDataUrl(composerSmileyPath, FALLBACK_ICON_SMILEY),
+    useAndroidChromeIcons
+      ? readPngDataUrlRaw(iconPhonePath, FALLBACK_ICON_PHONE)
+      : readComposerIconDataUrl(iconPhonePath, FALLBACK_ICON_PHONE),
+    useAndroidChromeIcons
+      ? readPngDataUrlRaw(androidBackIconPath, FALLBACK_ICON_BACK)
+      :     readPngDataUrlRaw(androidBackIconPath, FALLBACK_ICON_BACK),
+    readUiChromeDataUrl(androidTitlePillPath, ''),
+    readUiChromeDataUrl(androidInputPillPath, ''),
     readPngDataUrlRaw(telegramPlaquePath, FALLBACK_TELEGRAM_PLAQUE),
-    readComposerIconDataUrl(messageChecksPath, FALLBACK_MESSAGE_CHECKS),
+    readMessageChecksDataUrl(messageChecksPath, FALLBACK_MESSAGE_CHECKS),
     buildIosFontFaceCss(projectRoot),
   ]);
   const compositeLocalPath = resolveLocalAssetPath(withAssets.compositeScreenshot);
   const useNativeComposite = Boolean(compositeLocalPath);
   let compositeMeta = null;
   let compositeSourceBuf = null;
+  /** Сырая подложка до маски хрома — для frosted-blur с текстурой обоев */
+  let blurWallpaperBuf = null;
   if (useNativeComposite) {
     compositeSourceBuf = await fs.readFile(compositeLocalPath);
     compositeMeta = await sharp(compositeSourceBuf).metadata();
+    if (platformKey === 'android') {
+      blurWallpaperBuf = compositeSourceBuf;
+      compositeSourceBuf = await maskAndroidSubstrateChrome(compositeSourceBuf);
+      compositeMeta = await sharp(compositeSourceBuf).metadata();
+    } else {
+      blurWallpaperBuf = compositeSourceBuf;
+    }
   }
   const resolvedComposite = useNativeComposite
     ? null
@@ -538,8 +206,8 @@ export async function renderSceneToPngPages(scene, opts = {}) {
     headless: true,
     args: [
       '--force-color-profile=srgb',
-      /* iOS PNG: slight тоньше, чем medium/full, для Light (300) */
-      `--font-render-hinting=${platformKey === 'ios' ? 'slight' : 'none'}`,
+      /* none: чётче контур Light в headless, без «ваты» slight */
+      '--font-render-hinting=none',
       '--disable-lcd-text',
       '--disable-font-subpixel-positioning',
     ],
@@ -554,56 +222,36 @@ export async function renderSceneToPngPages(scene, opts = {}) {
     const nativeH = compositeMeta?.height || 0;
     const themeSel =
       platformKey === 'ios' ? '.theme-ios.phone.composite-screen-on' : '.theme-android.phone.composite-screen-on';
-    const nativeSizeCss =
-      useNativeComposite && nativeW > 0 && nativeH > 0
-        ? `<style id="native-composite-size">
-html, body {
-  background: transparent !important;
-  margin: 0 !important;
-}
-${themeSel}{
-  width:${nativeW}px !important;
-  height:${nativeH}px !important;
-  max-height:${nativeH}px !important;
-  border-radius:0 !important;
-  background:transparent !important;
-  box-shadow:none !important;
-  --and-ref-sx:${(nativeW / 360).toFixed(6)};
-  --and-ref-sy:${(nativeH / 806).toFixed(6)};
-}
-${themeSel} .phone-main,
-${themeSel} .chat-wrap,
-${themeSel} .chat-wrap::before {
-  background:transparent !important;
-  background-image:none !important;
-  box-shadow:none !important;
-}
-${themeSel} .composite-screen-bg{display:none !important;}
-${themeSel} .phone-chrome,
-${themeSel} .input-panel,
-${themeSel} .android-home-indicator,
-${themeSel} .ios-composer-row,
-${themeSel} .ios-home-indicator,
-${themeSel} .chrome-header-stack,
-${themeSel} .pinned-container {
-  display:none !important;
-}
-${themeSel} .chat-wrap {
-  inset: unset !important;
-  top: ${Math.round(nativeH * 0.085)}px !important;
-  right: 0 !important;
-  bottom: ${Math.round(nativeH * 0.095)}px !important;
-  left: 0 !important;
-  height: auto !important;
-  padding-top: 8px !important;
-  padding-bottom: 8px !important;
-  overflow: hidden !important;
-}
-</style>`
-        : '';
+    /*
+     * Android: phone = px подложки, dpr=1, --and-ref-*.
+     * iOS: логический 393×852 + dpr=nativeW/393 (без zoom — zoom ломал max-width пузырей).
+     */
+    const iosCompositeScale =
+      useNativeComposite && platformKey === 'ios' && nativeW > 0
+        ? nativeW / PHONE_LOGICAL_WIDTH_CSS_PX
+        : 0;
+    const androidNativeLayout =
+      useNativeComposite && platformKey === 'android' && nativeW > 0 && nativeH > 0;
+
+    let nativeSizeCss = '';
+    if (useNativeComposite && nativeW > 0 && nativeH > 0) {
+      if (androidNativeLayout) {
+        nativeSizeCss = buildAndroidNativeCompositeCss({ nativeW, nativeH, themeSel });
+      } else {
+        nativeSizeCss = buildIosNativeCompositeCss({
+          nativeW,
+          nativeH,
+          themeSel,
+          iosCompositeScale,
+          PHONE_LOGICAL_WIDTH_CSS_PX,
+        });
+      }
+    }
+
 
     const html = raw
     .replace('__IOS_FONT_FACES__', platformKey === 'ios' ? iosFontFaces : '')
+    .replace('__ANDROID_FONT_FACES__', platformKey === 'android' ? iosFontFaces : '')
     .replace('__SCENE_JSON__', json)
     .replace(/__COMPOSITE_SCREENSHOT_SRC__/g, compositeInject)
     .replace(/__CHAT_WALLPAPER__/g, wallpaperInject)
@@ -614,12 +262,15 @@ ${themeSel} .chat-wrap {
     .replace(/__ICON_SMILEY__/g, iconSmileyInject)
     .replace(/__ICON_PHONE__/g, iconPhoneInject)
     .replace(/__ICON_BACK__/g, iconBackInject)
+    .replace(/__ANDROID_TITLE_PILL__/g, androidTitlePillInject || '')
+    .replace(/__ANDROID_INPUT_PILL__/g, androidInputPillInject || '')
     .replace(/__TELEGRAM_PLAQUE__/g, telegramPlaqueInject)
     .replace(/__MESSAGE_CHECKS_SRC__/g, messageChecksInject)
     .replace(/__IOS_STATUS_TRAY__/g, iosStatusTrayInject)
     .replace('</head>', `${nativeSizeCss}</head>`);
 
     if (useNativeComposite) {
+      /* Оба: dpr=1, текст в целевых CSS-px — без даунскейла */
       dpr = 1;
     } else {
       const cap = maxRenderDeviceScaleFactor();
@@ -646,13 +297,26 @@ ${themeSel} .chat-wrap {
     });
     await page.emulateMedia({ colorScheme: 'dark' });
     await page.setContent(html, { waitUntil: 'load' });
-    const scrollPositions = await page.evaluate(() => {
+    await waitForFontsAndPaintStable(page, platformKey);
+    if (useNativeComposite) {
+      await page.evaluate(() => {
+        if (typeof window.syncMetaSpacers === 'function') window.syncMetaSpacers();
+      });
+    }
+    const headerOverlapPx = useNativeComposite
+      ? Math.max(
+          120,
+          Math.round(nativeH * 0.0395) + Math.round(nativeW * (88 / 1374) * 1.8) + 24
+        )
+      : 72;
+    const scrollPositions = await page.evaluate((overlap) => {
       var chat = document.getElementById('chat');
       if (!chat) return [0];
+      /* принудительно пересчитать layout после flex/margin-top:auto */
+      void chat.offsetHeight;
       var maxScroll = Math.max(0, chat.scrollHeight - chat.clientHeight);
       if (maxScroll <= 0) return [0];
-      var overlap = 72;
-      var step = Math.max(1, chat.clientHeight - overlap);
+      var step = Math.max(1, chat.clientHeight - Math.max(48, overlap | 0));
       var out = [0];
       var pos = 0;
       while (pos < maxScroll) {
@@ -660,10 +324,48 @@ ${themeSel} .chat-wrap {
         if (pos !== out[out.length - 1]) out.push(pos);
       }
       return out;
-    });
-    await waitForFontsAndPaintStable(page);
+    }, headerOverlapPx);
     const phone = await page.$('.phone');
     if (!phone) throw new Error('.phone not found in template');
+    const statusKeepRects =
+      platformKey === 'android' && useNativeComposite
+        ? await page.evaluate(() => {
+            var phoneEl = document.querySelector('.phone');
+            if (!phoneEl) return [];
+            var pr = phoneEl.getBoundingClientRect();
+            var pad = 2;
+            var els = [];
+            var timeEl = document.querySelector('#androidTime');
+            if (timeEl) els.push(timeEl);
+            var tray = document.querySelector('.android-status-tray');
+            if (tray) {
+              var kids = tray.querySelectorAll(
+                '.status-tray-signal, .status-tray-wifi, .status-battery, .status-tray-icon, img, svg'
+              );
+              if (kids.length) {
+                for (var k = 0; k < kids.length; k += 1) els.push(kids[k]);
+              } else {
+                els.push(tray);
+              }
+            }
+            var extras = document.querySelectorAll(
+              '.status-extra-icons .status-extra-icon, .status-extra-icons > *'
+            );
+            for (var e = 0; e < extras.length; e += 1) els.push(extras[e]);
+            var out = [];
+            for (var i = 0; i < els.length; i += 1) {
+              var r = els[i].getBoundingClientRect();
+              if (r.width < 1 || r.height < 1) continue;
+              out.push({
+                left: Math.floor(r.left - pr.left) - pad,
+                top: Math.floor(r.top - pr.top) - pad,
+                right: Math.ceil(r.right - pr.left) + pad,
+                bottom: Math.ceil(r.bottom - pr.top) + pad,
+              });
+            }
+            return out;
+          })
+        : [];
     /** @type {Buffer[]} */
     const pages = [];
     for (let i = 0; i < scrollPositions.length; i += 1) {
@@ -677,11 +379,14 @@ ${themeSel} .chat-wrap {
         if (typeof window.applyLightImageOverlayMeta === 'function') {
           window.applyLightImageOverlayMeta();
         }
+        if (typeof window.syncMetaSpacers === 'function') {
+          window.syncMetaSpacers();
+        }
         if (typeof window.fixIosMetaOverlap === 'function') {
           window.fixIosMetaOverlap();
         }
       }, top);
-      await waitForFontsAndPaintStable(page);
+      await waitForFontsAndPaintStable(page, platformKey);
       let buf = await phone.screenshot({
         type: 'png',
         scale: 'device',
@@ -689,17 +394,106 @@ ${themeSel} .chat-wrap {
         caret: 'hide',
         omitBackground: useNativeComposite,
       });
+      /** Чистый chrome без ленты — для restore status/пилюль без обломков текста */
+      let chromeShotBuf = null;
+      if (useNativeComposite && platformKey === 'android') {
+        await page.evaluate(() => {
+          var chat = document.getElementById('chat');
+          if (chat) chat.style.visibility = 'hidden';
+        });
+        chromeShotBuf = await phone.screenshot({
+          type: 'png',
+          scale: 'device',
+          animations: 'disabled',
+          caret: 'hide',
+          omitBackground: true,
+        });
+        await page.evaluate(() => {
+          var chat = document.getElementById('chat');
+          if (chat) chat.style.visibility = '';
+        });
+      }
       if (useNativeComposite && compositeSourceBuf) {
         const ovMeta = await sharp(buf).metadata();
         let overlayBuf = buf;
-        if (ovMeta.width !== nativeW || ovMeta.height !== nativeH) {
+        if (
+          ovMeta.width &&
+          ovMeta.height &&
+          (ovMeta.width !== nativeW || ovMeta.height !== nativeH)
+        ) {
+          /* Только если Chromium дал ±N px — nearest, без Lanczos-мыла */
           overlayBuf = await sharp(buf)
-            .resize(nativeW, nativeH, { fit: 'fill', kernel: sharp.kernel.lanczos3 })
+            .resize(nativeW, nativeH, {
+              fit: 'fill',
+              kernel: sharp.kernel.nearest,
+            })
             .ensureAlpha()
             .png()
             .toBuffer();
         } else {
           overlayBuf = await sharp(buf).ensureAlpha().png().toBuffer();
+        }
+        if (chromeShotBuf) {
+          const cm = await sharp(chromeShotBuf).metadata();
+          if (
+            cm.width &&
+            cm.height &&
+            (cm.width !== nativeW || cm.height !== nativeH)
+          ) {
+            chromeShotBuf = await sharp(chromeShotBuf)
+              .resize(nativeW, nativeH, {
+                fit: 'fill',
+                kernel: sharp.kernel.nearest,
+              })
+              .ensureAlpha()
+              .png()
+              .toBuffer();
+          } else {
+            chromeShotBuf = await sharp(chromeShotBuf).ensureAlpha().png().toBuffer();
+          }
+        }
+        const chromeTop = Math.round(nativeH * 0.0395);
+        const chromeH = Math.round(nativeW * (88 / 1374));
+        const pillH = Math.round(chromeH * 1.8);
+        const headerBottom = chromeTop + pillH;
+        /* chrome (status+пилюли) не densify — иначе ореолы у иконок/ника */
+        overlayBuf = await densifyOverlayGlyphs(overlayBuf, {
+          skipTop: platformKey === 'android' ? headerBottom : 0,
+        });
+        const chromeSide = Math.round(nativeW * (18 / 1374));
+        const chromeGap = Math.round(nativeW * (10 / 1374));
+        const titleAvatarGap = 2;
+        const titleAvatar = Math.max(1, pillH - titleAvatarGap * 2);
+        const titlePadStart = titleAvatarGap;
+        const avatarCircle = {
+          cx: chromeSide + pillH + chromeGap + titlePadStart + titleAvatar / 2,
+          cy: pillH / 2,
+          r: titleAvatar / 2 + 3,
+        };
+        const chromeKeepOpts = { avatarCircle, statusKeepRects };
+        const blurSigma = Math.max(30, Math.min(50, pillH / 2.6));
+        /** @type {Buffer | null} */
+        let chromeOnlyOverlay = null;
+        /** @type {Buffer | null} */
+        let statusRestoreBuf = null;
+        if (platformKey === 'android' && nativeW > 0 && nativeH > 0) {
+          /* status/пилюли с кадра без ленты — никаких обломков «для» в трее */
+          const chromeSrc = chromeShotBuf || overlayBuf;
+          if (chromeTop > 4) {
+            statusRestoreBuf = await sharp(chromeSrc)
+              .extract({ left: 0, top: 0, width: nativeW, height: chromeTop })
+              .png()
+              .toBuffer();
+          }
+          chromeOnlyOverlay = await stripOverlayMessagesInHeaderBand(
+            chromeSrc,
+            0,
+            headerBottom,
+            chromeTop,
+            chromeKeepOpts
+          );
+          /* в status — только обои+frost; сообщения оставляем под пилюлями для blur */
+          overlayBuf = await clearOverlayBand(overlayBuf, 0, chromeTop);
         }
         let pipe = sharp(compositeSourceBuf).composite([
           { input: overlayBuf, left: 0, top: 0, blend: 'over' },
@@ -708,6 +502,69 @@ ${themeSel} .chat-wrap {
           pipe = pipe.withMetadata({ density: compositeMeta.density });
         }
         buf = await pipe.png().toBuffer();
+        if (platformKey === 'android' && nativeW > 0 && nativeH > 0) {
+          /*
+           * Frost-glass поверх сообщений под хедером (как Telegram),
+           * с запасом ниже пилюль — плавный сход. Затем острые status+пилюли.
+           */
+          const frostEnd = Math.min(nativeH, headerBottom + Math.round(pillH * 0.9));
+          /* убрать хром из кадра до frost — иначе blur даёт «обводку» у ника/иконок */
+          let frostBase = buf;
+          if (chromeOnlyOverlay && compositeSourceBuf) {
+            frostBase = await paintWallpaperWhereMask(
+              buf,
+              chromeOnlyOverlay,
+              compositeSourceBuf,
+              { y0: 0, y1: headerBottom, alphaMin: 10 }
+            );
+          }
+          buf = await applyAndroidHeaderBlurZone(frostBase, {
+            y0: 0,
+            y1: frostEnd,
+            solidUntil: Math.max(chromeTop, headerBottom - Math.round(pillH * 0.35)),
+            statusH: chromeTop,
+            solidH: Math.max(chromeTop, headerBottom - Math.round(pillH * 0.35)),
+            sigma: Math.max(56, Math.min(90, blurSigma * 1.75)),
+            mode: 'under-chrome',
+            blurSource: frostBase,
+          });
+          if (chromeOnlyOverlay || statusRestoreBuf) {
+            const restore = [];
+            if (statusRestoreBuf) {
+              restore.push({
+                input: statusRestoreBuf,
+                left: 0,
+                top: 0,
+                blend: 'over',
+              });
+            } else if (chromeOnlyOverlay && chromeTop > 4) {
+              restore.push({
+                input: await sharp(chromeOnlyOverlay)
+                  .extract({ left: 0, top: 0, width: nativeW, height: chromeTop })
+                  .png()
+                  .toBuffer(),
+                left: 0,
+                top: 0,
+                blend: 'over',
+              });
+            }
+            const chromeStripH = Math.min(nativeH - chromeTop, pillH);
+            if (chromeOnlyOverlay && chromeStripH > 4) {
+              restore.push({
+                input: await sharp(chromeOnlyOverlay)
+                  .extract({ left: 0, top: chromeTop, width: nativeW, height: chromeStripH })
+                  .png()
+                  .toBuffer(),
+                left: 0,
+                top: chromeTop,
+                blend: 'over',
+              });
+            }
+            if (restore.length) {
+              buf = await sharp(buf).composite(restore).png().toBuffer();
+            }
+          }
+        }
       } else {
         buf = await normalizePngToEtalonDisplay(buf, platformKey, {
           preserveNative: false,
@@ -740,3 +597,4 @@ export async function renderSceneToPng(scene, opts = {}) {
   const pages = await renderSceneToPngPages(scene, opts);
   return pages[pages.length - 1];
 }
+

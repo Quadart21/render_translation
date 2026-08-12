@@ -9,6 +9,7 @@ const userLabel = document.getElementById('user-label');
 const btnLogout = document.getElementById('btn-logout');
 const btnRender = document.getElementById('btn-render');
 const btnRenderRandom = document.getElementById('btn-render-random');
+const btnRenderRandomMultipage = document.getElementById('btn-render-random-multipage');
 const btnAddMessage = document.getElementById('btn-add-message');
 const btnAddImage = document.getElementById('btn-add-image');
 const btnAddDate = document.getElementById('btn-add-date');
@@ -607,20 +608,36 @@ function buildScenePayload() {
     items,
   };
 
-  if (platform === 'ios') {
+  /* Подложка 1:1 — без CSS-хрома и без растяжения к чужому эталону */
+  scene.compositeScreenshot =
+    platform === 'ios' ? 'assets/ios-substrate.jpg' : 'assets/android-substrate.jpg';
+
+  {
     const sub = document.getElementById('ios-subtitle').value.trim();
-    const badge = document.getElementById('ios-back-badge').value.trim();
-    const bat = document.getElementById('ios-battery').value.trim();
-    const header = {};
+    const header = { ...(scene.header || {}) };
     if (sub) header.subtitle = sub;
-    if (badge) header.backBadge = badge;
+    const batRaw = document.getElementById('status-battery').value.trim();
+    if (batRaw) {
+      const batNum = Number(String(batRaw).replace('%', '').trim());
+      if (Number.isFinite(batNum)) {
+        scene.statusBar.battery = String(Math.max(0, Math.min(100, Math.round(batNum))));
+      }
+    }
+    if (platform === 'ios') {
+      const badge = document.getElementById('ios-back-badge').value.trim();
+      if (badge) header.backBadge = badge;
+    }
     if (Object.keys(header).length) scene.header = header;
-    if (bat) scene.statusBar.battery = bat;
   }
 
   if (chkPinned.checked) {
     const pt = pinnedText.value.trim();
     if (pt) scene.pinned = { text: pt };
+  }
+
+  /* На подложке pinned уже не рисуем — убираем, чтобы не мешал оверлею */
+  if (scene.compositeScreenshot) {
+    delete scene.pinned;
   }
 
   const payload = { ...scene };
@@ -635,7 +652,7 @@ function initFormDefaults() {
   document.getElementById('name-me').value = '';
   document.getElementById('ios-subtitle').value = '';
   document.getElementById('ios-back-badge').value = '';
-  document.getElementById('ios-battery').value = '';
+  document.getElementById('status-battery').value = '';
   chkPinned.checked = false;
   pinnedText.value = '';
   pinnedText.disabled = true;
@@ -805,6 +822,7 @@ btnRender.addEventListener('click', async () => {
   hide(renderError);
   btnRender.disabled = true;
   btnRenderRandom.disabled = true;
+  if (btnRenderRandomMultipage) btnRenderRandomMultipage.disabled = true;
   try {
     const payload = buildScenePayload();
     const r = await fetch('/api/render/scene', {
@@ -820,21 +838,23 @@ btnRender.addEventListener('click', async () => {
   } finally {
     btnRender.disabled = false;
     btnRenderRandom.disabled = false;
+    if (btnRenderRandomMultipage) btnRenderRandomMultipage.disabled = false;
   }
 });
 
-btnRenderRandom.addEventListener('click', async () => {
+async function runRandomRender({ multiPage }) {
   renderError.textContent = '';
   hide(renderError);
   btnRender.disabled = true;
   btnRenderRandom.disabled = true;
+  if (btnRenderRandomMultipage) btnRenderRandomMultipage.disabled = true;
   try {
     const platform = platformSel.value === 'ios' ? 'ios' : 'android';
     const r = await fetch('/api/render/random', {
       method: 'POST',
       credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ platform }),
+      body: JSON.stringify({ platform, multiPage: Boolean(multiPage) }),
     });
     await renderSceneFromResponse(r);
   } catch (e) {
@@ -843,8 +863,15 @@ btnRenderRandom.addEventListener('click', async () => {
   } finally {
     btnRender.disabled = false;
     btnRenderRandom.disabled = false;
+    if (btnRenderRandomMultipage) btnRenderRandomMultipage.disabled = false;
   }
-});
+}
+
+btnRenderRandom.addEventListener('click', () => runRandomRender({ multiPage: false }));
+
+if (btnRenderRandomMultipage) {
+  btnRenderRandomMultipage.addEventListener('click', () => runRandomRender({ multiPage: true }));
+}
 
 btnDocRender.addEventListener('click', async () => {
   clearDocError();

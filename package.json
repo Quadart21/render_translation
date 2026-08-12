@@ -9,6 +9,8 @@
     "bot": "node src/index.js",
     "render": "node src/cli-render.js",
     "render:random": "node src/cli-render.js random",
+    "test:golden": "node scripts/golden-render.mjs",
+    "test:golden:update": "node scripts/golden-render.mjs --update",
     "wallpaper:from-screenshot": "node scripts/extract-wallpaper-from-ui-screenshot.mjs"
   },
   "engines": {

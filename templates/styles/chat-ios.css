@@ -311,7 +311,7 @@ body {
     }
 
 .ios-nav-title {
-      font-size: 19px;
+      font-size: 22.8px;
       font-weight: 700;
       color: var(--tg-text);
       line-height: 1.2;
@@ -560,20 +560,24 @@ body {
 
 /* ?????-????????? (???????? + ??????????? ??????? ? ??????) ? ~60% ?? ??????? 240px */
     .bubble.message--media {
-      max-width: 144px;
-      width: 100%;
+      max-width: 78%;
+      width: fit-content;
       background: #1c1c1e !important;
-      border-radius: 10px !important;
-      padding: 5px !important;
+      border-radius: 12px !important;
+      padding: 2px !important;
       color: #fff;
       box-shadow: none !important;
+      box-sizing: border-box;
     }
 
 .message__image-wrap {
-      width: 100%;
-      border-radius: 7px;
+      display: block;
+      width: fit-content;
+      max-width: 100%;
+      border-radius: 10px;
       overflow: hidden;
       background: #2a2a2d;
+      line-height: 0;
     }
 
     /* ??? ???????: ????? (? ??) ?????? ????????, ??? ? Telegram */
@@ -622,9 +626,10 @@ body {
 
 .message__image {
       display: block;
-      width: 100%;
+      width: auto;
+      max-width: 100%;
       height: auto;
-      object-fit: cover;
+      object-fit: contain;
       vertical-align: middle;
     }
 
@@ -917,7 +922,8 @@ body {
 .theme-ios.phone.composite-screen-on .composite-screen-bg img {
       width: 100%;
       height: 100%;
-      object-fit: fill;
+      object-fit: contain;
+      object-position: center top;
       display: block;
     }
 
@@ -1182,9 +1188,9 @@ body {
 .theme-ios .ios-nav-title {
       font-weight: 400;
       font-synthesis: none;
-      font-size: 16px;
+      font-size: 19.2px;
       line-height: 1.2;
-    }
+}
 
 .theme-ios .ios-nav-sub {
       font-weight: 300;
@@ -1529,30 +1535,40 @@ body {
     }
 
 /*
-      iOS ? ?????? bubble--ios-a ? ios-e ?? ????? ?????? ([...text].length):
-      ios-a ?35      ? ???? ??????: ???? ????? ? ?????
-      ios-b 36?40    ? ????? ???? ?????? (nowrap), ????? ??????? ???? ??????
-      ios-c 41?75    ? ?????????????; .bubble-text inline-block (?????? ?? ????? ??????? ??????); ????? absolute ? ????
-      ios-d 76?80    ? ??? ios-c, ???? ?????? ?????? ??????
-      ios-e >80      ? ??? ios-c
-    */
+  Сценарии длины текста (bubble--ios-a…e) — каждый блок независим:
+  правка right/bottom/transform одного сценария не трогает остальные.
+  a ≤35 — время рядом с текстом (grid)
+  b 36–40 — одна строка, meta absolute
+  c 41–75 — многострочный, meta absolute
+  d 76–80 — как c, порог длины
+  e >80 — как c, порог длины
+*/
     .theme-ios .bubble.bubble--ios-a:not(.message--media) {
       display: inline-grid !important;
       grid-template-columns: max-content max-content;
       align-items: end;
-      column-gap: 7px;
-      width: max-content;
+      justify-content: start;
+      column-gap: 2px;
+      width: fit-content;
       max-width: 100%;
       min-width: min-content;
       vertical-align: top;
       box-sizing: border-box;
       border-radius: 22px;
+      overflow: hidden;
+    }
+
+.theme-ios .bubble.bubble--ios-a:not(.message--media)::after {
+      display: none !important;
+      content: none !important;
     }
 
 .theme-ios .bubble.bubble--ios-a:not(.message--media) .bubble-text {
       display: block;
       grid-column: 1;
+      flex: none !important;
       min-width: 0;
+      max-width: none !important;
       white-space: nowrap;
       word-break: normal;
       overflow-wrap: normal;
@@ -1563,9 +1579,22 @@ body {
       display: inline-flex;
       grid-column: 2;
       align-self: end;
-      transform: translateY(3px);
+      align-items: center;
+      transform: none;
       white-space: nowrap;
       margin-left: 0;
+      gap: 2px;
+    }
+
+.theme-ios .row.out .bubble.bubble--ios-a:not(.message--media) {
+      padding-right: 20px !important;
+    }
+
+.theme-ios .row.out .bubble.bubble--ios-a:not(.message--media) .meta {
+      margin-right: 0;
+      transform: none !important;
+      align-items: center;
+      gap: 2px;
     }
 
 .theme-ios .bubble.bubble--ios-b:not(.message--media) {
@@ -1588,7 +1617,7 @@ body {
       word-break: normal;
       overflow-wrap: normal;
       font-weight: 300;
-      padding-bottom: 4px;
+      padding-bottom: 0;
       padding-right: 2px;
     }
 
@@ -1599,38 +1628,57 @@ body {
       bottom: 6px;
       margin: 0;
       white-space: nowrap;
-      transform: translateY(-4px);
+      transform: none;
     }
 
 .theme-ios .bubble.bubble--ios-c:not(.message--media) {
-      display: inline-flex !important;
-      flex-direction: column;
-      align-items: flex-start;
+      display: block !important;
       position: relative;
       width: fit-content;
       max-width: 100%;
       vertical-align: top;
       text-align: left;
-      direction: ltr;
       box-sizing: border-box;
       overflow: hidden;
       border-radius: 22px;
     }
 
 /*
-      ios-c / ios-d / ios-e: ?????? ?????? ? ?????? ??? ? ????????????? (ios-b) ?
-      intrinsic ????? ??????? ?????? (max-content), ??? ???????????? ?? ??? bubble-col.
-    */
-    .theme-ios .bubble.bubble--ios-c:not(.message--media) .bubble-text,
-    .theme-ios .bubble.bubble--ios-d:not(.message--media) .bubble-text,
-    .theme-ios .bubble.bubble--ios-e:not(.message--media) .bubble-text {
+  c/d/e: absolute без лишнего padding — время на линии с последней строкой.
+  Карман только через .meta-corner-tuck.
+*/
+.theme-ios .bubble.bubble--ios-c:not(.message--media) .bubble-text {
       display: block;
       width: max-content;
       max-width: 100%;
       word-break: break-word;
       overflow-wrap: break-word;
       font-weight: 300;
-      padding-bottom: 4px;
+      padding-bottom: 0;
+      padding-right: 2px;
+      box-sizing: border-box;
+    }
+
+.theme-ios .bubble.bubble--ios-d:not(.message--media) .bubble-text {
+      display: block;
+      width: max-content;
+      max-width: 100%;
+      word-break: break-word;
+      overflow-wrap: break-word;
+      font-weight: 300;
+      padding-bottom: 0;
+      padding-right: 2px;
+      box-sizing: border-box;
+    }
+
+.theme-ios .bubble.bubble--ios-e:not(.message--media) .bubble-text {
+      display: block;
+      width: max-content;
+      max-width: 100%;
+      word-break: break-word;
+      overflow-wrap: break-word;
+      font-weight: 300;
+      padding-bottom: 0;
       padding-right: 2px;
       box-sizing: border-box;
     }
@@ -1638,18 +1686,17 @@ body {
 .theme-ios .bubble.bubble--ios-c:not(.message--media) .meta {
       display: inline-flex;
       position: absolute;
+      float: none;
       right: 10px;
       bottom: 6px;
-      float: none !important;
       margin: 0;
       white-space: nowrap;
-      transform: translateY(-4px);
+      transform: none;
+      z-index: 2;
     }
 
 .theme-ios .bubble.bubble--ios-d:not(.message--media) {
-      display: inline-flex !important;
-      flex-direction: column;
-      align-items: flex-start;
+      display: block !important;
       width: fit-content;
       max-width: 100%;
       position: relative;
@@ -1660,24 +1707,23 @@ body {
     }
 
 .theme-ios .bubble.bubble--ios-d:not(.message--media) .meta {
+      display: inline-flex;
       position: absolute;
+      float: none;
       right: 10px;
       bottom: 6px;
-      margin-left: 0;
+      margin: 0;
       white-space: nowrap;
-      transform: translateY(-4px);
+      transform: none;
+      z-index: 2;
     }
 
 .theme-ios .bubble.bubble--ios-e:not(.message--media) {
-      display: inline-flex !important;
-      flex-direction: column;
-      align-items: flex-start;
+      display: block !important;
       position: relative;
       width: fit-content;
       max-width: 100%;
       vertical-align: top;
-      text-align: left;
-      direction: ltr;
       box-sizing: border-box;
       overflow: hidden;
       border-radius: 22px;
@@ -1686,29 +1732,73 @@ body {
 .theme-ios .bubble.bubble--ios-e:not(.message--media) .meta {
       display: inline-flex;
       position: absolute;
+      float: none;
       right: 10px;
       bottom: 6px;
-      float: none !important;
       margin: 0;
       white-space: nowrap;
-      transform: translateY(-4px);
+      transform: none;
+      z-index: 2;
     }
 
-/* Fallback: если time/meta пересекает текст, уводим meta на отдельную строку */
-.theme-ios .bubble.meta-on-new-line:not(.message--media) .bubble-text {
-      padding-right: 0 !important;
-      padding-bottom: 0 !important;
-    }
-
+/* Устарело */
 .theme-ios .bubble.meta-on-new-line:not(.message--media) .meta {
-      position: static !important;
-      right: auto !important;
+      position: absolute !important;
+      right: 10px !important;
+      bottom: 6px !important;
       top: auto !important;
-      bottom: auto !important;
+      left: auto !important;
+      margin: 0 !important;
       transform: none !important;
-      margin-top: -3px !important;
-      margin-left: 0 !important;
-      align-self: flex-end;
+      z-index: 2;
+    }
+
+/*
+  Последняя строка на всю ширину — маленький карман, не новая строка.
+*/
+.theme-ios .bubble.meta-corner-tuck:not(.message--media) {
+      display: block !important;
+      position: relative !important;
+      width: fit-content;
+      max-width: 100%;
+      grid-template-columns: none !important;
+    }
+
+.theme-ios .bubble.meta-corner-tuck:not(.message--media) .bubble-text {
+      display: block !important;
+      grid-column: auto !important;
+      width: max-content;
+      max-width: 100%;
+      white-space: pre-wrap !important;
+      word-break: break-word !important;
+      overflow-wrap: break-word !important;
+      padding-bottom: 8px !important;
+      padding-right: 2px !important;
+      box-sizing: border-box;
+    }
+
+.theme-ios .bubble.meta-corner-tuck:not(.message--media) .meta {
+      position: absolute !important;
+      float: none !important;
+      display: inline-flex !important;
+      grid-column: auto !important;
+      right: 10px !important;
+      bottom: 5px !important;
+      top: auto !important;
+      left: auto !important;
+      margin: 0 !important;
+      transform: none !important;
+      align-self: auto !important;
+      z-index: 2;
+    }
+
+.theme-ios .row.out .bubble.meta-corner-tuck:not(.message--media) .meta {
+      right: 12px !important;
+      bottom: 5px !important;
+    }
+
+.theme-ios .row.in .bubble.meta-corner-tuck:not(.message--media) .meta {
+      right: 8px !important;
     }
 
 .theme-ios .bubble {
@@ -1720,11 +1810,20 @@ body {
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.14);
     }
 
-/* ?????????? ?????: ?????? ?????? padding ?????? ? ??? ?????? ?????? ??? ?????? */
-    .theme-ios .bubble.bubble--ios-b:not(.message--media),
-    .theme-ios .bubble.bubble--ios-c:not(.message--media),
-    .theme-ios .bubble.bubble--ios-d:not(.message--media),
-    .theme-ios .bubble.bubble--ios-e:not(.message--media) {
+/* Padding по сценариям — каждый независимо */
+.theme-ios .bubble.bubble--ios-b:not(.message--media) {
+      padding: 8px 11px 5px 11px;
+    }
+
+.theme-ios .bubble.bubble--ios-c:not(.message--media) {
+      padding: 8px 11px 5px 11px;
+    }
+
+.theme-ios .bubble.bubble--ios-d:not(.message--media) {
+      padding: 8px 11px 5px 11px;
+    }
+
+.theme-ios .bubble.bubble--ios-e:not(.message--media) {
       padding: 8px 11px 5px 11px;
     }
 
@@ -1761,30 +1860,63 @@ body {
       font-size: 10px;
       gap: 2px;
       line-height: 1;
+      align-items: center;
     }
 
 .theme-ios .row.out .bubble .checks {
       margin-left: 0;
+      height: 1em;
+      height: 1cap;
+      align-items: center;
     }
 
 /*
-      ????????? ???? ?????? (ios-b): ??????? ?????? ?? ??????? ????.
-      ????????? 2+ ?????? (ios-c/d/e): ???? ???? ?????? + ???????? ????? ? ??????? ??????? ???? (?????? inline-flex, ??? ????????).
-    */
-    .theme-ios .row.out .bubble.bubble--ios-b:not(.message--media) .meta {
-      right: 23px;
-      bottom: 4px;
-      transform: translateY(0);
+  Исходящие: время левее — место под галочки.
+  Входящие: время правее, ближе к краю.
+*/
+.theme-ios .row.out .bubble.bubble--ios-b:not(.message--media) .meta {
+      right: 12px;
+      bottom: 6px;
+      transform: none;
     }
 
-.theme-ios .row.out .bubble.bubble--ios-c:not(.message--media) .meta,
-    .theme-ios .row.out .bubble.bubble--ios-d:not(.message--media) .meta,
-    .theme-ios .row.out .bubble.bubble--ios-e:not(.message--media) .meta {
-      right: 8px;
-      bottom: 8px;
+.theme-ios .row.out .bubble.bubble--ios-c:not(.message--media) .meta {
+      right: 12px;
+      bottom: 6px;
       transform: none;
       align-items: center;
       z-index: 2;
+    }
+
+.theme-ios .row.out .bubble.bubble--ios-d:not(.message--media) .meta {
+      right: 12px;
+      bottom: 6px;
+      transform: none;
+      align-items: center;
+      z-index: 2;
+    }
+
+.theme-ios .row.out .bubble.bubble--ios-e:not(.message--media) .meta {
+      right: 12px;
+      bottom: 6px;
+      transform: none;
+      align-items: center;
+      z-index: 2;
+    }
+
+.theme-ios .row.in .bubble.bubble--ios-b:not(.message--media) .meta,
+.theme-ios .row.in .bubble.bubble--ios-c:not(.message--media) .meta,
+.theme-ios .row.in .bubble.bubble--ios-d:not(.message--media) .meta,
+.theme-ios .row.in .bubble.bubble--ios-e:not(.message--media) .meta {
+      right: 8px;
+    }
+
+.theme-ios .row.out .bubble:not(.message--media) {
+      padding-right: 12px;
+    }
+
+.theme-ios .row.in .bubble:not(.message--media) {
+      padding-right: 10px;
     }
 
 .theme-ios .checks {
@@ -1792,11 +1924,28 @@ body {
     }
 
 .theme-ios .bubble.message--media {
-      border-bottom-left-radius: 10px !important;
-      border-bottom-right-radius: 10px !important;
+      border-bottom-left-radius: 12px !important;
+      border-bottom-right-radius: 12px !important;
       backdrop-filter: none;
       -webkit-backdrop-filter: none;
+      width: fit-content;
+      max-width: 78%;
+      padding: 2px !important;
     }
+
+.theme-ios .bubble.message--media .message__image-wrap {
+      border-radius: 10px;
+      overflow: hidden;
+      line-height: 0;
+}
+
+.theme-ios .bubble.message--media .message__image {
+      width: auto;
+      max-width: 100%;
+      height: auto;
+      max-height: 280px;
+      object-fit: contain;
+}
 
 .theme-ios .bubble.message--media .meta {
       font-size: 8.25px;

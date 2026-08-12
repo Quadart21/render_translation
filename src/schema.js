@@ -4,6 +4,7 @@
  *
  * @typedef {Object} StatusBar
  * @property {string} time  Время в строке состояния (например "14:32")
+ * @property {string|number} [battery]  Заряд 0–100; на Android — цифры и заливка, на iOS — цифры на трее
  *
  * @typedef {Object} Participant
  * @property {string} id

@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { listRootImagePaths, pickRandomImages } from '../lib/rootImages.js';
+import { listRootImagePaths, listChatPhotoPaths, pickRandomImages } from '../lib/rootImages.js';
 import { twoUniqueNicknames } from '../lib/russianNicknames.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -37,7 +37,7 @@ function randomInt(min, max) {
   return min + Math.floor(Math.random() * (max - min + 1));
 }
 
-function buildMultiPageItems(baseItems, targetPages) {
+function buildMultiPageItems(baseItems, targetPages, photoPool = []) {
   const baseTexts = (baseItems || [])
     .filter((it) => it?.type === 'text' && it?.text)
     .map((it) => String(it.text).trim())
@@ -48,6 +48,7 @@ function buildMultiPageItems(baseItems, targetPages) {
   const totalMessages = randomInt(minMsg, maxMsg);
   const items = [{ type: 'date', label: DATE_LABELS[randomInt(0, DATE_LABELS.length - 1)] }];
   let time = '14:08';
+  const photos = Array.isArray(photoPool) ? photoPool.filter(Boolean) : [];
 
   for (let i = 0; i < totalMessages; i += 1) {
     if (i > 0 && i % 14 === 0) {
@@ -55,10 +56,10 @@ function buildMultiPageItems(baseItems, targetPages) {
       time = addMinutes(time, randomInt(8, 18));
     }
     const from = i % 2 === 0 ? 'bank' : 'me';
-    const isImage = Math.random() < 0.14;
+    const isImage = photos.length > 0 && Math.random() < 0.14;
     if (isImage) {
-      // Без подписи и кнопки: в интерфейсе эти поля не используются.
-      items.push({ type: 'image', from, time, src: null });
+      const src = photos[randomInt(0, photos.length - 1)];
+      items.push({ type: 'image', from, time, src });
     } else {
       const text = textPool[randomInt(0, textPool.length - 1)];
       items.push({ type: 'text', from, time, text });
@@ -70,7 +71,12 @@ function buildMultiPageItems(baseItems, targetPages) {
 
 /**
  * Берёт sample-сцену, подставляет случайные русские ники и аватарки из картинок в корне проекта.
- * @param {{ platform?: 'android'|'ios', projectRoot?: string }} [opts]
+ * @param {{
+ *   platform?: 'android'|'ios',
+ *   projectRoot?: string,
+ *   multiPage?: boolean,
+ *   pages?: number,
+ * }} [opts]
  * @returns {Promise<object>}
  */
 export async function buildRandomScene(opts = {}) {
@@ -81,6 +87,7 @@ export async function buildRandomScene(opts = {}) {
   if (opts.platform) scene.platform = opts.platform;
 
   const images = listRootImagePaths(projectRoot);
+  const chatPhotos = listChatPhotoPaths(projectRoot);
   const [imgLeft, imgRight] = pickRandomImages(images, 2);
   const [nameLeft, nameRight] = twoUniqueNicknames();
 
@@ -98,30 +105,43 @@ export async function buildRandomScene(opts = {}) {
       imgRight ?? imgLeft ?? null;
   }
 
-  // В случайных примерах делаем длинную историю (2-4 страниц).
-  const targetPages = randomInt(2, 4);
-  scene.items = buildMultiPageItems(scene.items, targetPages);
+  const multiPage = opts.multiPage !== false;
+  const targetPages = multiPage
+    ? Math.min(4, Math.max(2, Number(opts.pages) || randomInt(2, 4)))
+    : 1;
+  const chatPhotoPool = pickRandomImages(
+    chatPhotos,
+    Math.min(12, Math.max(1, chatPhotos.length))
+  );
+
+  if (multiPage) {
+    // Длинная история на 2–4 экрана (скролл в рендерере).
+    scene.items = buildMultiPageItems(scene.items, targetPages, chatPhotoPool);
+  } else if (Array.isArray(scene.items) && scene.items.length > 12) {
+    scene.items = scene.items.slice(0, 12);
+  }
 
   // Страховка: даже если в seed есть старые поля медиа, убираем их.
   scene.items = scene.items.map((item) => {
     if (item?.type !== 'image') return item;
     const { caption, action, ...rest } = item;
+    if (!rest.src && chatPhotoPool.length) {
+      rest.src = chatPhotoPool[randomInt(0, chatPhotoPool.length - 1)];
+    }
     return rest;
   });
 
-  // Подложка 1:1: Android = 113305, iPhone = 111458. Только переписка поверх.
+  // Подложка 1:1: Android = substrate, iPhone = substrate. Только переписка поверх.
   if (scene.platform === 'android') {
     scene.compositeScreenshot = 'assets/android-substrate.jpg';
     delete scene.pinned;
-    if (Array.isArray(scene.items) && scene.items.length > 12) {
-      scene.items = scene.items.slice(0, 12);
-    }
   } else if (scene.platform === 'ios') {
     scene.compositeScreenshot = 'assets/ios-substrate.jpg';
     delete scene.pinned;
-    if (Array.isArray(scene.items) && scene.items.length > 12) {
-      scene.items = scene.items.slice(0, 12);
-    }
+  }
+
+  if (multiPage) {
+    scene.meta = { ...(scene.meta || {}), multiPage: true, targetPages };
   }
 
   return scene;

@@ -1,0 +1,61 @@
+{
+  "platform": "ios",
+  "compositeScreenshot": "assets/ios-substrate.jpg",
+  "statusBar": {
+    "time": "14:32"
+  },
+  "header": {
+    "subtitle": ""
+  },
+  "participants": [
+    {
+      "id": "bank",
+      "name": "Ромчик",
+      "side": "left",
+      "avatar": null
+    },
+    {
+      "id": "me",
+      "name": "Вы",
+      "side": "right",
+      "avatar": null
+    }
+  ],
+  "items": [
+    {
+      "type": "date",
+      "label": "сегодня"
+    },
+    {
+      "type": "text",
+      "from": "me",
+      "time": "14:18",
+      "text": "Привет! По рекламе ещё свободно окно на сегодня?"
+    },
+    {
+      "type": "text",
+      "from": "bank",
+      "time": "14:19",
+      "text": "Да, есть. Пришлите креатив и условия оплаты."
+    },
+    {
+      "type": "image",
+      "from": "me",
+      "time": "14:20",
+      "src": "assets/chat-photos/creative-1.jpg",
+      "caption": "Креатив v1"
+    },
+    {
+      "type": "image",
+      "from": "bank",
+      "time": "14:21",
+      "src": "assets/chat-photos/receipt-1.jpg"
+    },
+    {
+      "type": "text",
+      "from": "me",
+      "time": "14:22",
+      "text": "Ок, жду подтверждение."
+    }
+  ]
+}

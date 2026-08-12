@@ -84,9 +84,18 @@
                 <span class="field-label">Время в статус-баре</span>
                 <input type="text" id="status-time" class="input" placeholder="14:32" maxlength="8" />
               </label>
-              <label class="field ios-only-row hidden">
-                <span class="field-label">Заряд (%, опционально)</span>
-                <input type="text" id="ios-battery" class="input" placeholder="17" maxlength="6" />
+              <label class="field">
+                <span class="field-label">Заряд батареи (%)</span>
+                <input
+                  type="number"
+                  id="status-battery"
+                  class="input"
+                  placeholder="авто"
+                  min="1"
+                  max="100"
+                  step="1"
+                  inputmode="numeric"
+                />
               </label>
             </div>
 
@@ -104,12 +113,12 @@
               </label>
             </div>
 
-            <div class="form-grid form-grid-2 ios-only-row hidden">
+            <div class="form-grid form-grid-2">
               <label class="field">
-                <span class="field-label">Подпись под именем (только iOS)</span>
-                <input type="text" id="ios-subtitle" class="input" placeholder="Пусто → случайно Онлайн или был(а) недавно" />
+                <span class="field-label">Подпись под именем</span>
+                <input type="text" id="ios-subtitle" class="input" placeholder="Пусто → в сети / был недавно / печатает..." />
               </label>
-              <label class="field">
+              <label class="field ios-only-row hidden">
                 <span class="field-label">Число у стрелки «назад»</span>
                 <input type="text" id="ios-back-badge" class="input" placeholder="16549" />
               </label>
@@ -165,7 +174,8 @@
           </div>
           <div class="form-actions">
           <button type="button" id="btn-render" class="btn btn-primary">Сгенерировать PNG</button>
-          <button type="button" id="btn-render-random" class="btn btn-ghost" title="Случайные имена, текст из примера и аватарки из корня">Случайный пример</button>
+          <button type="button" id="btn-render-random" class="btn btn-ghost" title="Короткий случайный пример (один экран)">Случайный пример</button>
+          <button type="button" id="btn-render-random-multipage" class="btn btn-ghost" title="Длинная переписка на 2–4 экрана">Случайный многостраничный</button>
           </div>
           </section>
 

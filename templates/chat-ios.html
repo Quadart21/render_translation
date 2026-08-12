@@ -360,29 +360,53 @@
       }
       window.applyLightImageOverlayMeta = applyLightImageOverlayMeta;
 
+      /**
+       * Если на последней строке есть место под время — оставляем на этой линии.
+       * Если нет — .meta-corner-tuck (маленький карман, не новая строка).
+       */
       function fixIosMetaOverlap() {
-        var sel =
-          '.bubble.bubble--ios-b:not(.message--media), ' +
-          '.bubble.bubble--ios-c:not(.message--media), ' +
-          '.bubble.bubble--ios-d:not(.message--media), ' +
-          '.bubble.bubble--ios-e:not(.message--media)';
-        var bubbles = chat.querySelectorAll(sel);
+        var bubbles = chat.querySelectorAll('.bubble:not(.message--media)');
+        var minGap = 6;
         for (var i = 0; i < bubbles.length; i++) {
           var bubble = bubbles[i];
           var textEl = bubble.querySelector('.bubble-text');
           var metaEl = bubble.querySelector('.meta');
           if (!textEl || !metaEl) continue;
+
+          bubble.classList.remove('meta-corner-tuck');
           bubble.classList.remove('meta-on-new-line');
-          var tr = textEl.getBoundingClientRect();
-          var mr = metaEl.getBoundingClientRect();
-          var intersects = !(
-            mr.left >= tr.right ||
-            mr.right <= tr.left ||
-            mr.top >= tr.bottom ||
-            mr.bottom <= tr.top
-          );
-          if (intersects) {
-            bubble.classList.add('meta-on-new-line');
+
+          /* однострочный a — не уводим в corner-tuck */
+          if (bubble.classList.contains('bubble--ios-a')) continue;
+
+          var metaW = metaEl.offsetWidth || metaEl.getBoundingClientRect().width;
+          if (!(metaW > 0)) continue;
+
+          var col = bubble.closest('.bubble-col') || bubble.parentElement;
+          var maxW = col ? col.clientWidth : bubble.clientWidth;
+          var cs = window.getComputedStyle(bubble);
+          var padL = parseFloat(cs.paddingLeft) || 0;
+          var padR = parseFloat(cs.paddingRight) || 0;
+
+          var rects = [];
+          for (var n = 0; n < textEl.childNodes.length; n++) {
+            var node = textEl.childNodes[n];
+            if (node === metaEl) continue;
+            if (node.nodeType === 3 && String(node.textContent || '').length) {
+              var range = document.createRange();
+              range.selectNodeContents(node);
+              var list = range.getClientRects();
+              for (var r = 0; r < list.length; r++) rects.push(list[r]);
+            }
+          }
+          if (!rects.length) continue;
+
+          var last = rects[rects.length - 1];
+          var bubbleLeft = bubble.getBoundingClientRect().left;
+          var lastLineW = last.right - (bubbleLeft + padL);
+          var avail = maxW - padL - padR - lastLineW;
+          if (avail < metaW + minGap) {
+            bubble.classList.add('meta-corner-tuck');
           }
         }
       }
@@ -411,9 +435,10 @@
         var bubble = document.createElement('div');
         bubble.className = 'bubble';
         var imageWrap = null;
+        var bubbleText = null;
 
         if (item.type === 'text') {
-          var bubbleText = document.createElement('span');
+          bubbleText = document.createElement('span');
           bubbleText.className = 'bubble-text';
           bubbleText.textContent = item.text || '';
           bubble.appendChild(bubbleText);
@@ -469,6 +494,8 @@
         if (item.type === 'image' && imageWrap && !hasImageCaption) {
           imageWrap.classList.add('message__image-wrap--overlay');
           imageWrap.appendChild(meta);
+        } else if (bubbleText) {
+          bubbleText.appendChild(meta);
         } else {
           bubble.appendChild(meta);
         }
