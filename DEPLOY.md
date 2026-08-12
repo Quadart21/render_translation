@@ -49,7 +49,7 @@ docker compose exec app ls -la /app/avatar
 | Статус | `docker compose ps` |
 | Логи приложения | `docker compose logs -f app` |
 | Логи nginx | `docker compose logs -f nginx` |
-| Обновление после `git pull` | `bash docker/scripts/update.sh` |
+| Обновление (pull + rebuild) | `bash docker/scripts/update.sh` |
 | Перезапуск | `docker compose restart app nginx` |
 | Telegram-бот (опционально) | `docker compose --profile bot up -d bot` |
 | Автообновление SSL | `docker compose --profile certbot up -d certbot` |

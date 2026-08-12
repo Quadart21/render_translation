@@ -186,8 +186,31 @@ function accessPayloadFor(userId) {
   };
 }
 
+function readDeployMeta() {
+  let version = '0.0.0';
+  try {
+    const pkg = JSON.parse(fs.readFileSync(path.join(projectRoot, 'package.json'), 'utf8'));
+    if (pkg?.version) version = String(pkg.version);
+  } catch {
+    /* ignore */
+  }
+  const commit =
+    process.env.GIT_COMMIT ||
+    process.env.SOURCE_COMMIT ||
+    (() => {
+      try {
+        return fs.readFileSync(path.join(projectRoot, '.git-commit'), 'utf8').trim();
+      } catch {
+        return '';
+      }
+    })();
+  return { version, commit: commit || undefined };
+}
+
+const DEPLOY_META = readDeployMeta();
+
 app.get('/api/health', (_req, res) => {
-  res.json({ ok: true, service: 'render-screen' });
+  res.json({ ok: true, service: 'render-screen', ...DEPLOY_META });
 });
 
 app.get('/api/config', (_req, res) => {
