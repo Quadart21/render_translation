@@ -316,6 +316,18 @@ function mountTelegramWidget(botUsername) {
 
 async function initUi() {
   const cfg = await fetch('/api/config').then((r) => r.json());
+  const avatarHint = document.getElementById('avatar-pool-hint');
+  if (avatarHint) {
+    const n = Number(cfg.avatarPoolSize) || 0;
+    if (n > 0) {
+      avatarHint.textContent = `Доступно аватарок: ${n}`;
+      avatarHint.classList.remove('error');
+    } else {
+      avatarHint.textContent =
+        'Папка avatar/ пуста — галочка случайных аватарок не сработает, пока не положите туда JPG/PNG.';
+      avatarHint.classList.add('error');
+    }
+  }
 
   if (!cfg.authEnabled) {
     hide(panelLoading);

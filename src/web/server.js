@@ -7,6 +7,7 @@ import express from 'express';
 import { renderSceneToPngPages } from '../renderer/render.js';
 import { renderDocumentToPdf } from '../renderer/renderDocument.js';
 import { applyRandomAvatars } from '../scene/applyRandomAvatars.js';
+import { listAvatarImagePaths } from '../lib/rootImages.js';
 import { buildRandomScene } from '../scene/buildRandomScene.js';
 import {
   parseTelegramIdWhitelist,
@@ -36,7 +37,13 @@ const AUTH_ENABLED = readAuthEnabled();
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const SESSION_SECRET = process.env.SESSION_SECRET || 'change-me-in-production';
 const TELEGRAM_BOT_USERNAME = process.env.TELEGRAM_BOT_USERNAME || '';
-const AVATAR_IMAGE_ROOT = process.env.AVATAR_IMAGE_ROOT || projectRoot;
+/** Предпочтительный каталог аватарок; при пустом/битом пути есть fallback в projectRoot/avatar */
+const AVATAR_IMAGE_ROOT = (() => {
+  const raw = process.env.AVATAR_IMAGE_ROOT;
+  if (raw == null || String(raw).trim() === '') return projectRoot;
+  const trimmed = String(raw).trim();
+  return path.isAbsolute(trimmed) ? trimmed : path.join(projectRoot, trimmed);
+})();
 const ACCESS_STORE_PATH = process.env.AUTH_ACCESS_FILE
   ? (path.isAbsolute(process.env.AUTH_ACCESS_FILE)
     ? process.env.AUTH_ACCESS_FILE
@@ -214,11 +221,13 @@ app.get('/api/health', (_req, res) => {
 });
 
 app.get('/api/config', (_req, res) => {
+  const avatarPoolSize = listAvatarImagePaths(projectRoot, AVATAR_IMAGE_ROOT).length;
   res.json({
     authEnabled: AUTH_ENABLED,
     telegramBotUsername: TELEGRAM_BOT_USERNAME,
     hasBotUsername: Boolean(TELEGRAM_BOT_USERNAME),
     accessManagedInGui: true,
+    avatarPoolSize,
   });
 });
 
@@ -323,7 +332,8 @@ app.post('/api/render/random', requireAuth, async (req, res) => {
     const pagesRaw = Number(req.body?.pages);
     const pages = Number.isFinite(pagesRaw) ? pagesRaw : undefined;
     const scene = await buildRandomScene({
-      projectRoot: AVATAR_IMAGE_ROOT,
+      projectRoot,
+      preferredAvatarRoot: AVATAR_IMAGE_ROOT,
       platform,
       multiPage,
       pages,
@@ -365,7 +375,17 @@ app.post('/api/render/scene', requireAuth, async (req, res) => {
     }
 
     if (randomAvatars) {
-      applyRandomAvatars(scene, AVATAR_IMAGE_ROOT);
+      const avatarResult = applyRandomAvatars(scene, projectRoot, {
+        preferredRoot: AVATAR_IMAGE_ROOT,
+        force: true,
+      });
+      if (!avatarResult.poolSize) {
+        res.status(400).json({
+          error:
+            'Нет картинок для случайных аватарок. Положите JPG/PNG в каталог avatar/ (локально) или в volume /app/avatar (Docker).',
+        });
+        return;
+      }
     }
 
     const pages = await renderSceneToPngPages(scene);

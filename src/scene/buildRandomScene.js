@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { listRootImagePaths, listChatPhotoPaths, pickRandomImages } from '../lib/rootImages.js';
+import { listAvatarImagePaths, listChatPhotoPaths, pickRandomImages } from '../lib/rootImages.js';
 import { twoUniqueNicknames } from '../lib/russianNicknames.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -86,7 +86,7 @@ export async function buildRandomScene(opts = {}) {
   const scene = JSON.parse(raw);
   if (opts.platform) scene.platform = opts.platform;
 
-  const images = listRootImagePaths(projectRoot);
+  const images = listAvatarImagePaths(projectRoot, opts.preferredAvatarRoot ?? null);
   const chatPhotos = listChatPhotoPaths(projectRoot);
   const [imgLeft, imgRight] = pickRandomImages(images, 2);
   const [nameLeft, nameRight] = twoUniqueNicknames();

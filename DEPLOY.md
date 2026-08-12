@@ -74,7 +74,15 @@ docker/scripts/         # init-ssl, deploy, update, install-fresh-server
 ### Volumes
 
 - `app-data` — `data/telegram-access.json` (список доступов)
-- `app-avatars` — изображения для случайных аватаров
+- `app-avatars` — изображения для случайных аватаров (`/app/avatar` в контейнере)
+
+Чтобы галочка «Случайные аватарки» работала на сервере, положите JPG/PNG в volume:
+
+```bash
+# пример: скопировать с хоста в volume контейнера
+docker compose cp /path/to/avatars/. app:/app/avatar/
+# или одноразово смонтировать каталог хоста через docker-compose.override.yml
+```
 
 ## Проверка здоровья
 

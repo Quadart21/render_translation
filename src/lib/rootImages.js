@@ -54,22 +54,61 @@ function listFromDirs(projectRoot, dirNames) {
 }
 
 /**
- * Аватарки: корень проекта, иначе avatar/avatars.
- * @param {string} projectRoot
+ * Аватарки: корень каталога, иначе avatar/avatars внутри него.
+ * @param {string} searchRoot
  * @returns {string[]} абсолютные пути
  */
-export function listRootImagePaths(projectRoot) {
+export function listRootImagePaths(searchRoot) {
   let entries;
   try {
-    entries = fs.readdirSync(projectRoot, { withFileTypes: true });
+    entries = fs.readdirSync(searchRoot, { withFileTypes: true });
   } catch {
     return [];
   }
   const rootFiles = entries
     .filter((e) => e.isFile() && IMAGE_EXT.has(path.extname(e.name).toLowerCase()))
-    .map((e) => path.join(projectRoot, e.name));
+    .map((e) => path.join(searchRoot, e.name));
   if (rootFiles.length > 0) return rootFiles;
-  return listFromDirs(projectRoot, AVATAR_DIRS);
+  return listFromDirs(searchRoot, AVATAR_DIRS);
+}
+
+/**
+ * Ищет аватарки по нескольким корням (configured → avatar/ → projectRoot).
+ * Нужен, когда AVATAR_IMAGE_ROOT указывает на чужой/пустой путь (Docker volume, Linux path на Windows).
+ * @param {string} projectRoot
+ * @param {string | null | undefined} preferredRoot
+ * @returns {string[]}
+ */
+export function listAvatarImagePaths(projectRoot, preferredRoot) {
+  const candidates = [];
+  const push = (p) => {
+    if (p == null || p === '') return;
+    const abs = path.resolve(String(p));
+    if (!candidates.includes(abs)) candidates.push(abs);
+  };
+
+  if (preferredRoot) {
+    const raw = String(preferredRoot).trim();
+    if (raw) {
+      push(path.isAbsolute(raw) ? raw : path.join(projectRoot, raw));
+    }
+  }
+  push(path.join(projectRoot, 'avatar'));
+  push(path.join(projectRoot, 'avatars'));
+  push(projectRoot);
+
+  for (const root of candidates) {
+    let st;
+    try {
+      st = fs.statSync(root);
+    } catch {
+      continue;
+    }
+    if (!st.isDirectory()) continue;
+    const found = listRootImagePaths(root);
+    if (found.length > 0) return found;
+  }
+  return [];
 }
 
 /**
