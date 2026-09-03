@@ -1,4 +1,5 @@
 import { compositeLightTextCss } from './compositeCss.js';
+import { iosHeaderGeometry } from './iosComposite.js';
 
 /**
  * Native Android composite layout + injected CSS.
@@ -704,23 +705,30 @@ export function buildIosNativeCompositeCss({
   iosCompositeScale,
   PHONE_LOGICAL_WIDTH_CSS_PX,
 }) {
-  /* iOS как Android: masked substrate + chrome из assets/ios-chrome, dpr=1. */
+  /* Шапка: em от базового 16px×scale (iosHeaderGeometry). Композер пока от ширины ассетов. */
   const s = iosCompositeScale > 0 ? iosCompositeScale : nativeW / PHONE_LOGICAL_WIDTH_CSS_PX;
-  const chromeSide = Math.round(nativeW * (14 / 1391));
-  const statusH = Math.round(nativeH * 0.045);
-  const pillH = Math.round(nativeW * (72 / 1391) * 2.25);
-  /* зазор status → пилюли; синхронно с iosHeaderGeometry */
-  const statusPillGap = Math.round(4 * s);
-  const chromeGap = Math.round(nativeW * (8 / 1391));
+  const g = iosHeaderGeometry(nativeW, nativeH);
+  const {
+    statusH,
+    pillH,
+    navH,
+    navPadY,
+    navPadX,
+    chromeGap,
+    statusPillGap,
+    chromeSide,
+    titleFont,
+    titleStatusFont,
+    statusFont,
+    statusIcon,
+    avatar,
+  } = g;
   const composerH = Math.round(nativeW * (96 / 1391) * 1.3);
   const composerBottom = Math.round(nativeH * 0.02);
   const homeH = Math.round(nativeH * 0.01);
   /* Лента на весь экран — сообщения уходят под верхние и нижние пилюли (frost в sharp). */
   const chatTopPx = 0;
   const chatBottomPx = 0;
-  const titleFont = Math.round(pillH * 0.36);
-  const titleStatusFont = Math.round(pillH * 0.24);
-  const avatar = Math.max(1, pillH - 6);
   const fsBubble = Math.round(12.75 * s);
   const fsMeta = Math.round(8.5 * s);
   const fsDate = Math.round(10.5 * s);
@@ -735,6 +743,7 @@ export function buildIosNativeCompositeCss({
   const mediaMetaFs = Math.round(8 * s);
   const mediaCaptionFs = Math.round(9 * s);
   const mediaMaxH = Math.round(280 * s);
+  const outlineW = Math.max(1, Math.round(0.08 * g.u));
   return `<style id="native-composite-size">
 html, body {
   background: transparent !important;
@@ -781,6 +790,7 @@ ${themeSel} .chrome-header-stack {
   background:transparent !important;
   border:none !important;
   padding:0 !important;
+  font-size:${Math.round(g.u)}px !important;
 }
 ${themeSel} .chrome-header-stack::before,
 ${themeSel} .chrome-header-stack::after {
@@ -788,19 +798,22 @@ ${themeSel} .chrome-header-stack::after {
 }
 ${themeSel} .ios-status {
   display:flex !important;
-  align-items:flex-end !important;
+  align-items:center !important;
   justify-content:space-between !important;
   height:${statusH}px !important;
   min-height:${statusH}px !important;
-  padding:0 ${Math.round(6 * s)}px ${Math.round(4 * s)}px !important;
+  padding:0 ${navPadX}px !important;
   box-sizing:border-box !important;
   background:transparent !important;
+  font-size:${statusFont}px !important;
+  font-weight:600 !important;
+  color:#fff !important;
 }
 ${themeSel} .ios-time {
   display:block !important;
   color:#fff !important;
-  font-size:${Math.max(14, Math.round(statusH * 0.32))}px !important;
-  font-weight:600 !important;
+  font-size:${statusFont}px !important;
+  font-weight:700 !important;
   line-height:1 !important;
   margin:0 !important;
   transform:none !important;
@@ -813,11 +826,12 @@ ${themeSel} .ios-tray {
   display:flex !important;
   align-items:center !important;
   justify-content:flex-end !important;
+  gap:${Math.round(0.3 * g.u)}px !important;
   transform:none !important;
   margin:0 !important;
 }
 ${themeSel} .ios-status-tray-img {
-  height:${Math.max(14, Math.round(statusH * 0.34))}px !important;
+  height:${statusIcon}px !important;
   width:auto !important;
   max-width:none !important;
   opacity:1 !important;
@@ -828,25 +842,26 @@ ${themeSel} .ios-nav.telegram-topbar {
   grid-template-columns:auto minmax(0,1fr) ${pillH}px !important;
   column-gap:${chromeGap}px !important;
   align-items:center !important;
-  height:${pillH}px !important;
-  min-height:${pillH}px !important;
+  height:${navH}px !important;
+  min-height:${navH}px !important;
   margin-top:${statusPillGap}px !important;
-  padding:0 !important;
+  padding:${navPadY}px ${navPadX}px !important;
+  box-sizing:border-box !important;
   transform:none !important;
 }
 ${themeSel} .ios-back.back-pill {
   display:inline-flex !important;
   visibility:visible !important;
   align-items:center !important;
-  gap:${Math.round(4 * s)}px !important;
+  gap:${Math.round(0.25 * g.u)}px !important;
   height:${pillH}px !important;
   min-height:${pillH}px !important;
-  min-width:${pillH}px !important;
+  min-width:${Math.round(1.8 * g.u)}px !important;
   width:auto !important;
   max-width:none !important;
-  padding:0 ${Math.round(12 * s)}px 0 ${Math.round(10 * s)}px !important;
+  padding:0 ${Math.round(0.55 * g.u)}px 0 ${Math.round(0.45 * g.u)}px !important;
   border-radius:999px !important;
-  border:${Math.max(1, Math.round(1.25 * s))}px solid #272320 !important;
+  border:${outlineW}px solid #272320 !important;
   box-shadow:none !important;
   background-color:#1b1b1b !important;
   background-image:url("__IOS_BACK_PILL__") !important;
@@ -860,7 +875,7 @@ ${themeSel} .ios-back.back-pill {
 ${themeSel} .ios-back.back-pill .ios-chevron {
   display:inline-block !important;
   color:#fff !important;
-  font-size:${Math.round(pillH * 0.72)}px !important;
+  font-size:${Math.round(pillH * 0.55)}px !important;
   line-height:1 !important;
   transform:translateY(-0.06em) !important;
 }
@@ -895,9 +910,9 @@ ${themeSel} .ios-title-pill.user-pill {
   max-width:100% !important;
   height:${pillH}px !important;
   min-height:${pillH}px !important;
-  padding:0 ${Math.round(pillH * 0.32)}px !important;
+  padding:0 ${Math.round(0.55 * g.u)}px !important;
   border-radius:999px !important;
-  border:${Math.max(1, Math.round(1.25 * s))}px solid #272320 !important;
+  border:${outlineW}px solid #272320 !important;
   box-shadow:none !important;
   background-color:#1b1b1b !important;
   background-image:url("__IOS_TITLE_PILL__") !important;
@@ -910,19 +925,19 @@ ${themeSel} .ios-title-pill.user-pill {
 }
 ${themeSel} .ios-nav-title {
   font-size:${titleFont}px !important;
-  font-weight:600 !important;
+  font-weight:700 !important;
   line-height:1.15 !important;
   color:#fff !important;
 }
 ${themeSel} .ios-nav-sub {
   font-size:${titleStatusFont}px !important;
-  line-height:1.15 !important;
-  margin-top:1px !important;
+  line-height:1.2 !important;
+  margin-top:${Math.max(1, Math.round(0.05 * g.u))}px !important;
 }
 ${themeSel} .ios-nav-right {
   width:${pillH}px !important;
   height:${pillH}px !important;
-  border:${Math.max(1, Math.round(1.25 * s))}px solid #272320 !important;
+  border:${outlineW}px solid #272320 !important;
   background:transparent !important;
   transform:none !important;
   box-sizing:border-box !important;
