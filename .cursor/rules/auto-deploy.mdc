@@ -1,0 +1,34 @@
+---
+description: After code changes — commit, push, deploy to production, restart
+alwaysApply: true
+---
+
+# Auto deploy after changes
+
+When the agent finishes a set of code/style changes the user asked for, do **all** of the following before ending the turn (unless the user says not to deploy):
+
+1. **Commit** only the relevant changed files (no secrets, no `backups/`, no unrelated junk).
+2. **Push** the current branch to `origin` (`git push -u origin HEAD` if needed).
+3. **Deploy** to production host from env (see below):
+   - Path: `/opt/render-screen`
+   - `git fetch` + checkout current branch + `git reset --hard origin/<branch>`
+   - `git rev-parse --short HEAD > .git-commit`
+   - `docker compose build app && docker compose up -d --force-recreate app nginx`
+   - Verify `https://screen.norenvpn.com/api/health`
+4. **Restart local** `npm run dev` on `PORT` from `.env` (default 3001) if it was running or the user uses local preview.
+
+## Credentials (never commit, never print)
+
+Read from `.env` (gitignored):
+
+- `DEPLOY_HOST` (e.g. `144.31.218.222`)
+- `DEPLOY_USER` (e.g. `root`)
+- `DEPLOY_SSH_PASSWORD` (or SSH key if BatchMode works)
+- `DEPLOY_PATH` (default `/opt/render-screen`)
+
+If SSH key auth fails, use Paramiko with `DEPLOY_SSH_PASSWORD`. Do not echo the password in chat or logs.
+
+## Notes
+
+- Server `update.sh` may fail on interactive `git pull`; prefer `fetch` + `reset --hard origin/<branch>`.
+- Skip deploy only for pure questions / docs-only answers with no runnable change.

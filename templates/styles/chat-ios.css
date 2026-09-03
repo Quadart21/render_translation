@@ -156,7 +156,7 @@ body {
       color: #fff;
       padding: 12px 12px 8px;
       flex-shrink: 0;
-      font-size: 16px;
+      font-size: 12px;
       font-weight: 600;
       letter-spacing: -0.02em;
     }
@@ -168,7 +168,7 @@ body {
       display: flex;
       align-items: center;
       line-height: 1;
-      min-height: 18px;
+      min-height: 16px;
     }
 
 .ios-island-wrap {
@@ -209,19 +209,19 @@ body {
       align-items: center;
       justify-content: flex-end;
       gap: 3px;
-      font-size: 16px;
+      font-size: 12px;
       font-weight: 600;
       color: rgba(255,255,255,0.92);
       flex-shrink: 0;
       white-space: nowrap;
-      min-height: 18px;
+      min-height: 14px;
     }
 
 .ios-status-tray-img {
       display: block;
-      height: 1em;
+      height: 0.9em;
       width: auto;
-      max-width: min(140px, 34vw);
+      max-width: min(110px, 28vw);
       object-fit: contain;
       object-position: center right;
       pointer-events: none;
@@ -1142,8 +1142,9 @@ body {
       column-gap: 6px;
       width: 100%;
       box-sizing: border-box;
-      padding: 18px 14px 2px;
-      transform: translateY(-15px);
+      padding: 10px 14px 2px;
+      margin-top: 4px;
+      transform: none;
     }
 
 /* ????? ? ?????? ????, ?????? ? ???????; ??????? ??????? 1fr ? ??????? ?? ??????, ?????? ?????/?????? ?? ??? ????? */
@@ -1232,8 +1233,8 @@ body {
     }
 
 .theme-ios .ios-status-tray-img {
-      height: 0.84em;
-      max-width: min(126px, 30vw);
+      height: 0.64em;
+      max-width: min(96px, 24vw);
       opacity: 0.98;
     }
 

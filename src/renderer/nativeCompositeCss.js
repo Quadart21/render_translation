@@ -709,6 +709,8 @@ export function buildIosNativeCompositeCss({
   const chromeSide = Math.round(nativeW * (14 / 1391));
   const statusH = Math.round(nativeH * 0.045);
   const pillH = Math.round(nativeW * (72 / 1391) * 2.25);
+  /* зазор status → пилюли; синхронно с iosHeaderGeometry */
+  const statusPillGap = Math.round(4 * s);
   const chromeGap = Math.round(nativeW * (8 / 1391));
   const composerH = Math.round(nativeW * (96 / 1391) * 1.3);
   const composerBottom = Math.round(nativeH * 0.02);
@@ -797,7 +799,7 @@ ${themeSel} .ios-status {
 ${themeSel} .ios-time {
   display:block !important;
   color:#fff !important;
-  font-size:${Math.max(20, Math.round(statusH * 0.5))}px !important;
+  font-size:${Math.max(14, Math.round(statusH * 0.32))}px !important;
   font-weight:600 !important;
   line-height:1 !important;
   margin:0 !important;
@@ -815,7 +817,7 @@ ${themeSel} .ios-tray {
   margin:0 !important;
 }
 ${themeSel} .ios-status-tray-img {
-  height:${Math.max(24, Math.round(statusH * 0.55))}px !important;
+  height:${Math.max(14, Math.round(statusH * 0.34))}px !important;
   width:auto !important;
   max-width:none !important;
   opacity:1 !important;
@@ -828,7 +830,7 @@ ${themeSel} .ios-nav.telegram-topbar {
   align-items:center !important;
   height:${pillH}px !important;
   min-height:${pillH}px !important;
-  margin-top:${Math.round(4 * s)}px !important;
+  margin-top:${statusPillGap}px !important;
   padding:0 !important;
   transform:none !important;
 }

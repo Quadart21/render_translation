@@ -61,8 +61,10 @@ export async function maskIosSubstrateChrome(imgBuf) {
 export function iosHeaderGeometry(nativeW, nativeH) {
   const statusH = Math.round(nativeH * 0.045);
   const pillH = Math.round(nativeW * (72 / 1391) * 2.25);
-  const headerBottom = statusH + pillH + Math.round(nativeW * (8 / 1391));
-  return { statusH, pillH, headerBottom };
+  /* зазор status → пилюли; синхронно с margin-top в buildIosNativeCompositeCss */
+  const statusPillGap = Math.round((nativeW / 393) * 4);
+  const headerBottom = statusH + statusPillGap + pillH;
+  return { statusH, pillH, statusPillGap, headerBottom };
 }
 
 /**
