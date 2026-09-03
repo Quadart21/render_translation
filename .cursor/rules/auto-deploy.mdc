@@ -25,6 +25,9 @@ Read from `.env` (gitignored):
 - `DEPLOY_USER` (e.g. `root`)
 - `DEPLOY_SSH_PASSWORD` (or SSH key if BatchMode works)
 - `DEPLOY_PATH` (default `/opt/render-screen`)
+- `DEPLOY_BRANCH` (optional; default = current git branch)
+
+Helper: `python scripts/_deploy_remote.py` (reads `.env`, no secrets in repo).
 
 If SSH key auth fails, use Paramiko with `DEPLOY_SSH_PASSWORD`. Do not echo the password in chat or logs.
 
