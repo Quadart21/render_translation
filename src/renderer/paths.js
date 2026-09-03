@@ -31,3 +31,14 @@ export const androidInputPillPath = path.join(uiChromeDir, 'input-pill.png');
 export const telegramPlaquePath = path.join(projectRoot, 'assets', 'telegram-plaque.png');
 export const messageChecksPath = path.join(projectRoot, 'assets', 'message-checks-read.png');
 export const iosStatusTrayStripPath = path.join(projectRoot, 'assets', 'ios-status-tray-strip.png');
+
+/* iPhone chrome layers (zip → assets/ios-chrome). Android paths above stay untouched. */
+export const iosChromeDir = path.join(projectRoot, 'assets', 'ios-chrome');
+export const iosTitlePillPath = path.join(iosChromeDir, 'title-pill.png');
+export const iosInputPillPath = path.join(iosChromeDir, 'input-pill.png');
+export const iosAttachCirclePath = path.join(iosChromeDir, 'attach-circle.png');
+export const iosMicPath = path.join(iosChromeDir, 'mic.png');
+export const iosSmilePath = path.join(iosChromeDir, 'smile.png');
+export const iosAttachIconPath = path.join(iosChromeDir, 'attach.png');
+export const iosUnreadPillPath = path.join(iosChromeDir, 'unread-pill.png');
+export const iosBackPillBgPath = path.join(iosChromeDir, 'back-pill-bg.png');

@@ -575,44 +575,38 @@
   <style id="live-meta-single-line-fix">
     .theme-android.phone #chat .row.out .bubble.bubble--ios-a:not(.message--media),
     .theme-android.phone.composite-screen-on #chat .row.out .bubble.bubble--ios-a:not(.message--media) {
-      display: inline-flex !important;
-      flex-direction: row !important;
-      flex-wrap: nowrap !important;
-      align-items: flex-end !important;
-      justify-content: flex-start !important;
-      column-gap: 0 !important;
-      gap: 0 !important;
+      display: inline-grid !important;
+      grid-template-columns: max-content max-content !important;
+      align-items: end !important;
+      column-gap: calc(4px * var(--and-ref-sx, 1)) !important;
       position: relative !important;
-      width: auto !important;
+      width: fit-content !important;
       max-width: 100% !important;
-      box-sizing: content-box !important;
-      padding-right: calc(30px * var(--and-ref-sx, 1)) !important;
+      padding-right: calc(4px * var(--and-ref-sx, 1)) !important;
       overflow: hidden !important;
-    }
-    .theme-android.phone #chat .row.out .bubble.bubble--ios-a:not(.message--media)::after,
-    .theme-android.phone.composite-screen-on #chat .row.out .bubble.bubble--ios-a:not(.message--media)::after {
-      display: none !important;
-      content: none !important;
     }
     .theme-android.phone #chat .row.out .bubble.bubble--ios-a:not(.message--media) .bubble-text,
     .theme-android.phone.composite-screen-on #chat .row.out .bubble.bubble--ios-a:not(.message--media) .bubble-text {
-      flex: 0 0 auto !important;
-      max-width: none !important;
+      grid-column: 1 !important;
+      grid-row: 1 !important;
+      display: block !important;
+      min-width: 0 !important;
+      max-width: 100% !important;
+      padding-right: 0 !important;
     }
     .theme-android.phone #chat .row.out .bubble.bubble--ios-a:not(.message--media) .meta,
     .theme-android.phone.composite-screen-on #chat .row.out .bubble.bubble--ios-a:not(.message--media) .meta {
+      grid-column: 2 !important;
+      grid-row: 1 !important;
       position: static !important;
+      right: auto !important;
+      bottom: auto !important;
       float: none !important;
       clear: none !important;
       display: inline-flex !important;
-      flex: 0 0 auto !important;
       align-items: center !important;
-      margin: calc(4px * var(--and-ref-sy, 1)) calc(16px * var(--and-ref-sx, 1)) 0 calc(4px * var(--and-ref-sx, 1)) !important;
+      margin: 0 !important;
       transform: none !important;
-      right: auto !important;
-      left: auto !important;
-      top: auto !important;
-      bottom: auto !important;
     }
     /* однострочный b (36–40): absolute — двигаем right */
     .theme-android.phone #chat .row.out .bubble.bubble--ios-b:not(.message--media) .meta,

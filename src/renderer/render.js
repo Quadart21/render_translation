@@ -37,6 +37,14 @@ import {
   androidBackIconPath,
   androidTitlePillPath,
   androidInputPillPath,
+  iosTitlePillPath,
+  iosInputPillPath,
+  iosAttachCirclePath,
+  iosMicPath,
+  iosSmilePath,
+  iosAttachIconPath,
+  iosUnreadPillPath,
+  iosBackPillBgPath,
   telegramPlaquePath,
   messageChecksPath,
 } from './paths.js';
@@ -69,11 +77,12 @@ import {
 import {
   maskAndroidSubstrateChrome,
   applyAndroidHeaderBlurZone,
-  clearOverlayBand,
   paintWallpaperWhereMask,
   stripOverlayMessagesInHeaderBand,
+  keepRectsFromStrip,
   densifyOverlayGlyphs,
 } from './androidComposite.js';
+import { maskIosSubstrateChrome, applyIosHeaderBlurZone, iosHeaderGeometry, iosFooterGeometry } from './iosComposite.js';
 import {
   buildAndroidNativeCompositeCss,
   buildIosNativeCompositeCss,
@@ -128,6 +137,7 @@ export async function renderSceneToPngPages(scene, opts = {}) {
     }
   }
   const useAndroidChromeIcons = platformKey === 'android';
+  const useIosChromeIcons = platformKey === 'ios';
   const [
     iconAttachInject,
     iconMicInject,
@@ -138,29 +148,45 @@ export async function renderSceneToPngPages(scene, opts = {}) {
     iconBackInject,
     androidTitlePillInject,
     androidInputPillInject,
+    iosTitlePillInject,
+    iosInputPillInject,
+    iosAttachCircleInject,
+    iosUnreadPillInject,
+    iosBackPillInject,
     telegramPlaqueInject,
     messageChecksInject,
     iosFontFaces,
   ] = await Promise.all([
     useAndroidChromeIcons
       ? readPngDataUrlRaw(iconPaperclipPath, FALLBACK_ICON_CLIP)
-      : readComposerIconDataUrl(iconPaperclipPath, FALLBACK_ICON_CLIP),
+      : useIosChromeIcons
+        ? readPngDataUrlRaw(iosAttachIconPath, FALLBACK_ICON_CLIP)
+        : readComposerIconDataUrl(iconPaperclipPath, FALLBACK_ICON_CLIP),
     useAndroidChromeIcons
       ? readPngDataUrlRaw(iconMicrophonePath, FALLBACK_ICON_MIC)
-      : Promise.resolve(FALLBACK_ICON_MIC),
+      : useIosChromeIcons
+        ? readPngDataUrlRaw(iosMicPath, FALLBACK_ICON_MIC)
+        : Promise.resolve(FALLBACK_ICON_MIC),
     readStatusTrayIconDataUrl(statusCellularPath, FALLBACK_ICON_SIGNAL),
     readStatusTrayIconDataUrl(statusWifiPath, FALLBACK_ICON_WIFI),
     useAndroidChromeIcons
       ? readPngDataUrlRaw(composerSmileyPath, FALLBACK_ICON_SMILEY)
-      : readComposerIconDataUrl(composerSmileyPath, FALLBACK_ICON_SMILEY),
+      : useIosChromeIcons
+        ? readPngDataUrlRaw(iosSmilePath, FALLBACK_ICON_SMILEY)
+        : readComposerIconDataUrl(composerSmileyPath, FALLBACK_ICON_SMILEY),
     useAndroidChromeIcons
       ? readPngDataUrlRaw(iconPhonePath, FALLBACK_ICON_PHONE)
       : readComposerIconDataUrl(iconPhonePath, FALLBACK_ICON_PHONE),
     useAndroidChromeIcons
       ? readPngDataUrlRaw(androidBackIconPath, FALLBACK_ICON_BACK)
-      :     readPngDataUrlRaw(androidBackIconPath, FALLBACK_ICON_BACK),
+      : readPngDataUrlRaw(androidBackIconPath, FALLBACK_ICON_BACK),
     readUiChromeDataUrl(androidTitlePillPath, ''),
     readUiChromeDataUrl(androidInputPillPath, ''),
+    readUiChromeDataUrl(iosTitlePillPath, ''),
+    readUiChromeDataUrl(iosInputPillPath, ''),
+    readUiChromeDataUrl(iosAttachCirclePath, ''),
+    readUiChromeDataUrl(iosUnreadPillPath, ''),
+    readUiChromeDataUrl(iosBackPillBgPath, ''),
     readPngDataUrlRaw(telegramPlaquePath, FALLBACK_TELEGRAM_PLAQUE),
     readMessageChecksDataUrl(messageChecksPath, FALLBACK_MESSAGE_CHECKS),
     buildIosFontFaceCss(projectRoot),
@@ -177,6 +203,28 @@ export async function renderSceneToPngPages(scene, opts = {}) {
     if (platformKey === 'android') {
       blurWallpaperBuf = compositeSourceBuf;
       compositeSourceBuf = await maskAndroidSubstrateChrome(compositeSourceBuf);
+      compositeMeta = await sharp(compositeSourceBuf).metadata();
+    } else if (platformKey === 'ios') {
+      /* iPhone: всегда фон из ios-chat-wallpaper, даже если в сцене старый substrate. */
+      const nativeW0 = compositeMeta.width || PHONE_LOGICAL_WIDTH_CSS_PX;
+      const nativeH0 = compositeMeta.height || PHONE_LOGICAL_HEIGHT_CSS_PX;
+      let wallBuf;
+      try {
+        wallBuf = await fs.readFile(iosChatWallpaperPath);
+      } catch {
+        try {
+          wallBuf = await fs.readFile(
+            path.join(projectRoot, 'assets', 'ios-composite-base.jpg')
+          );
+        } catch {
+          wallBuf = await fs.readFile(chatWallpaperPath);
+        }
+      }
+      compositeSourceBuf = await sharp(wallBuf)
+        .resize(nativeW0, nativeH0, { fit: 'cover', position: 'centre' })
+        .jpeg({ quality: 95, mozjpeg: true })
+        .toBuffer();
+      blurWallpaperBuf = compositeSourceBuf;
       compositeMeta = await sharp(compositeSourceBuf).metadata();
     } else {
       blurWallpaperBuf = compositeSourceBuf;
@@ -214,7 +262,7 @@ export async function renderSceneToPngPages(scene, opts = {}) {
   });
   try {
     let iosStatusTrayInject = FALLBACK_IOS_STATUS_TRAY;
-    if (platformKey === 'ios' && !useNativeComposite) {
+    if (platformKey === 'ios') {
       iosStatusTrayInject = await buildIosStatusTrayDataUrl(withAssets, browser);
     }
 
@@ -248,8 +296,8 @@ export async function renderSceneToPngPages(scene, opts = {}) {
       }
     }
 
-
-    const html = raw
+    /* Сначала вшиваем native CSS, потом подставляем все __*__ — иначе слои в inject не подставляются. */
+    const html = `${raw}`.replace('</head>', `${nativeSizeCss}</head>`)
     .replace('__IOS_FONT_FACES__', platformKey === 'ios' ? iosFontFaces : '')
     .replace('__ANDROID_FONT_FACES__', platformKey === 'android' ? iosFontFaces : '')
     .replace('__SCENE_JSON__', json)
@@ -264,10 +312,14 @@ export async function renderSceneToPngPages(scene, opts = {}) {
     .replace(/__ICON_BACK__/g, iconBackInject)
     .replace(/__ANDROID_TITLE_PILL__/g, androidTitlePillInject || '')
     .replace(/__ANDROID_INPUT_PILL__/g, androidInputPillInject || '')
+    .replace(/__IOS_TITLE_PILL__/g, iosTitlePillInject || '')
+    .replace(/__IOS_INPUT_PILL__/g, iosInputPillInject || '')
+    .replace(/__IOS_ATTACH_CIRCLE__/g, iosAttachCircleInject || '')
+    .replace(/__IOS_UNREAD_PILL__/g, iosUnreadPillInject || '')
+    .replace(/__IOS_BACK_PILL__/g, iosBackPillInject || '')
     .replace(/__TELEGRAM_PLAQUE__/g, telegramPlaqueInject)
     .replace(/__MESSAGE_CHECKS_SRC__/g, messageChecksInject)
-    .replace(/__IOS_STATUS_TRAY__/g, iosStatusTrayInject)
-    .replace('</head>', `${nativeSizeCss}</head>`);
+    .replace(/__IOS_STATUS_TRAY__/g, iosStatusTrayInject);
 
     if (useNativeComposite) {
       /* Оба: dpr=1, текст в целевых CSS-px — без даунскейла */
@@ -304,10 +356,12 @@ export async function renderSceneToPngPages(scene, opts = {}) {
       });
     }
     const headerOverlapPx = useNativeComposite
-      ? Math.max(
-          120,
-          Math.round(nativeH * 0.0395) + Math.round(nativeW * (88 / 1374) * 1.8) + 24
-        )
+      ? platformKey === 'ios'
+        ? iosHeaderGeometry(nativeW, nativeH).headerBottom
+        : Math.max(
+            120,
+            Math.round(nativeH * 0.0395) + Math.round(nativeW * (88 / 1374) * 1.8) + 24
+          )
       : 72;
     const scrollPositions = await page.evaluate((overlap) => {
       var chat = document.getElementById('chat');
@@ -328,30 +382,39 @@ export async function renderSceneToPngPages(scene, opts = {}) {
     const phone = await page.$('.phone');
     if (!phone) throw new Error('.phone not found in template');
     const statusKeepRects =
-      platformKey === 'android' && useNativeComposite
-        ? await page.evaluate(() => {
+      useNativeComposite && (platformKey === 'android' || platformKey === 'ios')
+        ? await page.evaluate((plat) => {
             var phoneEl = document.querySelector('.phone');
             if (!phoneEl) return [];
             var pr = phoneEl.getBoundingClientRect();
             var pad = 2;
             var els = [];
-            var timeEl = document.querySelector('#androidTime');
-            if (timeEl) els.push(timeEl);
-            var tray = document.querySelector('.android-status-tray');
-            if (tray) {
-              var kids = tray.querySelectorAll(
-                '.status-tray-signal, .status-tray-wifi, .status-battery, .status-tray-icon, img, svg'
-              );
-              if (kids.length) {
-                for (var k = 0; k < kids.length; k += 1) els.push(kids[k]);
-              } else {
-                els.push(tray);
+            if (plat === 'android') {
+              var timeEl = document.querySelector('#androidTime');
+              if (timeEl) els.push(timeEl);
+              var tray = document.querySelector('.android-status-tray');
+              if (tray) {
+                var kids = tray.querySelectorAll(
+                  '.status-tray-signal, .status-tray-wifi, .status-battery, .status-tray-icon, img, svg'
+                );
+                if (kids.length) {
+                  for (var k = 0; k < kids.length; k += 1) els.push(kids[k]);
+                } else {
+                  els.push(tray);
+                }
               }
+              var extras = document.querySelectorAll(
+                '.status-extra-icons .status-extra-icon, .status-extra-icons > *'
+              );
+              for (var e = 0; e < extras.length; e += 1) els.push(extras[e]);
+            } else if (plat === 'ios') {
+              var iosTime = document.querySelector('#iosTime');
+              if (iosTime) els.push(iosTime);
+              var island = document.querySelector('.ios-island-wrap');
+              if (island) els.push(island);
+              var iosTray = document.querySelector('.ios-tray');
+              if (iosTray) els.push(iosTray);
             }
-            var extras = document.querySelectorAll(
-              '.status-extra-icons .status-extra-icon, .status-extra-icons > *'
-            );
-            for (var e = 0; e < extras.length; e += 1) els.push(extras[e]);
             var out = [];
             for (var i = 0; i < els.length; i += 1) {
               var r = els[i].getBoundingClientRect();
@@ -364,7 +427,7 @@ export async function renderSceneToPngPages(scene, opts = {}) {
               });
             }
             return out;
-          })
+          }, platformKey)
         : [];
     /** @type {Buffer[]} */
     const pages = [];
@@ -387,6 +450,35 @@ export async function renderSceneToPngPages(scene, opts = {}) {
         }
       }, top);
       await waitForFontsAndPaintStable(page, platformKey);
+      const imageSkipRects =
+        useNativeComposite
+          ? await page.evaluate(() => {
+              var phoneEl = document.querySelector('.phone');
+              if (!phoneEl) return [];
+              var pr = phoneEl.getBoundingClientRect();
+              var pad = 2;
+              var imgs = document.querySelectorAll(
+                '#chat img.message__image, #chat .message__image-wrap'
+              );
+              var seen = [];
+              for (var ii = 0; ii < imgs.length; ii += 1) {
+                var el = imgs[ii];
+                var key = el.classList && el.classList.contains('message__image-wrap')
+                  ? 'wrap'
+                  : 'img';
+                if (key === 'img' && el.closest('.message__image-wrap')) continue;
+                var r = el.getBoundingClientRect();
+                if (r.width < 1 || r.height < 1) continue;
+                seen.push({
+                  left: Math.floor(r.left - pr.left) - pad,
+                  top: Math.floor(r.top - pr.top) - pad,
+                  right: Math.ceil(r.right - pr.left) + pad,
+                  bottom: Math.ceil(r.bottom - pr.top) + pad,
+                });
+              }
+              return seen;
+            })
+          : [];
       let buf = await phone.screenshot({
         type: 'png',
         scale: 'device',
@@ -394,9 +486,10 @@ export async function renderSceneToPngPages(scene, opts = {}) {
         caret: 'hide',
         omitBackground: useNativeComposite,
       });
-      /** Чистый chrome без ленты — для restore status/пилюль без обломков текста */
+      /** Чистый chrome без ленты — для restore; для iOS ещё кадр ленты без хрома */
       let chromeShotBuf = null;
-      if (useNativeComposite && platformKey === 'android') {
+      let messagesOnlyBuf = null;
+      if (useNativeComposite && (platformKey === 'android' || platformKey === 'ios')) {
         await page.evaluate(() => {
           var chat = document.getElementById('chat');
           if (chat) chat.style.visibility = 'hidden';
@@ -412,6 +505,31 @@ export async function renderSceneToPngPages(scene, opts = {}) {
           var chat = document.getElementById('chat');
           if (chat) chat.style.visibility = '';
         });
+        if (platformKey === 'ios') {
+          await page.evaluate(() => {
+            var chrome = document.querySelector('.phone-chrome');
+            var composer = document.querySelector('.ios-composer-row');
+            var home = document.querySelector('.ios-home-indicator');
+            if (chrome) chrome.style.visibility = 'hidden';
+            if (composer) composer.style.visibility = 'hidden';
+            if (home) home.style.visibility = 'hidden';
+          });
+          messagesOnlyBuf = await phone.screenshot({
+            type: 'png',
+            scale: 'device',
+            animations: 'disabled',
+            caret: 'hide',
+            omitBackground: true,
+          });
+          await page.evaluate(() => {
+            var chrome = document.querySelector('.phone-chrome');
+            var composer = document.querySelector('.ios-composer-row');
+            var home = document.querySelector('.ios-home-indicator');
+            if (chrome) chrome.style.visibility = '';
+            if (composer) composer.style.visibility = '';
+            if (home) home.style.visibility = '';
+          });
+        }
       }
       if (useNativeComposite && compositeSourceBuf) {
         const ovMeta = await sharp(buf).metadata();
@@ -452,13 +570,61 @@ export async function renderSceneToPngPages(scene, opts = {}) {
             chromeShotBuf = await sharp(chromeShotBuf).ensureAlpha().png().toBuffer();
           }
         }
+        if (messagesOnlyBuf) {
+          const mm = await sharp(messagesOnlyBuf).metadata();
+          if (
+            mm.width &&
+            mm.height &&
+            (mm.width !== nativeW || mm.height !== nativeH)
+          ) {
+            messagesOnlyBuf = await sharp(messagesOnlyBuf)
+              .resize(nativeW, nativeH, {
+                fit: 'fill',
+                kernel: sharp.kernel.nearest,
+              })
+              .ensureAlpha()
+              .png()
+              .toBuffer();
+          } else {
+            messagesOnlyBuf = await sharp(messagesOnlyBuf).ensureAlpha().png().toBuffer();
+          }
+          /* iOS: в композит идёт лента без хрома — сообщения реально уходят под шапку */
+          overlayBuf = messagesOnlyBuf;
+        }
         const chromeTop = Math.round(nativeH * 0.0395);
         const chromeH = Math.round(nativeW * (88 / 1374));
         const pillH = Math.round(chromeH * 1.8);
         const headerBottom = chromeTop + pillH;
-        /* chrome (status+пилюли) не densify — иначе ореолы у иконок/ника */
+        const iosGeom =
+          platformKey === 'ios' ? iosHeaderGeometry(nativeW, nativeH) : null;
+        const iosFooter =
+          platformKey === 'ios' ? iosFooterGeometry(nativeW, nativeH) : null;
+        const iosHeaderBottom = iosGeom ? iosGeom.headerBottom : headerBottom;
+        let scaledImageSkipRects = imageSkipRects;
+        if (
+          imageSkipRects.length &&
+          ovMeta.width &&
+          ovMeta.height &&
+          (ovMeta.width !== nativeW || ovMeta.height !== nativeH)
+        ) {
+          const sx = nativeW / ovMeta.width;
+          const sy = nativeH / ovMeta.height;
+          scaledImageSkipRects = imageSkipRects.map((r) => ({
+            left: Math.floor(r.left * sx),
+            top: Math.floor(r.top * sy),
+            right: Math.ceil(r.right * sx),
+            bottom: Math.ceil(r.bottom * sy),
+          }));
+        }
+        /* chrome (status+пилюли) не densify — иначе ореолы у иконок/ника; фото — без выбеливания */
         overlayBuf = await densifyOverlayGlyphs(overlayBuf, {
-          skipTop: platformKey === 'android' ? headerBottom : 0,
+          skipTop:
+            platformKey === 'android'
+              ? headerBottom
+              : platformKey === 'ios'
+                ? iosHeaderBottom
+                : 0,
+          skipRects: scaledImageSkipRects,
         });
         const chromeSide = Math.round(nativeW * (18 / 1374));
         const chromeGap = Math.round(nativeW * (10 / 1374));
@@ -474,17 +640,8 @@ export async function renderSceneToPngPages(scene, opts = {}) {
         const blurSigma = Math.max(30, Math.min(50, pillH / 2.6));
         /** @type {Buffer | null} */
         let chromeOnlyOverlay = null;
-        /** @type {Buffer | null} */
-        let statusRestoreBuf = null;
         if (platformKey === 'android' && nativeW > 0 && nativeH > 0) {
-          /* status/пилюли с кадра без ленты — никаких обломков «для» в трее */
           const chromeSrc = chromeShotBuf || overlayBuf;
-          if (chromeTop > 4) {
-            statusRestoreBuf = await sharp(chromeSrc)
-              .extract({ left: 0, top: 0, width: nativeW, height: chromeTop })
-              .png()
-              .toBuffer();
-          }
           chromeOnlyOverlay = await stripOverlayMessagesInHeaderBand(
             chromeSrc,
             0,
@@ -492,8 +649,7 @@ export async function renderSceneToPngPages(scene, opts = {}) {
             chromeTop,
             chromeKeepOpts
           );
-          /* в status — только обои+frost; сообщения оставляем под пилюлями для blur */
-          overlayBuf = await clearOverlayBand(overlayBuf, 0, chromeTop);
+          /* лента под status-bar остаётся — frost размоет; поверх только глифы */
         }
         let pipe = sharp(compositeSourceBuf).composite([
           { input: overlayBuf, left: 0, top: 0, blend: 'over' },
@@ -528,16 +684,9 @@ export async function renderSceneToPngPages(scene, opts = {}) {
             mode: 'under-chrome',
             blurSource: frostBase,
           });
-          if (chromeOnlyOverlay || statusRestoreBuf) {
+          if (chromeOnlyOverlay) {
             const restore = [];
-            if (statusRestoreBuf) {
-              restore.push({
-                input: statusRestoreBuf,
-                left: 0,
-                top: 0,
-                blend: 'over',
-              });
-            } else if (chromeOnlyOverlay && chromeTop > 4) {
+            if (chromeTop > 4) {
               restore.push({
                 input: await sharp(chromeOnlyOverlay)
                   .extract({ left: 0, top: 0, width: nativeW, height: chromeTop })
@@ -549,7 +698,7 @@ export async function renderSceneToPngPages(scene, opts = {}) {
               });
             }
             const chromeStripH = Math.min(nativeH - chromeTop, pillH);
-            if (chromeOnlyOverlay && chromeStripH > 4) {
+            if (chromeStripH > 4) {
               restore.push({
                 input: await sharp(chromeOnlyOverlay)
                   .extract({ left: 0, top: chromeTop, width: nativeW, height: chromeStripH })
@@ -557,6 +706,88 @@ export async function renderSceneToPngPages(scene, opts = {}) {
                   .toBuffer(),
                 left: 0,
                 top: chromeTop,
+                blend: 'over',
+              });
+            }
+            if (restore.length) {
+              buf = await sharp(buf).composite(restore).png().toBuffer();
+            }
+          }
+        } else if (platformKey === 'ios' && nativeW > 0 && nativeH > 0 && iosGeom) {
+          /*
+           * Сообщения уходят под status-bar и пилюли — frost размоет.
+           * Под пилюлями — обои вместо пузырей; status-bar — только глифы/island/tray.
+           */
+          let frostBase = buf;
+          if (chromeShotBuf && compositeSourceBuf) {
+            frostBase = await paintWallpaperWhereMask(
+              buf,
+              chromeShotBuf,
+              compositeSourceBuf,
+              { y0: iosGeom.statusH, y1: iosHeaderBottom, alphaMin: 10 }
+            );
+          }
+          buf = await applyIosHeaderBlurZone(frostBase, {
+            y0: 0,
+            y1: iosHeaderBottom,
+            blurMax: 0.94,
+            sigma: Math.max(90, Math.min(200, iosGeom.pillH * 0.95)),
+          });
+          if (iosFooter) {
+            let footerBase = buf;
+            if (chromeShotBuf && compositeSourceBuf) {
+              footerBase = await paintWallpaperWhereMask(
+                buf,
+                chromeShotBuf,
+                compositeSourceBuf,
+                { y0: iosFooter.composerTop, y1: nativeH, alphaMin: 10 }
+              );
+            }
+            buf = await applyIosHeaderBlurZone(footerBase, {
+              y0: iosFooter.composerTop,
+              y1: nativeH,
+              blurMax: 0.94,
+              sigma: Math.max(90, Math.min(200, iosFooter.composerH * 0.95)),
+              invert: true,
+            });
+          }
+          if (chromeShotBuf) {
+            const restore = [];
+            const { statusH, headerBottom: iosHeadBot } = iosGeom;
+            if (statusH > 4) {
+              const statusRaw = await sharp(chromeShotBuf)
+                .extract({ left: 0, top: 0, width: nativeW, height: statusH })
+                .png()
+                .toBuffer();
+              restore.push({
+                input: await keepRectsFromStrip(statusRaw, statusKeepRects, 0),
+                left: 0,
+                top: 0,
+                blend: 'over',
+              });
+            }
+            const pillsH = Math.min(nativeH - statusH, iosHeadBot - statusH);
+            if (pillsH > 4) {
+              restore.push({
+                input: await sharp(chromeShotBuf)
+                  .extract({ left: 0, top: statusH, width: nativeW, height: pillsH })
+                  .png()
+                  .toBuffer(),
+                left: 0,
+                top: statusH,
+                blend: 'over',
+              });
+            }
+            const composerTop = iosFooter ? iosFooter.composerTop : nativeH;
+            const composerH = Math.max(0, nativeH - composerTop);
+            if (composerH > 4) {
+              restore.push({
+                input: await sharp(chromeShotBuf)
+                  .extract({ left: 0, top: composerTop, width: nativeW, height: composerH })
+                  .png()
+                  .toBuffer(),
+                left: 0,
+                top: composerTop,
                 blend: 'over',
               });
             }

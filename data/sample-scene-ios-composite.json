@@ -1,6 +1,6 @@
 {
   "platform": "ios",
-  "compositeScreenshot": "assets/reference-ui-screenshot.png",
+  "compositeScreenshot": "assets/ios-composite-base.jpg",
   "statusBar": {
     "time": "9:41",
     "date": "2026-05-10",

@@ -1870,17 +1870,14 @@ body {
   Сценарии длины текста (bubble--ios-a…e).
   a ≤35 | b 36–40 | c 41–75 | d 76–80 | e >80
 */
-/* a: время РЯДОМ с текстом на одной линии (flex; float после block ломает) */
+/* a: время рядом с текстом (grid: текст | meta) */
 .theme-android .bubble.bubble--ios-a:not(.message--media) {
-      display: inline-flex !important;
-      flex-direction: row;
-      flex-wrap: nowrap;
-      align-items: flex-end;
-      justify-content: flex-start !important;
-      column-gap: 0 !important;
-      gap: 0 !important;
+      display: inline-grid !important;
+      grid-template-columns: max-content max-content;
+      align-items: end;
+      justify-content: start;
+      column-gap: calc(4px * var(--and-ref-sx));
       position: relative !important;
-      /* auto/fit-content: padding увеличивает пузырь; max-content+border-box — нет */
       width: fit-content !important;
       max-width: 100%;
       vertical-align: top;
@@ -1888,18 +1885,18 @@ body {
       overflow: hidden;
 }
 
-/* clearfix иначе становится 3-м flex-item и уводит meta вправо */
 .theme-android .bubble.bubble--ios-a:not(.message--media)::after {
       display: none !important;
       content: none !important;
 }
 
 .theme-android .bubble.bubble--ios-a:not(.message--media) .bubble-text {
+      grid-column: 1;
+      grid-row: 1;
       display: block;
-      flex: 0 0 auto !important;
-      width: auto !important;
-      max-width: none !important;
       min-width: 0;
+      width: auto !important;
+      max-width: 100%;
       white-space: pre-wrap;
       word-break: break-word;
       overflow-wrap: break-word;
@@ -1909,14 +1906,15 @@ body {
 }
 
 .theme-android .bubble.bubble--ios-a:not(.message--media) .meta {
+      grid-column: 2;
+      grid-row: 1;
+      align-self: end;
       position: static !important;
       float: none !important;
       clear: none !important;
       display: inline-flex !important;
-      flex: 0 0 auto;
-      align-self: flex-end;
       align-items: center;
-      margin: 0 0 0 calc(4px * var(--and-ref-sx)) !important;
+      margin: 0 !important;
       transform: none !important;
       bottom: auto !important;
       right: auto !important;
@@ -1926,14 +1924,34 @@ body {
       z-index: 2;
 }
 
-/* исходящие a: реальное место справа — время/галочки левее края */
+/* исходящие a: grid (текст | meta), без padding-right на тексте — иначе пустой карман */
 .theme-android .row.out .bubble.bubble--ios-a:not(.message--media) {
-      padding-right: calc(30px * var(--and-ref-sx)) !important;
-      box-sizing: content-box !important;
+      display: inline-grid !important;
+      grid-template-columns: max-content max-content !important;
+      align-items: end !important;
+      column-gap: calc(4px * var(--and-ref-sx)) !important;
+      position: relative !important;
+      width: fit-content !important;
+      max-width: 100%;
+      padding-right: calc(4px * var(--and-ref-sx)) !important;
+      overflow: hidden;
+}
+
+.theme-android .row.out .bubble.bubble--ios-a:not(.message--media) .bubble-text {
+      grid-column: 1 !important;
+      grid-row: 1 !important;
+      display: block !important;
+      padding-right: 0 !important;
+      padding-bottom: 0;
 }
 
 .theme-android .row.out .bubble.bubble--ios-a:not(.message--media) .meta {
-      margin: calc(4px * var(--and-ref-sy)) calc(16px * var(--and-ref-sx)) 0 calc(4px * var(--and-ref-sx)) !important;
+      grid-column: 2 !important;
+      grid-row: 1 !important;
+      position: static !important;
+      right: auto !important;
+      bottom: auto !important;
+      margin: 0 !important;
       align-items: center;
       transform: none !important;
 }
@@ -2106,7 +2124,7 @@ body {
 }
 
 .theme-android .row.out .message__image-wrap--overlay .meta {
-      right: 10px;
+      right: 4px;
 }
 
 .theme-android .message__image-wrap--overlay .checks-img {

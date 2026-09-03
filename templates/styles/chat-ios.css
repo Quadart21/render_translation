@@ -715,9 +715,12 @@ body {
       width: 44px;
       height: 44px;
       border-radius: 50%;
-      background: rgba(18, 18, 18, 0.88);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
+      background-color: rgba(18, 18, 18, 0.92);
+      background-image: url('__IOS_ATTACH_CIRCLE__');
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
       border: 1px solid rgba(255, 255, 255, 0.05);
       display: flex;
       align-items: center;
@@ -732,9 +735,12 @@ body {
       height: 44px;
       padding: 0 16px;
       border-radius: 999px;
-      background: rgba(18, 18, 18, 0.86);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
+      background-color: rgba(18, 18, 18, 0.92);
+      background-image: url('__IOS_INPUT_PILL__');
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
       border: 1px solid rgba(255, 255, 255, 0.04);
       font-size: 16px;
       min-height: 44px;
@@ -763,16 +769,24 @@ body {
       width: 44px;
       height: 44px;
       border-radius: 50%;
-      background: rgba(18, 18, 18, 0.88);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-      border: 1px solid rgba(255, 255, 255, 0.05);
+      background: transparent;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      border: none;
       display: flex;
       align-items: center;
       justify-content: center;
       color: #fff;
       font-size: 22px;
       flex-shrink: 0;
+      overflow: hidden;
+      padding: 0;
+    }
+
+.ios-mic.circle-button .composer-tool-icon {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
     }
 
 /* ?????? ?????????: ??? CSS filter ? ? img+data URL ? headless Chromium filter ????? ?????? ???????? */
@@ -957,41 +971,34 @@ body {
     }
 
 /*
-      compositeScreenshot: ????? ??? ???? ??????? ? ????? ??????? ????????.
-      ??? ???? ??????? ????????? ?????? ??? ????????? ???? ? ??? ?????? ??????? ? ??? ?????? ?????.
+      compositeScreenshot: masked substrate + chrome из ios-chrome слоёв (как Android).
     */
     .theme-ios.phone.composite-screen-on .ios-back.back-pill {
       visibility: visible;
-      background: transparent !important;
+      background-color: #1b1b1b !important;
+      background-image: url('__IOS_BACK_PILL__') !important;
+      background-size: 100% 100% !important;
+      background-repeat: no-repeat !important;
       backdrop-filter: none !important;
       -webkit-backdrop-filter: none !important;
-      border: none !important;
+      border: 1px solid #272320 !important;
       box-shadow: none !important;
-      padding: 0 !important;
-      min-width: 0 !important;
-      width: auto !important;
-      max-width: none !important;
-      height: auto !important;
-      min-height: 0 !important;
-      gap: 0 !important;
-      overflow: visible !important;
-      justify-content: flex-start !important;
-      align-items: center !important;
-      --ios-unread-digit-shift-x: 0px;
-      --ios-unread-digit-shift-y: -1px;
     }
 
 .theme-ios.phone.composite-screen-on .ios-back.back-pill .ios-chevron {
-      display: none !important;
+      display: inline-block !important;
     }
 
-/* Composite: ?????? ??????? ??????? ??????, ?? ????? ? ? ????? ?????? ??? ? Telegram */
+/* Composite: unread pill поверх слоя */
 .theme-ios.phone.composite-screen-on .ios-back.back-pill .ios-unread-pill {
       display: inline-flex !important;
       align-items: center !important;
       justify-content: center !important;
       box-sizing: border-box !important;
-      background: #ffffff !important;
+      background-color: #ffffff !important;
+      background-image: url('__IOS_UNREAD_PILL__') !important;
+      background-size: 100% 100% !important;
+      background-repeat: no-repeat !important;
       color: #0a0a0a !important;
       border-radius: 999px !important;
       padding: 5px !important;
@@ -1023,24 +1030,28 @@ body {
     }
 
 .theme-ios.phone.composite-screen-on .ios-title-pill.user-pill {
-      background: transparent !important;
+      background-color: #1b1b1b !important;
+      background-image: url('__IOS_TITLE_PILL__') !important;
+      background-size: 100% 100% !important;
+      background-repeat: no-repeat !important;
       backdrop-filter: none !important;
       -webkit-backdrop-filter: none !important;
-      border-color: transparent !important;
+      border: 1px solid #272320 !important;
       box-shadow: none !important;
     }
 
 .theme-ios.phone.composite-screen-on .ios-nav-right {
-      border-color: transparent !important;
+      border: 1px solid #272320 !important;
       background: transparent !important;
     }
 
 .theme-ios.phone.composite-screen-on .ios-composer-row {
-      display: none !important;
+      display: block !important;
     }
 
 .theme-ios.phone.composite-screen-on .ios-home-indicator.home-indicator {
-      display: none !important;
+      display: flex !important;
+      background: transparent !important;
     }
 
 /* ??? Telegram iOS DARK UI (?????? + ????????????? ?? ??????? --ios-*) ??? */
@@ -1120,11 +1131,11 @@ body {
 
 .theme-ios .ios-nav.telegram-topbar {
       align-items: center;
-      --ios-nav-row-height: 45px;
-      --ios-nav-avatar-inner: 36px;
-      --ios-nav-chrome-outline: rgba(255, 255, 255, 0.22);
-      --ios-nav-pill-outline: rgba(255, 255, 255, 0.16);
-      --ios-nav-chrome-outline-w: 0.5px;
+      --ios-nav-row-height: 102px;
+      --ios-nav-avatar-inner: 81px;
+      --ios-nav-chrome-outline: #272320;
+      --ios-nav-pill-outline: #272320;
+      --ios-nav-chrome-outline-w: 1px;
       display: grid;
       grid-template-columns: auto minmax(0, 1fr) var(--ios-nav-row-height);
       justify-items: stretch;
@@ -1297,9 +1308,12 @@ body {
       height: var(--ios-nav-row-height);
       padding: 0 10px 0 11px;
       border-radius: 999px;
-      background: rgba(25, 25, 25, 0.76);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
+      background-color: rgba(25, 25, 25, 0.92);
+      background-image: url('__IOS_BACK_PILL__');
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
       border: var(--ios-nav-chrome-outline-w) solid var(--ios-nav-pill-outline);
       box-shadow: var(--tg-shadow);
       flex-shrink: 0;
@@ -1323,7 +1337,10 @@ body {
       align-items: center;
       justify-content: center;
       box-sizing: border-box;
-      background: #ffffff;
+      background-color: #ffffff;
+      background-image: url('__IOS_UNREAD_PILL__');
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
       color: #0a0a0a;
       border-radius: 999px;
       padding: 5px;
@@ -1388,9 +1405,12 @@ body {
       max-height: var(--ios-nav-row-height);
       padding: 0 var(--ios-title-pill-hpad, 24px);
       border-radius: 999px;
-      background: rgba(24, 24, 24, 0.78);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
+      background-color: rgba(24, 24, 24, 0.92);
+      background-image: url('__IOS_TITLE_PILL__');
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
       border: var(--ios-nav-chrome-outline-w) solid var(--ios-nav-pill-outline);
       box-shadow: var(--tg-shadow);
       text-align: center;
@@ -1587,8 +1607,12 @@ body {
     }
 
 .theme-ios .row.out .bubble.bubble--ios-a:not(.message--media) {
-      padding-right: 20px !important;
-    }
+      padding-right: 4px !important;
+}
+
+.theme-ios .row.out .bubble.bubble--ios-a:not(.message--media) .bubble-text {
+      padding-right: 0 !important;
+}
 
 .theme-ios .row.out .bubble.bubble--ios-a:not(.message--media) .meta {
       margin-right: 0;
@@ -1828,15 +1852,15 @@ body {
     }
 
 .theme-ios .row.in .bubble {
-      background: linear-gradient(145deg, rgba(56, 46, 64, 0.92), rgba(34, 34, 40, 0.96));
+      background: rgba(18, 0, 54, 0.82);
       color: var(--tg-text);
       border-bottom-left-radius: 8px;
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
     }
 
 .theme-ios .row.out .bubble {
-      background: linear-gradient(145deg, #964BEC, #3f66ff);
+      background: rgba(11, 0, 113, 0.82);
       color: #fff;
       border-bottom-right-radius: 8px;
     }

@@ -1,6 +1,6 @@
 {
   "platform": "ios",
-  "compositeScreenshot": "assets/ios-substrate.jpg",
+  "compositeScreenshot": "assets/ios-composite-base.jpg",
   "statusBar": {
     "time": "14:32"
   },

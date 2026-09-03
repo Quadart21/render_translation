@@ -332,6 +332,47 @@ export async function clearOverlayBand(pngBuf, y0, y1) {
 }
 
 /**
+ * Прозрачная полоса: непрозрачны только пиксели внутри keepRects (часы, island, tray).
+ * @param {Buffer} stripPng
+ * @param {{ left: number, top: number, right: number, bottom: number }[]} keepRects
+ * @param {number} [stripTop]
+ * @returns {Promise<Buffer>}
+ */
+export async function keepRectsFromStrip(stripPng, keepRects, stripTop = 0) {
+  const { data, info } = await sharp(stripPng)
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  const w = info.width;
+  const h = info.height;
+  const out = Buffer.alloc(data.length);
+  const rects = Array.isArray(keepRects) ? keepRects : [];
+  const inKeep = (x, y) => {
+    const absY = y + stripTop;
+    for (const r of rects) {
+      if (x >= r.left && x < r.right && absY >= r.top && absY < r.bottom) return true;
+    }
+    return false;
+  };
+  for (let y = 0; y < h; y += 1) {
+    for (let x = 0; x < w; x += 1) {
+      const i = (y * w + x) * 4;
+      if (inKeep(x, y) && data[i + 3] >= 8) {
+        out[i] = data[i];
+        out[i + 1] = data[i + 1];
+        out[i + 2] = data[i + 2];
+        out[i + 3] = data[i + 3];
+      }
+    }
+  }
+  return sharp(out, {
+    raw: { width: w, height: h, channels: 4 },
+  })
+    .png()
+    .toBuffer();
+}
+
+/**
  * Где mask непрозрачен — подставить пиксели wallpaper (чтобы frost не «жёг» обводку хрома).
  * @param {Buffer} dstPng
  * @param {Buffer} maskPng
@@ -385,9 +426,14 @@ export async function stripBubblesKeepStatusChrome(stripPng, opts = null) {
   const w = info.width;
   const h = info.height;
   const keepRects = Array.isArray(opts?.keepRects) ? opts.keepRects : null;
-  const isBubble = (r, g, b) =>
-    (b > 150 && b > r + 40 && b > g + 25) ||
-    (r > 110 && b > 140 && r > g + 25 && b > g + 30);
+  const isBubble = (r, g, b) => {
+    const lum = (r * 0.2126 + g * 0.7152 + b * 0.0722) / 255;
+    if (lum > 0.55) return false;
+    return (
+      (b > 150 && b > r + 40 && b > g + 25) ||
+      (r > 110 && b > 140 && r > g + 25 && b > g + 30)
+    );
+  };
 
   if (keepRects && keepRects.length) {
     /*
@@ -633,9 +679,15 @@ export async function keepAndroidChromeOnly(stripPng, opts = null) {
     b <= 95 &&
     Math.abs(r - g) <= 20 &&
     Math.abs(g - b) <= 28;
-  const isBubbleLike = (r, g, b) =>
-    (b > 140 && b > r + 35 && b > g + 20) ||
-    (r > 100 && b > 130 && r > g + 20 && b > g + 25);
+  const isBubbleLike = (r, g, b) => {
+    const lum = (r * 0.2126 + g * 0.7152 + b * 0.0722) / 255;
+    /* светлый синий — статус «в сети», не исходящий пузырь */
+    if (lum > 0.55) return false;
+    return (
+      (b > 140 && b > r + 35 && b > g + 20) ||
+      (r > 100 && b > 130 && r > g + 20 && b > g + 25)
+    );
+  };
   /* ник, статус, иконки внутри пилюли (не аватар/пузырь) */
   const isChromeInk = (r, g, b, a) => {
     if (a < 12) return false;
@@ -644,9 +696,9 @@ export async function keepAndroidChromeOnly(stripPng, opts = null) {
     const maxc = Math.max(r, g, b);
     const minc = Math.min(r, g, b);
     const chroma = maxc - minc;
-    /* синий круг аватара / цветной UI — не раздувать маску */
-    if (chroma > 36 && b > r + 15 && b > g + 10) return false;
     const lum = (r * 0.2126 + g * 0.7152 + b * 0.0722) / 255;
+    /* тёмный синий (аватар и т.п.) — не раздувать маску */
+    if (chroma > 36 && b > r + 15 && b > g + 10 && lum < 0.55) return false;
     return lum >= 0.32;
   };
 
@@ -726,10 +778,23 @@ export async function keepAndroidChromeOnly(stripPng, opts = null) {
 }
 
 /**
+ * @param {{ left: number, top: number, right: number, bottom: number }[]} rects
+ * @param {number} x
+ * @param {number} y
+ */
+function pointInRects(rects, x, y) {
+  for (let ri = 0; ri < rects.length; ri += 1) {
+    const r = rects[ri];
+    if (x >= r.left && x < r.right && y >= r.top && y < r.bottom) return true;
+  }
+  return false;
+}
+
+/**
  * Light 300 + grayscale-AA даёт серую «кашу» на краях глифов.
  * Уплотняем светлые пиксели оверлея (ближе к белому / плотнее альфа), цвет пузырей не трогаем.
  * @param {Buffer} pngBuf
- * @param {{ skipTop?: number }} [opts]
+ * @param {{ skipTop?: number, skipRects?: { left: number, top: number, right: number, bottom: number }[] }} [opts]
  * @returns {Promise<Buffer>}
  */
 export async function densifyOverlayGlyphs(pngBuf, opts = null) {
@@ -740,10 +805,13 @@ export async function densifyOverlayGlyphs(pngBuf, opts = null) {
   const out = Buffer.from(data);
   const w = info.width;
   const skipTop = Math.max(0, Math.round(opts?.skipTop || 0));
+  const skipRects = Array.isArray(opts?.skipRects) ? opts.skipRects : [];
   for (let i = 0; i < out.length; i += 4) {
     const px = (i / 4) | 0;
+    const x = px % w;
     const y = (px / w) | 0;
     if (y < skipTop) continue;
+    if (skipRects.length && pointInRects(skipRects, x, y)) continue;
     const a = out[i + 3];
     if (a < 10) continue;
     const r = out[i];

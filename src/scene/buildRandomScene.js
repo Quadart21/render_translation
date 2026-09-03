@@ -131,12 +131,12 @@ export async function buildRandomScene(opts = {}) {
     return rest;
   });
 
-  // Подложка 1:1: Android = substrate, iPhone = substrate. Только переписка поверх.
+  // Подложка 1:1: Android = substrate. iPhone = обои (ocean), не старый doodle-substrate.
   if (scene.platform === 'android') {
     scene.compositeScreenshot = 'assets/android-substrate.jpg';
     delete scene.pinned;
   } else if (scene.platform === 'ios') {
-    scene.compositeScreenshot = 'assets/ios-substrate.jpg';
+    scene.compositeScreenshot = 'assets/ios-composite-base.jpg';
     delete scene.pinned;
   }
 

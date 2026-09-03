@@ -490,13 +490,11 @@ ${themeSel} #chat .message__image-wrap--overlay .checks-img {
 }
 /* meta a–e: a — рядом с текстом; b–e — угол */
 ${themeSel} #chat .bubble.bubble--ios-a:not(.message--media) {
-  display: inline-flex !important;
-  flex-direction: row !important;
-  flex-wrap: nowrap !important;
-  align-items: flex-end !important;
-  justify-content: flex-start !important;
-  column-gap: 0 !important;
-  gap: 0 !important;
+  display: inline-grid !important;
+  grid-template-columns: max-content max-content !important;
+  align-items: end !important;
+  justify-content: start !important;
+  column-gap: ${Math.round(4 * sx)}px !important;
   position: relative !important;
   width: fit-content !important;
   max-width: 100% !important;
@@ -508,33 +506,55 @@ ${themeSel} #chat .bubble.bubble--ios-a:not(.message--media)::after {
   content: none !important;
 }
 ${themeSel} #chat .bubble.bubble--ios-a:not(.message--media) .bubble-text {
-  flex: 0 0 auto !important;
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+  display: block !important;
+  min-width: 0 !important;
   width: auto !important;
-  max-width: none !important;
+  max-width: 100% !important;
   padding-bottom: 0 !important;
   padding-right: 0 !important;
 }
 ${themeSel} #chat .bubble.bubble--ios-a:not(.message--media) .meta {
+  grid-column: 2 !important;
+  grid-row: 1 !important;
+  align-self: end !important;
   position: static !important;
   float: none !important;
   clear: none !important;
   right: auto !important;
   bottom: auto !important;
   top: auto !important;
-  margin: 0 0 0 ${Math.max(2, Math.round(4 * sx))}px !important;
+  margin: 0 !important;
   transform: none !important;
   display: inline-flex !important;
-  flex: 0 0 auto !important;
-  align-self: flex-end !important;
   align-items: center !important;
 }
 ${themeSel} #chat .row.out .bubble.bubble--ios-a:not(.message--media) {
-  padding-right: ${Math.round(30 * sx)}px !important;
-  box-sizing: content-box !important;
-  width: auto !important;
+  display: inline-grid !important;
+  grid-template-columns: max-content max-content !important;
+  align-items: end !important;
+  column-gap: ${Math.round(4 * sx)}px !important;
+  position: relative !important;
+  padding-right: ${Math.round(4 * sx)}px !important;
+  width: fit-content !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+}
+${themeSel} #chat .row.out .bubble.bubble--ios-a:not(.message--media) .bubble-text {
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+  display: block !important;
+  padding-right: 0 !important;
+  padding-bottom: 0 !important;
 }
 ${themeSel} #chat .row.out .bubble.bubble--ios-a:not(.message--media) .meta {
-  margin: ${Math.round(4 * sy)}px ${Math.round(16 * sx)}px 0 ${Math.round(4 * sx)}px !important;
+  grid-column: 2 !important;
+  grid-row: 1 !important;
+  position: static !important;
+  right: auto !important;
+  bottom: auto !important;
+  margin: 0 !important;
   align-items: center !important;
   transform: none !important;
 }
@@ -608,7 +628,7 @@ ${themeSel} #chat .message__image-wrap--overlay .meta {
   right: ${Math.round(5 * sx)}px !important;
 }
 ${themeSel} #chat .row.out .message__image-wrap--overlay .meta {
-  right: ${Math.round(10 * sx)}px !important;
+  right: ${Math.round(4 * sx)}px !important;
 }
 ${themeSel} #chat .bubble:not(.message--media) .meta-slot,
 ${themeSel} #chat .bubble:not(.message--media) .meta-spacer {
@@ -684,10 +704,21 @@ export function buildIosNativeCompositeCss({
   iosCompositeScale,
   PHONE_LOGICAL_WIDTH_CSS_PX,
 }) {
-  /* iOS: 1:1 px подложки + dpr=1; целые CSS-px (дробный calc мылит Light). */
-  const chatTopPx = Math.round(nativeH * 0.085);
-  const chatBottomPx = Math.round(nativeH * 0.095);
+  /* iOS как Android: masked substrate + chrome из assets/ios-chrome, dpr=1. */
   const s = iosCompositeScale > 0 ? iosCompositeScale : nativeW / PHONE_LOGICAL_WIDTH_CSS_PX;
+  const chromeSide = Math.round(nativeW * (14 / 1391));
+  const statusH = Math.round(nativeH * 0.045);
+  const pillH = Math.round(nativeW * (72 / 1391) * 2.25);
+  const chromeGap = Math.round(nativeW * (8 / 1391));
+  const composerH = Math.round(nativeW * (96 / 1391) * 1.3);
+  const composerBottom = Math.round(nativeH * 0.02);
+  const homeH = Math.round(nativeH * 0.01);
+  /* Лента на весь экран — сообщения уходят под верхние и нижние пилюли (frost в sharp). */
+  const chatTopPx = 0;
+  const chatBottomPx = 0;
+  const titleFont = Math.round(pillH * 0.36);
+  const titleStatusFont = Math.round(pillH * 0.24);
+  const avatar = Math.max(1, pillH - 6);
   const fsBubble = Math.round(12.75 * s);
   const fsMeta = Math.round(8.5 * s);
   const fsDate = Math.round(10.5 * s);
@@ -715,6 +746,8 @@ ${themeSel}{
   background:transparent !important;
   box-shadow:none !important;
   --comp-s:${s.toFixed(6)};
+  --ios-nav-row-height:${pillH}px;
+  --ios-nav-avatar-inner:${avatar}px;
 }
 ${themeSel} .phone-main,
 ${themeSel} .chat-wrap,
@@ -724,33 +757,313 @@ ${themeSel} .chat-wrap::before {
   box-shadow:none !important;
 }
 ${themeSel} .composite-screen-bg{display:none !important;}
-${themeSel} .phone-chrome,
-${themeSel} .ios-composer-row,
-${themeSel} .ios-home-indicator,
-${themeSel} .chrome-header-stack,
-${themeSel} .pinned-container {
+${themeSel} .pinned-container,
+${themeSel} .ios-pinned-row {
   display:none !important;
 }
-${themeSel} .chat-wrap {
+${themeSel} .phone-chrome {
+  display:block !important;
+  visibility:visible !important;
+  position:absolute !important;
+  left:0 !important;
+  right:0 !important;
+  top:0 !important;
+  z-index:5 !important;
+  pointer-events:none !important;
+  background:transparent !important;
+  padding:0 ${chromeSide}px !important;
+}
+${themeSel} .chrome-header-stack {
+  display:block !important;
+  visibility:visible !important;
+  background:transparent !important;
+  border:none !important;
+  padding:0 !important;
+}
+${themeSel} .chrome-header-stack::before,
+${themeSel} .chrome-header-stack::after {
+  display:none !important;
+}
+${themeSel} .ios-status {
+  display:flex !important;
+  align-items:flex-end !important;
+  justify-content:space-between !important;
+  height:${statusH}px !important;
+  min-height:${statusH}px !important;
+  padding:0 ${Math.round(6 * s)}px ${Math.round(4 * s)}px !important;
+  box-sizing:border-box !important;
+  background:transparent !important;
+}
+${themeSel} .ios-time {
+  display:block !important;
+  color:#fff !important;
+  font-size:${Math.max(20, Math.round(statusH * 0.5))}px !important;
+  font-weight:600 !important;
+  line-height:1 !important;
+  margin:0 !important;
+  transform:none !important;
+}
+${themeSel} .ios-island-wrap {
+  display:none !important;
+  visibility:hidden !important;
+}
+${themeSel} .ios-tray {
+  display:flex !important;
+  align-items:center !important;
+  justify-content:flex-end !important;
+  transform:none !important;
+  margin:0 !important;
+}
+${themeSel} .ios-status-tray-img {
+  height:${Math.max(24, Math.round(statusH * 0.55))}px !important;
+  width:auto !important;
+  max-width:none !important;
+  opacity:1 !important;
+  display:block !important;
+}
+${themeSel} .ios-nav.telegram-topbar {
+  display:grid !important;
+  grid-template-columns:auto minmax(0,1fr) ${pillH}px !important;
+  column-gap:${chromeGap}px !important;
+  align-items:center !important;
+  height:${pillH}px !important;
+  min-height:${pillH}px !important;
+  margin-top:${Math.round(4 * s)}px !important;
+  padding:0 !important;
+  transform:none !important;
+}
+${themeSel} .ios-back.back-pill {
+  display:inline-flex !important;
+  visibility:visible !important;
+  align-items:center !important;
+  gap:${Math.round(4 * s)}px !important;
+  height:${pillH}px !important;
+  min-height:${pillH}px !important;
+  min-width:${pillH}px !important;
+  width:auto !important;
+  max-width:none !important;
+  padding:0 ${Math.round(12 * s)}px 0 ${Math.round(10 * s)}px !important;
+  border-radius:999px !important;
+  border:${Math.max(1, Math.round(1.25 * s))}px solid #272320 !important;
+  box-shadow:none !important;
+  background-color:#1b1b1b !important;
+  background-image:url("__IOS_BACK_PILL__") !important;
+  background-size:100% 100% !important;
+  background-repeat:no-repeat !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+  overflow:hidden !important;
+  box-sizing:border-box !important;
+}
+${themeSel} .ios-back.back-pill .ios-chevron {
+  display:inline-block !important;
+  color:#fff !important;
+  font-size:${Math.round(pillH * 0.72)}px !important;
+  line-height:1 !important;
+  transform:translateY(-0.06em) !important;
+}
+${themeSel} .ios-back.back-pill .ios-unread-pill {
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  min-width:${Math.round(pillH * 0.48)}px !important;
+  height:${Math.round(pillH * 0.48)}px !important;
+  padding:0 ${Math.round(pillH * 0.14)}px !important;
+  border-radius:999px !important;
+  background-color:#fff !important;
+  background-image:url("__IOS_UNREAD_PILL__") !important;
+  background-size:100% 100% !important;
+  background-repeat:no-repeat !important;
+  color:#0a0a0a !important;
+  font-size:${Math.round(pillH * 0.28)}px !important;
+  font-weight:500 !important;
+}
+${themeSel} .ios-nav-mid {
+  display:flex !important;
+  justify-content:center !important;
+  align-items:center !important;
+  min-width:0 !important;
+}
+${themeSel} .ios-title-pill.user-pill {
+  display:flex !important;
+  visibility:visible !important;
+  align-items:center !important;
+  justify-content:center !important;
+  width:fit-content !important;
+  max-width:100% !important;
+  height:${pillH}px !important;
+  min-height:${pillH}px !important;
+  padding:0 ${Math.round(pillH * 0.32)}px !important;
+  border-radius:999px !important;
+  border:${Math.max(1, Math.round(1.25 * s))}px solid #272320 !important;
+  box-shadow:none !important;
+  background-color:#1b1b1b !important;
+  background-image:url("__IOS_TITLE_PILL__") !important;
+  background-size:100% 100% !important;
+  background-repeat:no-repeat !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+  overflow:hidden !important;
+  box-sizing:border-box !important;
+}
+${themeSel} .ios-nav-title {
+  font-size:${titleFont}px !important;
+  font-weight:600 !important;
+  line-height:1.15 !important;
+  color:#fff !important;
+}
+${themeSel} .ios-nav-sub {
+  font-size:${titleStatusFont}px !important;
+  line-height:1.15 !important;
+  margin-top:1px !important;
+}
+${themeSel} .ios-nav-right {
+  width:${pillH}px !important;
+  height:${pillH}px !important;
+  border:${Math.max(1, Math.round(1.25 * s))}px solid #272320 !important;
+  background:transparent !important;
+  transform:none !important;
+  box-sizing:border-box !important;
+  border-radius:50% !important;
+  overflow:hidden !important;
+}
+${themeSel} .ios-nav-right .ios-nav-avatar,
+${themeSel} .ios-nav-right .ios-nav-avatar.placeholder {
+  width:${avatar}px !important;
+  height:${avatar}px !important;
+  font-size:${Math.round(avatar * 0.42)}px !important;
+}
+${themeSel} .ios-composer-row.message-input-bar,
+${themeSel} .ios-composer-row {
+  display:block !important;
+  visibility:visible !important;
+  position:absolute !important;
+  left:${chromeSide}px !important;
+  right:${chromeSide}px !important;
+  bottom:${composerBottom + homeH}px !important;
+  height:${composerH}px !important;
+  padding:0 !important;
+  border:none !important;
+  background:transparent !important;
+  z-index:5 !important;
+}
+${themeSel} .ios-composer {
+  display:grid !important;
+  grid-template-columns:${composerH}px minmax(0,1fr) ${composerH}px !important;
+  column-gap:${chromeGap}px !important;
+  align-items:center !important;
+  height:100% !important;
+}
+${themeSel} .ios-attach.circle-button {
+  width:${composerH}px !important;
+  height:${composerH}px !important;
+  border-radius:50% !important;
+  border:none !important;
+  background-color:#1b1b1b !important;
+  background-image:url("__IOS_ATTACH_CIRCLE__") !important;
+  background-size:100% 100% !important;
+  background-repeat:no-repeat !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+  display:grid !important;
+  place-items:center !important;
+  overflow:hidden !important;
+}
+${themeSel} .ios-attach .composer-tool-icon {
+  width:${Math.round(composerH * 0.42)}px !important;
+  height:${Math.round(composerH * 0.42)}px !important;
+}
+${themeSel} .ios-input-fake.message-input {
+  height:${composerH}px !important;
+  min-height:${composerH}px !important;
+  padding:0 ${Math.round(composerH * 0.32)}px 0 ${Math.round(composerH * 0.36)}px !important;
+  border-radius:999px !important;
+  border:none !important;
+  background-color:#1b1b1b !important;
+  background-image:url("__IOS_INPUT_PILL__") !important;
+  background-size:100% 100% !important;
+  background-repeat:no-repeat !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+}
+${themeSel} .ios-input-placeholder {
+  font-size:${Math.round(composerH * 0.36)}px !important;
+  color:rgba(255,255,255,0.42) !important;
+}
+${themeSel} .ios-input-icons .composer-tool-icon {
+  width:${Math.round(composerH * 0.42)}px !important;
+  height:${Math.round(composerH * 0.42)}px !important;
+}
+${themeSel} .ios-mic.circle-button {
+  width:${composerH}px !important;
+  height:${composerH}px !important;
+  border-radius:50% !important;
+  border:none !important;
+  background:transparent !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+  padding:0 !important;
+  display:grid !important;
+  place-items:center !important;
+  overflow:hidden !important;
+}
+${themeSel} .ios-mic .composer-tool-icon {
+  width:100% !important;
+  height:100% !important;
+  object-fit:contain !important;
+}
+${themeSel} .ios-home-indicator.home-indicator {
+  display:flex !important;
+  position:absolute !important;
+  left:0 !important;
+  right:0 !important;
+  bottom:0 !important;
+  height:${homeH + composerBottom}px !important;
+  background:transparent !important;
+  padding:0 !important;
+  align-items:flex-end !important;
+  justify-content:center !important;
+  z-index:6 !important;
+}
+${themeSel} .ios-home-indicator.home-indicator::after {
+  width:${Math.round(nativeW * 0.3)}px !important;
+  height:${Math.max(3, Math.round(4 * s))}px !important;
+  margin-bottom:${Math.round(composerBottom * 0.35)}px !important;
+  background:rgba(255,255,255,0.9) !important;
+}
+${themeSel} .chat-wrap,
+${themeSel} #chat.chat-wrap {
   inset: unset !important;
-  top: ${chatTopPx}px !important;
+  top: 0 !important;
   right: 0 !important;
   bottom: ${chatBottomPx}px !important;
   left: 0 !important;
   height: auto !important;
+  max-height: none !important;
   display: flex !important;
   flex-direction: column !important;
   justify-content: flex-start !important;
-  padding-top: ${Math.round(8 * s)}px !important;
-  padding-bottom: ${Math.round(8 * s)}px !important;
-  padding-left: ${Math.round(10 * s)}px !important;
-  padding-right: ${Math.round(10 * s)}px !important;
+  padding: 0 ${Math.round(10 * s)}px ${Math.round(8 * s)}px !important;
   overflow-x: hidden !important;
   overflow-y: auto !important;
   min-height: 0 !important;
+  clip-path: none !important;
+  -webkit-mask-image: none !important;
+  mask-image: none !important;
+  background: transparent !important;
+  background-image: none !important;
 }
 ${themeSel} .chat-wrap > :first-child {
   margin-top: auto !important;
+}
+${themeSel} #chat .row.in .bubble:not(.message--media) {
+  background: rgba(18, 0, 54, 0.82) !important;
+}
+${themeSel} #chat .row.out .bubble:not(.message--media) {
+  background: rgba(11, 0, 113, 0.82) !important;
 }
 ${themeSel} #chat .row {
   margin-bottom: ${Math.round(6 * s)}px !important;
@@ -840,7 +1153,10 @@ ${themeSel} #chat .bubble.bubble--ios-a:not(.message--media) .meta {
   gap: ${Math.max(2, Math.round(2 * s))}px !important;
 }
 ${themeSel} #chat .row.out .bubble.bubble--ios-a:not(.message--media) {
-  padding-right: ${Math.round(20 * s)}px !important;
+  padding-right: ${Math.round(4 * s)}px !important;
+}
+${themeSel} #chat .row.out .bubble.bubble--ios-a:not(.message--media) .bubble-text {
+  padding-right: 0 !important;
 }
 ${themeSel} #chat .row.out .bubble.bubble--ios-a:not(.message--media) .meta {
   margin: 0 0 0 ${Math.max(2, Math.round(2 * s))}px !important;

@@ -6,7 +6,7 @@ import {
   resolveSfProTextFontForWeight,
   trayBatterySvgFontFamily,
 } from './iosFontFaces.js';
-import { iosStatusTrayStripPath } from './paths.js';
+import { iosStatusTrayStripPath, projectRoot } from './paths.js';
 import { FALLBACK_IOS_STATUS_TRAY } from './fallbackIcons.js';
 
 

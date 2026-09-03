@@ -621,8 +621,9 @@ function buildScenePayload() {
   };
 
   /* Подложка 1:1 — без CSS-хрома и без растяжения к чужому эталону */
+  /* Подложка 1:1 — Android substrate; iPhone — новые обои (не ios-substrate doodle). */
   scene.compositeScreenshot =
-    platform === 'ios' ? 'assets/ios-substrate.jpg' : 'assets/android-substrate.jpg';
+    platform === 'ios' ? 'assets/ios-composite-base.jpg' : 'assets/android-substrate.jpg';
 
   {
     const sub = document.getElementById('ios-subtitle').value.trim();
