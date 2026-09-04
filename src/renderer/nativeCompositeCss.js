@@ -887,16 +887,16 @@ ${themeSel} .ios-back.back-pill .ios-unread-pill {
   display:inline-flex !important;
   align-items:center !important;
   justify-content:center !important;
-  min-width:${Math.round(pillH * 0.48)}px !important;
-  height:${Math.round(pillH * 0.48)}px !important;
-  padding:0 ${Math.round(pillH * 0.14)}px !important;
+  min-width:${Math.round(pillH * 0.58)}px !important;
+  height:${Math.round(pillH * 0.58)}px !important;
+  padding:0 ${Math.round(pillH * 0.18)}px !important;
   border-radius:999px !important;
   background-color:#fff !important;
   background-image:url("__IOS_UNREAD_PILL__") !important;
   background-size:100% 100% !important;
   background-repeat:no-repeat !important;
   color:#0a0a0a !important;
-  font-size:${Math.round(pillH * 0.28)}px !important;
+  font-size:${Math.round(pillH * 0.34)}px !important;
   font-weight:500 !important;
 }
 ${themeSel} .ios-nav-mid {
@@ -929,7 +929,7 @@ ${themeSel} .ios-title-pill.user-pill {
 }
 ${themeSel} .ios-nav-title {
   font-size:${titleFont}px !important;
-  font-weight:400 !important;
+  font-weight:500 !important;
   line-height:1.15 !important;
   color:#fff !important;
 }
