@@ -78,7 +78,7 @@ export function iosHeaderGeometry(nativeW, _nativeH) {
   const titleFont = Math.round(1.1 * u);
   const titleStatusFont = Math.round(0.6 * u);
   const statusFont = Math.round(0.9 * u);
-  const statusIcon = Math.round(0.85 * u);
+  const statusIcon = Math.round(0.72 * u);
   const avatar = Math.max(1, pillH - Math.max(2, Math.round(0.15 * u)));
   const headerBottom = statusH + statusPillGap + navH;
   return {
