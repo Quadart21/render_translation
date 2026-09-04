@@ -79,7 +79,15 @@ export function iosHeaderGeometry(nativeW, _nativeH) {
   const titleStatusFont = Math.round(0.6 * u);
   const statusFont = Math.round(0.9 * u);
   const statusIcon = Math.round(0.8 * u);
-  const avatar = Math.max(1, pillH - Math.max(2, Math.round(0.15 * u)));
+  /* аватар меньше пилюль; серая обводка + зазор до фото; сдвиг вправо */
+  const avatarOuter = Math.round(2.45 * u);
+  const avatarGap = Math.round(0.14 * u);
+  const avatarOutlineW = Math.max(1, Math.round(0.1 * u));
+  const avatar = Math.max(
+    1,
+    avatarOuter - 2 * avatarOutlineW - 2 * avatarGap
+  );
+  const avatarShiftX = Math.round(0.4 * u);
   const headerBottom = statusH + statusPillGap + navH;
   return {
     u,
@@ -97,6 +105,10 @@ export function iosHeaderGeometry(nativeW, _nativeH) {
     statusFont,
     statusIcon,
     avatar,
+    avatarOuter,
+    avatarGap,
+    avatarOutlineW,
+    avatarShiftX,
     headerBottom,
   };
 }

@@ -722,6 +722,10 @@ export function buildIosNativeCompositeCss({
     statusFont,
     statusIcon,
     avatar,
+    avatarOuter,
+    avatarGap,
+    avatarOutlineW,
+    avatarShiftX,
   } = g;
   const composerH = Math.round(nativeW * (96 / 1391) * 1.3);
   const composerBottom = Math.round(nativeH * 0.02);
@@ -839,7 +843,7 @@ ${themeSel} .ios-status-tray-img {
 }
 ${themeSel} .ios-nav.telegram-topbar {
   display:grid !important;
-  grid-template-columns:auto minmax(0,1fr) ${pillH}px !important;
+  grid-template-columns:auto minmax(0,1fr) ${avatarOuter}px !important;
   column-gap:${chromeGap}px !important;
   align-items:center !important;
   height:${navH}px !important;
@@ -935,19 +939,24 @@ ${themeSel} .ios-nav-sub {
   margin-top:${Math.max(1, Math.round(0.05 * g.u))}px !important;
 }
 ${themeSel} .ios-nav-right {
-  width:${pillH}px !important;
-  height:${pillH}px !important;
-  border:${outlineW}px solid #272320 !important;
+  width:${avatarOuter}px !important;
+  height:${avatarOuter}px !important;
+  padding:${avatarGap}px !important;
+  border:${avatarOutlineW}px solid #9a9a9a !important;
   background:transparent !important;
-  transform:none !important;
+  transform:translateX(${avatarShiftX}px) !important;
   box-sizing:border-box !important;
   border-radius:50% !important;
   overflow:hidden !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
 }
 ${themeSel} .ios-nav-right .ios-nav-avatar,
 ${themeSel} .ios-nav-right .ios-nav-avatar.placeholder {
-  width:${avatar}px !important;
-  height:${avatar}px !important;
+  width:100% !important;
+  height:100% !important;
+  border-radius:50% !important;
   font-size:${Math.round(avatar * 0.42)}px !important;
 }
 ${themeSel} .ios-composer-row.message-input-bar,

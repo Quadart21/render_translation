@@ -1041,7 +1041,7 @@ body {
     }
 
 .theme-ios.phone.composite-screen-on .ios-nav-right {
-      border: 1px solid #272320 !important;
+      border: 1.5px solid #9a9a9a !important;
       background: transparent !important;
     }
 
@@ -1145,12 +1145,14 @@ body {
 .theme-ios .ios-nav.telegram-topbar {
       align-items: center;
       --ios-nav-row-height: 3.024em;
-      --ios-nav-avatar-inner: 2.835em;
+      --ios-nav-avatar-outer: 2.45em;
+      --ios-nav-avatar-gap: 0.14em;
+      --ios-nav-avatar-outline: #9a9a9a;
       --ios-nav-chrome-outline: #272320;
       --ios-nav-pill-outline: #272320;
       --ios-nav-chrome-outline-w: 1px;
       display: grid;
-      grid-template-columns: auto minmax(0, 1fr) 3.024em;
+      grid-template-columns: auto minmax(0, 1fr) var(--ios-nav-avatar-outer);
       justify-items: stretch;
       column-gap: 0.882em;
       width: 100%;
@@ -1160,6 +1162,7 @@ body {
       padding: 0.6em 0.8em;
       margin-top: 0.55em;
       transform: none;
+      overflow: visible;
     }
 
 /* ????? ? ?????? ????, ?????? ? ???????; ??????? ??????? 1fr ? ??????? ?? ??????, ?????? ?????/?????? ?? ??? ????? */
@@ -1183,22 +1186,25 @@ body {
 .theme-ios .ios-nav-right {
       justify-self: end;
       box-sizing: border-box;
-      width: 3.024em;
-      height: 3.024em;
+      width: var(--ios-nav-avatar-outer);
+      height: var(--ios-nav-avatar-outer);
+      padding: var(--ios-nav-avatar-gap);
       display: flex;
       align-items: center;
       justify-content: center;
       border-radius: 50%;
-      border: var(--ios-nav-chrome-outline-w) solid var(--ios-nav-chrome-outline);
+      border: 1.5px solid var(--ios-nav-avatar-outline);
       overflow: hidden;
-      transform: none;
+      background: transparent;
+      transform: translateX(0.4em);
     }
 
 .theme-ios .ios-nav-right .ios-nav-avatar,
     .theme-ios .ios-nav-right .ios-nav-avatar.placeholder {
-      width: var(--ios-nav-avatar-inner);
-      height: var(--ios-nav-avatar-inner);
+      width: 100%;
+      height: 100%;
       border: none;
+      border-radius: 50%;
       box-sizing: border-box;
       flex-shrink: 0;
     }
