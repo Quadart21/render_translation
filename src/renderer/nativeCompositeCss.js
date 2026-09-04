@@ -887,16 +887,16 @@ ${themeSel} .ios-back.back-pill .ios-unread-pill {
   display:inline-flex !important;
   align-items:center !important;
   justify-content:center !important;
-  min-width:${Math.round(pillH * 0.464)}px !important;
-  height:${Math.round(pillH * 0.464)}px !important;
-  padding:0 ${Math.round(pillH * 0.144)}px !important;
+  min-width:${Math.round(pillH * 0.418)}px !important;
+  height:${Math.round(pillH * 0.418)}px !important;
+  padding:0 ${Math.round(pillH * 0.13)}px !important;
   border-radius:999px !important;
   background-color:#fff !important;
   background-image:url("__IOS_UNREAD_PILL__") !important;
   background-size:100% 100% !important;
   background-repeat:no-repeat !important;
   color:#0a0a0a !important;
-  font-size:${Math.round(pillH * 0.272)}px !important;
+  font-size:${Math.round(pillH * 0.245)}px !important;
   font-weight:500 !important;
 }
 ${themeSel} .ios-nav-mid {

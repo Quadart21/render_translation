@@ -1001,10 +1001,10 @@ body {
       background-repeat: no-repeat !important;
       color: #0a0a0a !important;
       border-radius: 999px !important;
-      padding: 5px 6px !important;
-      min-width: 1.08em !important;
-      min-height: 1.08em !important;
-      font-size: 12px !important;
+      padding: 4px 5px !important;
+      min-width: 0.97em !important;
+      min-height: 0.97em !important;
+      font-size: 11px !important;
       font-weight: 400 !important;
       line-height: 1 !important;
       letter-spacing: 0 !important;
@@ -1014,15 +1014,15 @@ body {
     }
 
 .theme-ios.phone.composite-screen-on .ios-back.back-pill .ios-unread-pill--w2 {
-      padding: 5px 9px !important;
+      padding: 4px 8px !important;
     }
 
 .theme-ios.phone.composite-screen-on .ios-back.back-pill .ios-unread-pill--w3 {
-      padding: 5px 7px !important;
+      padding: 4px 6px !important;
     }
 
 .theme-ios.phone.composite-screen-on .ios-back.back-pill .ios-unread-pill--w4 {
-      padding: 4px 6px !important;
+      padding: 4px 5px !important;
     }
 
 .theme-ios.phone.composite-screen-on .ios-back.back-pill .ios-unread-pill .ios-unread-pill-inner {
@@ -1369,10 +1369,10 @@ body {
       background-repeat: no-repeat;
       color: #0a0a0a;
       border-radius: 999px;
-      padding: 5px 6px;
-      min-width: 1.08em;
-      min-height: 1.08em;
-      font-size: 12px;
+      padding: 4px 5px;
+      min-width: 0.97em;
+      min-height: 0.97em;
+      font-size: 11px;
       font-weight: 400;
       line-height: 1;
       letter-spacing: 0;
@@ -1384,15 +1384,15 @@ body {
     }
 
 .theme-ios .ios-back.back-pill .ios-unread-pill--w2 {
-      padding: 5px 9px;
+      padding: 4px 8px;
     }
 
 .theme-ios .ios-back.back-pill .ios-unread-pill--w3 {
-      padding: 5px 7px;
+      padding: 4px 6px;
     }
 
 .theme-ios .ios-back.back-pill .ios-unread-pill--w4 {
-      padding: 4px 6px;
+      padding: 4px 5px;
     }
 
 .theme-ios .ios-back.back-pill .ios-unread-pill .ios-unread-pill-inner {
