@@ -75,8 +75,8 @@ export function iosHeaderGeometry(nativeW, _nativeH) {
   const statusPillGap = Math.round(0.55 * u); /* ещё ниже под статус-баром */
   const navH = Math.round(4.224 * u); /* 0.6*2 + 3.024 */
   const chromeSide = Math.round(0.8 * u);
-  const titleFont = Math.round(1.386 * u); /* 1.32em × 1.05 */
-  const titleStatusFont = Math.round(0.756 * u); /* 0.72em × 1.05 */
+  const titleFont = Math.round(1.1 * u); /* ник без масштаба пилюль */
+  const titleStatusFont = Math.round(0.6 * u);
   const statusFont = Math.round(0.9 * u);
   const statusIcon = Math.round(0.8 * u);
   const avatar = Math.max(1, pillH - Math.max(2, Math.round(0.15 * u)));

@@ -1215,14 +1215,14 @@ body {
 .theme-ios .ios-nav-title {
       font-weight: 700;
       font-synthesis: none;
-      font-size: 1.386em;
+      font-size: 1.1em;
       line-height: 1.2;
 }
 
 .theme-ios .ios-nav-sub {
       font-weight: 300;
       font-synthesis: none;
-      font-size: 0.756em;
+      font-size: 0.6em;
       margin-top: 0.05em;
       line-height: 1.2;
     }
