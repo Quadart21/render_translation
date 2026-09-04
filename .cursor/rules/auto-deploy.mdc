@@ -28,6 +28,7 @@ Read from `.env` (gitignored):
 - `DEPLOY_BRANCH` (optional; default = current git branch)
 
 Helper: `python scripts/_deploy_remote.py` (reads `.env`, no secrets in repo).
+Must stream remote logs live (`[deploy] 1/4…4/4`) — do not buffer until exit.
 
 If SSH key auth fails, use Paramiko with `DEPLOY_SSH_PASSWORD`. Do not echo the password in chat or logs.
 
