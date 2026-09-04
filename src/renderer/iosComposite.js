@@ -59,7 +59,7 @@ export async function maskIosSubstrateChrome(imgBuf) {
 
 /**
  * Геометрия iOS-шапки — только em от базового шрифта (не % экрана).
- * Пилюли nav: 2.4em × 1.2 = 2.88em; nav ≈ 4.08em (pad 0.6 + content 2.88).
+ * Пилюли nav: 2.88em × 1.05 ≈ 3.024em; nav ≈ 4.224em (pad 0.6 + content).
  * Синхронно с buildIosNativeCompositeCss и theme-ios CSS.
  * @param {number} nativeW
  * @param {number} [_nativeH]
@@ -68,15 +68,15 @@ export function iosHeaderGeometry(nativeW, _nativeH) {
   const s = nativeW / PHONE_LOGICAL_WIDTH_CSS_PX;
   const u = IOS_CHROME_BASE_EM_PX * s;
   const statusH = Math.round(2.4 * u);
-  const pillH = Math.round(2.88 * u); /* 2.4em × 1.2 */
+  const pillH = Math.round(3.024 * u); /* 2.88em × 1.05 */
   const navPadY = Math.round(0.6 * u);
   const navPadX = Math.round(0.8 * u);
-  const chromeGap = Math.round(0.84 * u); /* 0.7em × 1.2 */
-  const statusPillGap = Math.round(0.35 * u); /* чуть ниже под статус-баром */
-  const navH = Math.round(4.08 * u); /* 0.6*2 + 2.88 */
+  const chromeGap = Math.round(0.882 * u); /* 0.84em × 1.05 */
+  const statusPillGap = Math.round(0.55 * u); /* ещё ниже под статус-баром */
+  const navH = Math.round(4.224 * u); /* 0.6*2 + 3.024 */
   const chromeSide = Math.round(0.8 * u);
-  const titleFont = Math.round(1.32 * u); /* 1.1em × 1.2 */
-  const titleStatusFont = Math.round(0.72 * u); /* 0.6em × 1.2 */
+  const titleFont = Math.round(1.386 * u); /* 1.32em × 1.05 */
+  const titleStatusFont = Math.round(0.756 * u); /* 0.72em × 1.05 */
   const statusFont = Math.round(0.9 * u);
   const statusIcon = Math.round(0.8 * u);
   const avatar = Math.max(1, pillH - Math.max(2, Math.round(0.15 * u)));

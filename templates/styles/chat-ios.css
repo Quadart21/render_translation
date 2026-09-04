@@ -1144,21 +1144,21 @@ body {
 
 .theme-ios .ios-nav.telegram-topbar {
       align-items: center;
-      --ios-nav-row-height: 2.88em;
-      --ios-nav-avatar-inner: 2.7em;
+      --ios-nav-row-height: 3.024em;
+      --ios-nav-avatar-inner: 2.835em;
       --ios-nav-chrome-outline: #272320;
       --ios-nav-pill-outline: #272320;
       --ios-nav-chrome-outline-w: 1px;
       display: grid;
-      grid-template-columns: auto minmax(0, 1fr) 2.88em;
+      grid-template-columns: auto minmax(0, 1fr) 3.024em;
       justify-items: stretch;
-      column-gap: 0.84em;
+      column-gap: 0.882em;
       width: 100%;
       box-sizing: border-box;
-      height: 4.08em;
-      min-height: 4.08em;
+      height: 4.224em;
+      min-height: 4.224em;
       padding: 0.6em 0.8em;
-      margin-top: 0.35em;
+      margin-top: 0.55em;
       transform: none;
     }
 
@@ -1183,8 +1183,8 @@ body {
 .theme-ios .ios-nav-right {
       justify-self: end;
       box-sizing: border-box;
-      width: 2.88em;
-      height: 2.88em;
+      width: 3.024em;
+      height: 3.024em;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1215,14 +1215,14 @@ body {
 .theme-ios .ios-nav-title {
       font-weight: 700;
       font-synthesis: none;
-      font-size: 1.32em;
+      font-size: 1.386em;
       line-height: 1.2;
 }
 
 .theme-ios .ios-nav-sub {
       font-weight: 300;
       font-synthesis: none;
-      font-size: 0.72em;
+      font-size: 0.756em;
       margin-top: 0.05em;
       line-height: 1.2;
     }
