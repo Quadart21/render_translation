@@ -815,8 +815,8 @@ ${themeSel} .ios-time {
   font-size:${statusFont}px !important;
   font-weight:700 !important;
   line-height:1 !important;
-  margin:0 !important;
-  transform:none !important;
+  margin:0 0 0 ${Math.round(0.35 * g.u)}px !important;
+  transform:translateY(${Math.round(0.18 * g.u)}px) !important;
 }
 ${themeSel} .ios-island-wrap {
   display:none !important;
@@ -826,9 +826,9 @@ ${themeSel} .ios-tray {
   display:flex !important;
   align-items:center !important;
   justify-content:flex-end !important;
-  gap:${Math.round(0.3 * g.u)}px !important;
-  transform:none !important;
-  margin:0 !important;
+  gap:${Math.round(0.25 * g.u)}px !important;
+  margin:0 ${Math.round(-0.1 * g.u)}px 0 0 !important;
+  transform:translate(${Math.round(0.28 * g.u)}px, ${Math.round(0.2 * g.u)}px) !important;
 }
 ${themeSel} .ios-status-tray-img {
   height:${statusIcon}px !important;

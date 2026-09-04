@@ -1232,10 +1232,10 @@ body {
       font-weight: 600;
     }
 
-/* время / трей — em от шапки; без сдвигов в px */
+/* время — чуть ниже и правее */
     .theme-ios .ios-time {
-      transform: none;
-      margin: 0;
+      transform: translateY(0.18em);
+      margin: 0 0 0 0.35em;
       font-size: 0.9em;
       font-weight: 700;
       letter-spacing: 0;
@@ -1244,12 +1244,13 @@ body {
     }
 
 .theme-ios .ios-tray {
-      transform: none;
-      gap: 0.3em;
+      transform: translate(0.28em, 0.2em);
+      margin-right: -0.1em;
+      gap: 0.25em;
     }
 
 .theme-ios .ios-status-tray-img {
-      height: 1.1em;
+      height: 0.85em;
       max-width: none;
       opacity: 0.98;
     }
