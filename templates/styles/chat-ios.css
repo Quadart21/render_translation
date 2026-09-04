@@ -1352,7 +1352,8 @@ body {
 .theme-ios .ios-chevron {
       color: #ffffff;
       margin-top: 0;
-      font-size: 0.9em;
+      /* чуть выше белой подложки (.ios-unread-pill min-height: 0.97em) */
+      font-size: 1.09em;
       line-height: 1;
       transform: translateY(-0.085em);
     }
