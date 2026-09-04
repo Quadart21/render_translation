@@ -82,7 +82,7 @@ export function iosHeaderGeometry(nativeW, _nativeH) {
   /* аватар меньше пилюль; серая обводка + зазор до фото; сдвиг вправо */
   const avatarOuter = Math.round(2.45 * u);
   const avatarGap = Math.round(0.14 * u);
-  const avatarOutlineW = Math.max(1, Math.round(0.1 * u));
+  const avatarOutlineW = 1; /* тонкая серая обводка */
   const avatar = Math.max(
     1,
     avatarOuter - 2 * avatarOutlineW - 2 * avatarGap

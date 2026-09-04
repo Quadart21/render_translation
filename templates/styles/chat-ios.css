@@ -1041,7 +1041,7 @@ body {
     }
 
 .theme-ios.phone.composite-screen-on .ios-nav-right {
-      border: 1.5px solid #9a9a9a !important;
+      border: 1px solid #9a9a9a !important;
       background: transparent !important;
     }
 
@@ -1193,7 +1193,7 @@ body {
       align-items: center;
       justify-content: center;
       border-radius: 50%;
-      border: 1.5px solid var(--ios-nav-avatar-outline);
+      border: 1px solid var(--ios-nav-avatar-outline);
       overflow: hidden;
       background: transparent;
       transform: translateX(0.4em);
@@ -1219,7 +1219,7 @@ body {
     }
 
 .theme-ios .ios-nav-title {
-      font-weight: 700;
+      font-weight: 400;
       font-synthesis: none;
       font-size: 1.1em;
       line-height: 1.2;
@@ -1427,7 +1427,7 @@ body {
       height: var(--ios-nav-row-height);
       min-height: var(--ios-nav-row-height);
       max-height: var(--ios-nav-row-height);
-      padding: 0 0.55em;
+      padding: 0 var(--ios-title-pill-hpad, 0.55em);
       border-radius: 999px;
       background-color: rgba(24, 24, 24, 0.92);
       background-image: url('__IOS_TITLE_PILL__');

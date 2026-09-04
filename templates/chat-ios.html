@@ -200,9 +200,16 @@
         if (!pill) return;
         var inner = pill.querySelector('.ios-title-pill-body');
         if (!inner) return;
+        var titleEl = document.getElementById('iosNavTitle');
         function apply() {
+          var nameLen = (titleEl && titleEl.textContent ? String(titleEl.textContent).trim() : '').length;
           var w = inner.offsetWidth || inner.scrollWidth;
-          var side = Math.round(w * 0.58);
+          /* короткие ники (<7): равномерно шире «уши», больше пустого места */
+          var ratio = nameLen > 0 && nameLen < 7 ? 1.05 : 0.58;
+          var side = Math.round(w * ratio);
+          if (nameLen > 0 && nameLen < 7) {
+            side = Math.max(side, Math.round(w * 0.95), 36);
+          }
           pill.style.setProperty('--ios-title-pill-hpad', Math.max(12, side) + 'px');
         }
         apply();

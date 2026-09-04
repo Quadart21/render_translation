@@ -914,7 +914,7 @@ ${themeSel} .ios-title-pill.user-pill {
   max-width:100% !important;
   height:${pillH}px !important;
   min-height:${pillH}px !important;
-  padding:0 ${Math.round(0.55 * g.u)}px !important;
+  padding:0 var(--ios-title-pill-hpad, ${Math.round(0.55 * g.u)}px) !important;
   border-radius:999px !important;
   border:${outlineW}px solid #272320 !important;
   box-shadow:none !important;
@@ -929,7 +929,7 @@ ${themeSel} .ios-title-pill.user-pill {
 }
 ${themeSel} .ios-nav-title {
   font-size:${titleFont}px !important;
-  font-weight:700 !important;
+  font-weight:400 !important;
   line-height:1.15 !important;
   color:#fff !important;
 }
