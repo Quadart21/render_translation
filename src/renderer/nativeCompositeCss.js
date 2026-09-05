@@ -879,8 +879,7 @@ ${themeSel} .ios-back.back-pill {
 ${themeSel} .ios-back.back-pill .ios-chevron {
   display:inline-block !important;
   color:#fff !important;
-  /* чуть выше белой подложки счётчика (0.418 × pillH) */
-  font-size:${Math.round(pillH * 0.418 * 1.12)}px !important;
+  font-size:${Math.round(pillH * 0.418 * 1.12 * 2)}px !important;
   line-height:1 !important;
   transform:translateY(-0.06em) !important;
 }
