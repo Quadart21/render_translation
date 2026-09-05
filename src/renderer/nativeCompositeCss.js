@@ -897,7 +897,7 @@ ${themeSel} .ios-back.back-pill .ios-unread-pill {
   background-size:100% 100% !important;
   background-repeat:no-repeat !important;
   color:#0a0a0a !important;
-  font-size:${Math.round(pillH * 0.245)}px !important;
+  font-size:${Math.round(pillH * 0.245) + 1}px !important;
   font-weight:500 !important;
 }
 ${themeSel} .ios-nav-mid {
