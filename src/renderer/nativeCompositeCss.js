@@ -877,6 +877,7 @@ ${themeSel} .ios-back.back-pill {
   box-sizing:border-box !important;
   transform:translateX(${Math.round(-0.4 * g.u)}px) !important;
 }
+${themeSel} .ios-back.back-pill .ios-chevron {
   display:inline-block !important;
   color:#fff !important;
   font-size:${Math.round(pillH * 0.418 * 1.12 * 2)}px !important;
