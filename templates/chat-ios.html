@@ -149,7 +149,11 @@
 
       var badge = headerMeta.backBadge;
       var backEl = document.getElementById('iosBack');
-      var chev = '<span class="ios-chevron">&#8249;</span>';
+      var chev =
+        '<span class="ios-chevron" aria-hidden="true">' +
+        '<svg viewBox="0 0 12 20" xmlns="http://www.w3.org/2000/svg" focusable="false">' +
+        '<path d="M8.5 2.5L2.5 10l6 7.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>' +
+        '</svg></span>';
       if (badge != null && badge !== '') {
         var badgeStr = String(badge);
         var digitLen = (badgeStr.match(/\d/g) || []).length;

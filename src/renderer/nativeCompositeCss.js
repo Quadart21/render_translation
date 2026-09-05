@@ -878,11 +878,21 @@ ${themeSel} .ios-back.back-pill {
   transform:translateX(${Math.round(-0.4 * g.u)}px) !important;
 }
 ${themeSel} .ios-back.back-pill .ios-chevron {
-  display:inline-block !important;
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
   color:#fff !important;
+  width:${Math.round(pillH * 0.418 * 1.12 * 2)}px !important;
+  height:${Math.round(pillH * 0.418 * 1.12 * 2)}px !important;
   font-size:${Math.round(pillH * 0.418 * 1.12 * 2)}px !important;
-  line-height:1 !important;
-  transform:translateY(-0.06em) !important;
+  line-height:0 !important;
+  transform:none !important;
+  margin:0 !important;
+}
+${themeSel} .ios-back.back-pill .ios-chevron svg {
+  display:block !important;
+  width:100% !important;
+  height:100% !important;
 }
 ${themeSel} .ios-back.back-pill .ios-unread-pill {
   display:inline-flex !important;
