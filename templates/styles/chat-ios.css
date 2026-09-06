@@ -1382,7 +1382,7 @@ body {
     }
 
 .theme-ios .ios-back.back-pill .ios-unread-pill {
-      /* ????: ???? ????? ??? ??? ????????????; 2 / 3 / 4+ ? .ios-unread-pill--w2?w4 */
+      /* белая подложка под счётчик непрочитанных; 2 / 3 / 4+ → .ios-unread-pill--w2…w4 */
       display: inline-flex;
       align-items: center;
       justify-content: center;
