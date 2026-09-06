@@ -1159,7 +1159,7 @@ body {
 .theme-ios .ios-nav.telegram-topbar {
       align-items: end;
       --ios-nav-row-height: calc(3.024em - 3px);
-      --ios-nav-avatar-outer: calc(2.45em - 3px);
+      --ios-nav-avatar-outer: 2.45em;
       --ios-nav-avatar-gap: 0.14em;
       --ios-nav-avatar-outline: #9a9a9a;
       --ios-nav-chrome-outline: #272320;
@@ -1199,6 +1199,7 @@ body {
 
 .theme-ios .ios-nav-right {
       justify-self: end;
+      align-self: center;
       box-sizing: border-box;
       width: var(--ios-nav-avatar-outer);
       height: var(--ios-nav-avatar-outer);
@@ -1237,7 +1238,7 @@ body {
       font-synthesis: none;
       font-size: 1.1em;
       line-height: 1.2;
-      transform: translateY(3px);
+      transform: translateY(1px);
     }
 
 .theme-ios .ios-nav-sub {
@@ -1475,7 +1476,7 @@ body {
 
 /* ??? + ?? ?????: ???? ?? ?????? ??????? (?????? ??????) */
     .theme-ios .ios-title-pill.user-pill .ios-title-pill-body {
-      transform: translateY(2px);
+      transform: translateY(0);
     }
 
 .theme-ios .ios-title-pill.user-pill .ios-title-line {
@@ -1484,13 +1485,13 @@ body {
 
 .theme-ios .ios-title-pill.user-pill .ios-nav-title {
       line-height: 1.1;
-      transform: translateY(3px);
+      transform: translateY(1px);
     }
 
 .theme-ios .ios-title-pill.user-pill .ios-nav-sub {
       margin-top: 5px;
       line-height: 1.1;
-      transform: translateY(-2px);
+      transform: translateY(-4px);
     }
 
 .theme-ios.phone.chat-under-pinned .ios-pinned-inner.pinned-message {

@@ -748,10 +748,9 @@ export function buildIosNativeCompositeCss({
   const mediaCaptionFs = Math.round(9 * s);
   const mediaMaxH = Math.round(280 * s);
   const outlineW = Math.max(1, Math.round(0.08 * g.u));
-  /* верх пилюль на 3px ниже, нижняя граница ряда на месте */
+  /* верх пилюль на 3px ниже, нижняя граница ряда на месте; аватар не трогаем */
   const pillTrimTop = 3;
   const pillVisualH = Math.max(1, pillH - pillTrimTop);
-  const avatarOuterVisual = Math.max(1, avatarOuter - pillTrimTop);
   /* высота −2px снизу (верх на месте); шеврон от прежней высоты */
   const unreadHBase = Math.max(1, Math.round(pillH * 0.418) - 3);
   const unreadH = Math.max(1, unreadHBase - 2);
@@ -854,7 +853,7 @@ ${themeSel} .ios-status-tray-img {
 }
 ${themeSel} .ios-nav.telegram-topbar {
   display:grid !important;
-  grid-template-columns:auto minmax(0,1fr) ${avatarOuterVisual}px !important;
+  grid-template-columns:auto minmax(0,1fr) ${avatarOuter}px !important;
   column-gap:${chromeGap}px !important;
   align-items:end !important;
   height:${navH}px !important;
@@ -964,16 +963,17 @@ ${themeSel} .ios-nav-title {
   font-weight:500 !important;
   line-height:1.15 !important;
   color:#fff !important;
-  transform:translateY(3px) !important;
+  transform:translateY(1px) !important;
 }
 ${themeSel} .ios-nav-sub {
   font-size:${titleStatusFont}px !important;
   line-height:1.2 !important;
   margin-top:${Math.max(1, Math.round(0.05 * g.u))}px !important;
+  transform:translateY(-2px) !important;
 }
 ${themeSel} .ios-nav-right {
-  width:${avatarOuterVisual}px !important;
-  height:${avatarOuterVisual}px !important;
+  width:${avatarOuter}px !important;
+  height:${avatarOuter}px !important;
   padding:${avatarGap}px !important;
   border:${avatarOutlineW}px solid #9a9a9a !important;
   background:transparent !important;
@@ -984,7 +984,7 @@ ${themeSel} .ios-nav-right {
   display:flex !important;
   align-items:center !important;
   justify-content:center !important;
-  align-self:end !important;
+  align-self:center !important;
 }
 ${themeSel} .ios-nav-right .ios-nav-avatar,
 ${themeSel} .ios-nav-right .ios-nav-avatar.placeholder {
