@@ -964,6 +964,7 @@ ${themeSel} .ios-nav-title {
   font-weight:500 !important;
   line-height:1.15 !important;
   color:#fff !important;
+  transform:translateY(3px) !important;
 }
 ${themeSel} .ios-nav-sub {
   font-size:${titleStatusFont}px !important;

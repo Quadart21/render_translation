@@ -76,7 +76,7 @@ export function iosHeaderGeometry(nativeW, _nativeH) {
   const navH = Math.round(4.224 * u); /* 0.6*2 + 3.024 */
   const chromeSide = Math.round(0.8 * u);
   const titleFont = Math.round(1.1 * u); /* ник без масштаба пилюль */
-  const titleStatusFont = Math.round(0.6 * u);
+  const titleStatusFont = Math.round(0.6 * u) + 2; /* статус +2px */
   const statusFont = Math.round(0.9 * u);
   const statusIcon = Math.round(0.8 * u);
   /* аватар меньше пилюль; серая обводка + зазор до фото; сдвиг вправо */

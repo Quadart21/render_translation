@@ -1237,12 +1237,13 @@ body {
       font-synthesis: none;
       font-size: 1.1em;
       line-height: 1.2;
-}
+      transform: translateY(3px);
+    }
 
 .theme-ios .ios-nav-sub {
       font-weight: 300;
       font-synthesis: none;
-      font-size: 0.6em;
+      font-size: calc(0.6em + 2px);
       margin-top: 0.05em;
       line-height: 1.2;
     }
@@ -1483,6 +1484,7 @@ body {
 
 .theme-ios .ios-title-pill.user-pill .ios-nav-title {
       line-height: 1.1;
+      transform: translateY(3px);
     }
 
 .theme-ios .ios-title-pill.user-pill .ios-nav-sub {
