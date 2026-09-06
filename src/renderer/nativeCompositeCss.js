@@ -1167,10 +1167,12 @@ ${themeSel} #chat .bubble .meta {
   font-size: ${fsMeta}px !important;
 }
 ${themeSel} #chat .bubble.bubble--ios-a:not(.message--media) {
-  border-radius: ${rad}px !important;
-  column-gap: ${Math.round(7 * s)}px !important;
-  overflow: hidden !important;
-  position: relative !important;
+  border-radius:${rad}px !important;
+  column-gap:${Math.round(7 * s)}px !important;
+  overflow:hidden !important;
+  position:relative !important;
+  /* однострочный: меньше пустоты под meta, положение времени к тексту то же */
+  padding-bottom:${Math.max(3, Math.round(4 * s))}px !important;
 }
 ${themeSel} #chat .bubble.bubble--ios-b:not(.message--media) {
   border-radius: ${rad}px !important;
