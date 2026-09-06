@@ -69,6 +69,8 @@ export function iosHeaderGeometry(nativeW, _nativeH) {
   const u = IOS_CHROME_BASE_EM_PX * s;
   const statusH = Math.round(2.4 * u);
   const pillH = Math.round(3.024 * u); /* 2.88em × 1.05 */
+  const pillTrimTop = 3; /* верх пилюль ниже; низ на месте */
+  const pillVisualH = Math.max(1, pillH - pillTrimTop);
   const navPadY = Math.round(0.6 * u);
   const navPadX = Math.round(0.8 * u);
   const chromeGap = Math.round(0.882 * u); /* 0.84em × 1.05 */
@@ -79,8 +81,8 @@ export function iosHeaderGeometry(nativeW, _nativeH) {
   const titleStatusFont = Math.round(0.6 * u) + 2; /* статус +2px */
   const statusFont = Math.round(0.9 * u);
   const statusIcon = Math.round(0.8 * u);
-  /* аватар меньше пилюль; серая обводка + зазор до фото; сдвиг вправо */
-  const avatarOuter = Math.round(2.45 * u);
+  /* обводка аватара = высота средней пилюли; внутри — зазор до фото */
+  const avatarOuter = pillVisualH;
   const avatarGap = Math.round(0.14 * u);
   const avatarOutlineW = 1; /* тонкая серая обводка */
   const avatar = Math.max(
@@ -94,6 +96,8 @@ export function iosHeaderGeometry(nativeW, _nativeH) {
     s,
     statusH,
     pillH,
+    pillTrimTop,
+    pillVisualH,
     navH,
     navPadY,
     navPadX,
