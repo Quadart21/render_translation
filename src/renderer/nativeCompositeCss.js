@@ -748,6 +748,10 @@ export function buildIosNativeCompositeCss({
   const mediaCaptionFs = Math.round(9 * s);
   const mediaMaxH = Math.round(280 * s);
   const outlineW = Math.max(1, Math.round(0.08 * g.u));
+  /* верх пилюль на 3px ниже, нижняя граница ряда на месте */
+  const pillTrimTop = 3;
+  const pillVisualH = Math.max(1, pillH - pillTrimTop);
+  const avatarOuterVisual = Math.max(1, avatarOuter - pillTrimTop);
   return `<style id="native-composite-size">
 html, body {
   background: transparent !important;
@@ -843,9 +847,9 @@ ${themeSel} .ios-status-tray-img {
 }
 ${themeSel} .ios-nav.telegram-topbar {
   display:grid !important;
-  grid-template-columns:auto minmax(0,1fr) ${avatarOuter}px !important;
+  grid-template-columns:auto minmax(0,1fr) ${avatarOuterVisual}px !important;
   column-gap:${chromeGap}px !important;
-  align-items:center !important;
+  align-items:end !important;
   height:${navH}px !important;
   min-height:${navH}px !important;
   margin-top:${statusPillGap}px !important;
@@ -853,13 +857,17 @@ ${themeSel} .ios-nav.telegram-topbar {
   box-sizing:border-box !important;
   transform:none !important;
 }
+${themeSel} .ios-nav-left,
+${themeSel} .ios-nav-mid {
+  align-items:flex-end !important;
+}
 ${themeSel} .ios-back.back-pill {
   display:inline-flex !important;
   visibility:visible !important;
   align-items:center !important;
   gap:${Math.round(0.25 * g.u)}px !important;
-  height:${pillH}px !important;
-  min-height:${pillH}px !important;
+  height:${pillVisualH}px !important;
+  min-height:${pillVisualH}px !important;
   min-width:${Math.round(1.8 * g.u)}px !important;
   width:auto !important;
   max-width:none !important;
@@ -924,8 +932,8 @@ ${themeSel} .ios-title-pill.user-pill {
   justify-content:center !important;
   width:fit-content !important;
   max-width:100% !important;
-  height:${pillH}px !important;
-  min-height:${pillH}px !important;
+  height:${pillVisualH}px !important;
+  min-height:${pillVisualH}px !important;
   padding:0 var(--ios-title-pill-hpad, ${Math.round(0.55 * g.u)}px) !important;
   border-radius:999px !important;
   border:${outlineW}px solid #272320 !important;
@@ -951,8 +959,8 @@ ${themeSel} .ios-nav-sub {
   margin-top:${Math.max(1, Math.round(0.05 * g.u))}px !important;
 }
 ${themeSel} .ios-nav-right {
-  width:${avatarOuter}px !important;
-  height:${avatarOuter}px !important;
+  width:${avatarOuterVisual}px !important;
+  height:${avatarOuterVisual}px !important;
   padding:${avatarGap}px !important;
   border:${avatarOutlineW}px solid #9a9a9a !important;
   background:transparent !important;
@@ -963,6 +971,7 @@ ${themeSel} .ios-nav-right {
   display:flex !important;
   align-items:center !important;
   justify-content:center !important;
+  align-self:end !important;
 }
 ${themeSel} .ios-nav-right .ios-nav-avatar,
 ${themeSel} .ios-nav-right .ios-nav-avatar.placeholder {

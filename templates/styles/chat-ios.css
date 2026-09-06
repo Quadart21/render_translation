@@ -1155,9 +1155,9 @@ body {
 }
 
 .theme-ios .ios-nav.telegram-topbar {
-      align-items: center;
-      --ios-nav-row-height: 3.024em;
-      --ios-nav-avatar-outer: 2.45em;
+      align-items: end;
+      --ios-nav-row-height: calc(3.024em - 3px);
+      --ios-nav-avatar-outer: calc(2.45em - 3px);
       --ios-nav-avatar-gap: 0.14em;
       --ios-nav-avatar-outline: #9a9a9a;
       --ios-nav-chrome-outline: #272320;
@@ -1182,7 +1182,7 @@ body {
       justify-self: start;
       min-width: 0;
       display: flex;
-      align-items: center;
+      align-items: flex-end;
     }
 
 .theme-ios .ios-nav-mid {
@@ -1192,7 +1192,7 @@ body {
       overflow: hidden;
       display: flex;
       justify-content: center;
-      align-items: center;
+      align-items: flex-end;
     }
 
 .theme-ios .ios-nav-right {
