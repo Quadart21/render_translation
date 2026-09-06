@@ -1667,7 +1667,7 @@ body {
     }
 
 .theme-ios .row.out .bubble.bubble--ios-a:not(.message--media) {
-      padding-right: 4px !important;
+      padding-right: 8px !important;
 }
 
 .theme-ios .row.out .bubble.bubble--ios-a:not(.message--media) .bubble-text {

@@ -1214,7 +1214,7 @@ ${themeSel} #chat .bubble.bubble--ios-a:not(.message--media) .meta {
   gap: ${Math.max(2, Math.round(2 * s))}px !important;
 }
 ${themeSel} #chat .row.out .bubble.bubble--ios-a:not(.message--media) {
-  padding-right: ${Math.round(4 * s)}px !important;
+  padding-right: ${Math.round(8 * s)}px !important;
 }
 ${themeSel} #chat .row.out .bubble.bubble--ios-a:not(.message--media) .bubble-text {
   padding-right: 0 !important;
