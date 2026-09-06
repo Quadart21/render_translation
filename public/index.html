@@ -4,283 +4,302 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Отрисовка переписок</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/styles.css" />
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('screen-ui-theme');
+        if (t !== 'light' && t !== 'dark') {
+          t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    })();
+  </script>
 </head>
 <body>
-  <div class="layout layout-wide">
-    <header class="header">
-      <h1 class="title">Генератор макетов</h1>
-      <p class="subtitle">Отрисовка переписок и подготовка раздела для рендера документов.</p>
-    </header>
-
+  <div class="app">
     <main class="main">
-      <section id="panel-login" class="card hidden" aria-live="polite">
-        <div class="login-shell">
-          <div class="login-window">
-            <h2 class="card-title login-title">Вход через Telegram</h2>
-            <p class="hint login-hint">
-              Доступ в панель выдаётся администратором через интерфейс. Войдите Telegram-аккаунтом для проверки доступа.
-            </p>
-            <div id="tg-widget-wrap" class="tg-widget-wrap"></div>
-            <p id="login-error" class="error hidden"></p>
-          </div>
+      <section id="panel-loading" class="state-panel">
+        <div class="state-card">
+          <p class="state-text">Загрузка…</p>
         </div>
       </section>
 
-      <section id="panel-app" class="card hidden">
-        <div id="auth-toolbar" class="user-info hidden">
-          <span id="user-label"></span>
-          <button type="button" id="btn-logout" class="btn btn-ghost">Выйти</button>
+      <section id="panel-login" class="state-panel hidden" aria-live="polite">
+        <div class="state-card login-card">
+          <div class="login-card-head">
+            <p class="brand-mark">Screen</p>
+            <button type="button" class="btn btn-ghost btn-sm btn-theme-toggle" aria-label="Переключить тему">Тема</button>
+          </div>
+          <h1 class="login-title">Вход через Telegram</h1>
+          <p class="hint">
+            Доступ выдаёт администратор. Войдите Telegram-аккаунтом для проверки.
+          </p>
+          <div id="tg-widget-wrap" class="tg-widget-wrap"></div>
+          <p id="login-error" class="error hidden"></p>
         </div>
+      </section>
+
+      <section id="panel-app" class="app-panel hidden">
+        <header class="topbar">
+          <div class="topbar-brand">
+            <span class="brand-mark">Screen</span>
+            <span class="brand-sub">макеты чатов и документов</span>
+          </div>
+          <div class="builder-nav" role="tablist" aria-label="Разделы рендера">
+            <button type="button" id="btn-section-chat" class="builder-nav-btn is-active" data-section="chat" role="tab" aria-selected="true">Переписка</button>
+            <button type="button" id="btn-section-docs" class="builder-nav-btn" data-section="docs" role="tab" aria-selected="false">Документы</button>
+          </div>
+          <div class="topbar-end">
+            <button type="button" id="btn-theme-toggle" class="btn btn-ghost btn-sm btn-theme-toggle" aria-label="Переключить тему">Тема</button>
+            <div id="auth-toolbar" class="user-info hidden">
+              <span id="user-label" class="user-label"></span>
+              <button type="button" id="btn-logout" class="btn btn-ghost">Выйти</button>
+            </div>
+          </div>
+        </header>
+
         <section id="access-manager" class="access-manager hidden">
           <div class="access-head">
-            <h3 class="section-heading step-title">Доступы Telegram</h3>
-            <span id="access-summary" class="feed-stats"></span>
+            <h2 class="section-title">Доступы Telegram</h2>
+            <span id="access-summary" class="chip"></span>
           </div>
           <p class="hint hint-tight">
-            Добавляйте ID пользователей, которым можно входить в панель. Первый вошедший пользователь автоматически становится админом.
+            Добавляйте Telegram ID. Первый вошедший становится админом.
           </p>
           <div class="access-controls">
             <label class="field">
               <span class="field-label">Telegram ID</span>
-              <input type="text" id="access-id-input" class="input" placeholder="Например: 123456789" />
+              <input type="text" id="access-id-input" class="input" placeholder="123456789" />
             </label>
             <label class="checkbox-row access-admin-toggle">
               <input type="checkbox" id="access-make-admin" />
-              <span>Сделать администратором</span>
+              <span>Админ</span>
             </label>
-            <button type="button" id="btn-access-grant" class="btn btn-secondary">Выдать доступ</button>
+            <button type="button" id="btn-access-grant" class="btn btn-secondary">Выдать</button>
           </div>
           <p id="access-error" class="error hidden"></p>
           <div id="access-list" class="access-list"></div>
         </section>
 
-        <div class="builder-nav" role="tablist" aria-label="Разделы рендера">
-          <button type="button" id="btn-section-chat" class="btn btn-secondary builder-nav-btn is-active" data-section="chat" role="tab" aria-selected="true">Переписка</button>
-          <button type="button" id="btn-section-docs" class="btn btn-secondary builder-nav-btn" data-section="docs" role="tab" aria-selected="false">Документы</button>
-        </div>
-
-        <section id="section-chat-builder">
-          <h2 class="card-title card-title-spaced">Конструктор чата</h2>
-          <p class="hint builder-intro">
-            Заполняйте сверху вниз: <strong>1) параметры чата</strong>, <strong>2) лента сообщений</strong>, затем
-            нажмите <strong>Сгенерировать PNG</strong>.
-          </p>
-
-          <section class="builder-step">
-          <div class="step-head">
-            <h3 class="section-heading step-title">Шаг 1. Параметры чата</h3>
-          </div>
-          <div class="form-section">
-            <div class="form-grid form-grid-3">
-              <label class="field">
-                <span class="field-label">Оформление</span>
-                <select id="platform" class="select">
-                  <option value="android">Android</option>
-                  <option value="ios">iPhone (iOS)</option>
-                </select>
-              </label>
-              <label class="field">
-                <span class="field-label">Время в статус-баре</span>
-                <input type="text" id="status-time" class="input" placeholder="14:32" maxlength="8" />
-              </label>
-              <label class="field">
-                <span class="field-label">Заряд батареи (%)</span>
-                <input
-                  type="number"
-                  id="status-battery"
-                  class="input"
-                  placeholder="авто"
-                  min="1"
-                  max="100"
-                  step="1"
-                  inputmode="numeric"
-                />
-              </label>
-            </div>
-
-            <div class="form-grid form-grid-2">
-              <label class="field">
-                <span class="field-label field-label-with-icon">
-                  <svg class="field-label-icon" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>
-                  <span>Имя оппонента</span>
-                </span>
-                <input type="text" id="name-opponent" class="input" placeholder="+7 … или имя" autocomplete="off" />
-              </label>
-              <label class="field">
-                <span class="field-label">Ваше имя в чате</span>
-                <input type="text" id="name-me" class="input" placeholder="Как в Telegram" autocomplete="off" />
-              </label>
-            </div>
-
-            <div class="form-grid form-grid-2">
-              <label class="field">
-                <span class="field-label">Подпись под именем</span>
-                <input type="text" id="ios-subtitle" class="input" placeholder="Пусто → в сети / был недавно / печатает..." />
-              </label>
-              <label class="field ios-only-row hidden">
-                <span class="field-label">Число у стрелки «назад»</span>
-                <input type="text" id="ios-back-badge" class="input" placeholder="16549" />
-              </label>
-            </div>
-
-            <label class="checkbox-row">
-              <input type="checkbox" id="chk-pinned" />
-              <span>Показать закреплённое сообщение</span>
-            </label>
-            <label class="field field-full">
-              <span class="field-label muted-small">Текст закрепа (видно на макете iPhone)</span>
-              <textarea id="pinned-text" class="textarea" rows="2" placeholder="Краткий текст закрепа…" disabled></textarea>
-            </label>
-
-            <label class="checkbox-row">
-              <input type="checkbox" id="chk-random-avatar" />
-              <span>Случайные аватарки из папки avatar/</span>
-            </label>
-            <p id="avatar-pool-hint" class="hint hint-tight muted-small"></p>
-            <div class="form-grid form-grid-2">
-              <div class="field field-full">
-                <span class="field-label">Аватарка оппонента (опционально)</span>
-                <div class="composite-file-actions">
-                  <input type="file" id="avatar-opponent-file" class="input-file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp" />
-                  <button type="button" id="btn-avatar-opponent-clear" class="btn btn-ghost btn-sm">Сбросить</button>
+        <section id="section-chat-builder" class="workspace">
+          <div class="editor-col">
+            <section class="block">
+              <h2 class="section-title">Чат</h2>
+              <div class="form-section">
+                <div class="form-grid form-grid-3">
+                  <label class="field">
+                    <span class="field-label">Оформление</span>
+                    <select id="platform" class="select">
+                      <option value="android">Android</option>
+                      <option value="ios">iPhone (iOS)</option>
+                    </select>
+                  </label>
+                  <label class="field">
+                    <span class="field-label">Время</span>
+                    <input type="text" id="status-time" class="input" placeholder="14:32" maxlength="8" />
+                  </label>
+                  <label class="field">
+                    <span class="field-label">Батарея %</span>
+                    <input
+                      type="number"
+                      id="status-battery"
+                      class="input"
+                      placeholder="авто"
+                      min="1"
+                      max="100"
+                      step="1"
+                      inputmode="numeric"
+                    />
+                  </label>
                 </div>
-                <p id="avatar-opponent-status" class="hint hint-tight muted-small"></p>
+
+                <div class="form-grid form-grid-2">
+                  <label class="field">
+                    <span class="field-label field-label-with-icon">
+                      <svg class="field-label-icon" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>
+                      <span>Оппонент</span>
+                    </span>
+                    <input type="text" id="name-opponent" class="input" placeholder="+7 … или имя" autocomplete="off" />
+                  </label>
+                  <label class="field">
+                    <span class="field-label">Ваше имя</span>
+                    <input type="text" id="name-me" class="input" placeholder="Как в Telegram" autocomplete="off" />
+                  </label>
+                </div>
+
+                <div class="form-grid form-grid-2">
+                  <label class="field">
+                    <span class="field-label">Подпись под именем</span>
+                    <input type="text" id="ios-subtitle" class="input" placeholder="в сети / был недавно…" />
+                  </label>
+                  <label class="field ios-only-row hidden">
+                    <span class="field-label">Число у «назад»</span>
+                    <input type="text" id="ios-back-badge" class="input" placeholder="16549" />
+                  </label>
+                </div>
+
+                <label class="checkbox-row">
+                  <input type="checkbox" id="chk-pinned" />
+                  <span>Закреплённое сообщение</span>
+                </label>
+                <label class="field field-full">
+                  <span class="field-label muted-small">Текст закрепа</span>
+                  <textarea id="pinned-text" class="textarea" rows="2" placeholder="Краткий текст…" disabled></textarea>
+                </label>
+
+                <label class="checkbox-row">
+                  <input type="checkbox" id="chk-random-avatar" />
+                  <span>Случайные аватарки из avatar/</span>
+                </label>
+                <p id="avatar-pool-hint" class="hint hint-tight muted-small"></p>
+                <div class="field field-full">
+                  <span class="field-label">Аватар оппонента</span>
+                  <div class="composite-file-actions">
+                    <input type="file" id="avatar-opponent-file" class="input-file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp" />
+                    <button type="button" id="btn-avatar-opponent-clear" class="btn btn-ghost btn-sm">Сбросить</button>
+                  </div>
+                  <p id="avatar-opponent-status" class="hint hint-tight muted-small"></p>
+                </div>
+              </div>
+            </section>
+
+            <section class="block">
+              <div class="block-head">
+                <h2 class="section-title">Лента</h2>
+                <div id="feed-stats" class="chip" aria-live="polite"></div>
+              </div>
+              <p class="hint hint-tight">Порядок сверху вниз. Текст, фото и даты можно смешивать.</p>
+              <div id="message-rows" class="message-rows"></div>
+              <div class="message-rows-toolbar">
+                <button type="button" id="btn-add-message" class="btn btn-secondary">+ Сообщение</button>
+                <button type="button" id="btn-add-image" class="btn btn-secondary">+ Картинка</button>
+                <button type="button" id="btn-add-date" class="btn btn-secondary">+ Дата</button>
+                <button type="button" id="btn-clear-rows" class="btn btn-ghost">Очистить</button>
+              </div>
+            </section>
+
+            <section class="block block-actions">
+              <div class="form-actions">
+                <button type="button" id="btn-render" class="btn btn-primary">Сгенерировать PNG</button>
+                <button type="button" id="btn-render-random" class="btn btn-ghost" title="Короткий случайный пример">Случайный</button>
+                <button type="button" id="btn-render-random-multipage" class="btn btn-ghost" title="Длинная переписка на 2–4 экрана">Многостраничный</button>
+              </div>
+              <p id="render-error" class="error hidden"></p>
+            </section>
+          </div>
+
+          <aside class="preview-col">
+            <div class="preview-panel">
+              <h2 class="section-title">Превью</h2>
+              <div class="preview-stage">
+                <p class="preview-placeholder">Здесь появится PNG после генерации</p>
+                <div id="preview-wrap" class="preview-wrap hidden">
+                  <img id="preview-img" alt="Предпросмотр переписки" class="preview-img" />
+                  <a id="download-link" class="link-download" href="#" download="chat.png">Скачать PNG</a>
+                  <div id="preview-pages" class="preview-pages hidden"></div>
+                </div>
               </div>
             </div>
-
-          </div>
+          </aside>
         </section>
 
-        <section class="builder-step">
-          <div class="step-head">
-            <h3 class="section-heading step-title">Шаг 2. Лента сообщений</h3>
-            <div id="feed-stats" class="feed-stats" aria-live="polite"></div>
+        <section id="section-docs-builder" class="workspace hidden">
+          <div class="editor-col">
+            <section class="block">
+              <h2 class="section-title">Документ</h2>
+              <div class="form-grid form-grid-2">
+                <label class="field">
+                  <span class="field-label">Шаблон</span>
+                  <select id="doc-template" class="select">
+                    <option value="npd-certificate">Справка НПД (КНД 1122036)</option>
+                  </select>
+                </label>
+                <label class="field">
+                  <span class="field-label">Дата документа</span>
+                  <input type="text" id="doc-date" class="input" placeholder="18.05.2026" />
+                </label>
+              </div>
+            </section>
+
+            <section class="block">
+              <h2 class="section-title">Реквизиты</h2>
+              <div class="form-grid form-grid-2">
+                <label class="field field-full">
+                  <span class="field-label">Инспекция ФНС</span>
+                  <input type="text" id="doc-inspection" class="input" placeholder="Инспекция Федеральной налоговой службы по г. Санкт-Петербургу" />
+                </label>
+                <label class="field">
+                  <span class="field-label">ФИО налогоплательщика</span>
+                  <input type="text" id="doc-taxpayer-name" class="input" placeholder="Иванов Иван Иванович" />
+                </label>
+                <label class="field">
+                  <span class="field-label">ИНН</span>
+                  <input type="text" id="doc-inn" class="input" placeholder="780627415124" />
+                </label>
+                <label class="field">
+                  <span class="field-label">Справка №</span>
+                  <input type="text" id="doc-certificate-number" class="input" placeholder="96773089" />
+                </label>
+                <label class="checkbox-row access-admin-toggle">
+                  <input type="checkbox" id="doc-certificate-random" />
+                  <span>Рандомизировать номер</span>
+                </label>
+                <label class="field">
+                  <span class="field-label">За год</span>
+                  <input type="text" id="doc-year" class="input" placeholder="2024" />
+                </label>
+                <label class="field">
+                  <span class="field-label">Серия и номер документа</span>
+                  <input type="text" id="doc-id-series-number" class="input" placeholder="40 21 870290" />
+                </label>
+                <label class="field">
+                  <span class="field-label">Сумма дохода (руб.)</span>
+                  <input type="text" id="doc-amount" class="input" placeholder="2106276.00" />
+                </label>
+                <label class="field">
+                  <span class="field-label">Ставка налога, %</span>
+                  <input type="text" id="doc-tax-rate" class="input" placeholder="6" />
+                </label>
+                <label class="field">
+                  <span class="field-label">Печать с</span>
+                  <input type="text" id="doc-valid-from" class="input" placeholder="05.03.2025" />
+                </label>
+                <label class="field">
+                  <span class="field-label">Печать по</span>
+                  <input type="text" id="doc-valid-to" class="input" placeholder="29.05.2026" />
+                </label>
+              </div>
+            </section>
+
+            <section class="block block-actions">
+              <div class="form-actions">
+                <button type="button" id="btn-doc-render" class="btn btn-primary">Сгенерировать PDF</button>
+                <button type="button" id="btn-doc-reset" class="btn btn-ghost">Сбросить</button>
+              </div>
+              <p id="doc-render-error" class="error hidden"></p>
+            </section>
           </div>
-          <p class="hint hint-tight">
-            Порядок карточек = порядок сообщений сверху вниз. Можно смешивать текст, фото и даты-разделители.
-          </p>
-          <div id="message-rows" class="message-rows"></div>
-          <div class="message-rows-toolbar">
-            <button type="button" id="btn-add-message" class="btn btn-secondary">+ Сообщение</button>
-            <button type="button" id="btn-add-image" class="btn btn-secondary">+ Картинка</button>
-            <button type="button" id="btn-add-date" class="btn btn-secondary">+ Дата</button>
-            <button type="button" id="btn-clear-rows" class="btn btn-ghost">Очистить ленту</button>
-          </div>
+
+          <aside class="preview-col">
+            <div class="preview-panel">
+              <h2 class="section-title">Превью</h2>
+              <div class="preview-stage">
+                <p class="preview-placeholder">Здесь появится PDF после генерации</p>
+                <div id="doc-preview-wrap" class="preview-wrap hidden">
+                  <iframe id="doc-preview-frame" class="doc-preview-frame" title="Предпросмотр PDF документа"></iframe>
+                  <a id="doc-download-link" class="link-download" href="#" download="document.pdf">Скачать PDF</a>
+                </div>
+              </div>
+            </div>
+          </aside>
         </section>
-
-        <section class="builder-step">
-          <div class="step-head">
-            <h3 class="section-heading step-title">Шаг 3. Рендер и экспорт</h3>
-          </div>
-          <div class="form-actions">
-          <button type="button" id="btn-render" class="btn btn-primary">Сгенерировать PNG</button>
-          <button type="button" id="btn-render-random" class="btn btn-ghost" title="Короткий случайный пример (один экран)">Случайный пример</button>
-          <button type="button" id="btn-render-random-multipage" class="btn btn-ghost" title="Длинная переписка на 2–4 экрана">Случайный многостраничный</button>
-          </div>
-          </section>
-
-          <p id="render-error" class="error hidden"></p>
-          <div id="preview-wrap" class="preview-wrap hidden">
-            <img id="preview-img" alt="Предпросмотр переписки" class="preview-img" />
-            <a id="download-link" class="link-download" href="#" download="chat.png">Скачать PNG</a>
-            <div id="preview-pages" class="preview-pages hidden"></div>
-          </div>
-        </section>
-
-        <section id="section-docs-builder" class="hidden">
-          <h2 class="card-title card-title-spaced">Отрисовка документов</h2>
-          
-
-          <section class="builder-step">
-            <div class="step-head">
-              <h3 class="section-heading step-title">Шаг 1. Тип документа</h3>
-            </div>
-            <div class="form-grid form-grid-2">
-              <label class="field">
-                <span class="field-label">Шаблон</span>
-                <select id="doc-template" class="select">
-                  <option value="npd-certificate">Справка НПД (КНД 1122036)</option>
-                </select>
-              </label>
-              <label class="field">
-                <span class="field-label">Дата документа</span>
-                <input type="text" id="doc-date" class="input" placeholder="18.05.2026" />
-              </label>
-            </div>
-          </section>
-
-          <section class="builder-step">
-            <div class="step-head">
-              <h3 class="section-heading step-title">Шаг 2. Реквизиты</h3>
-            </div>
-            <div class="form-grid form-grid-2">
-              <label class="field field-full">
-                <span class="field-label">Инспекция ФНС</span>
-                <input type="text" id="doc-inspection" class="input" placeholder="Инспекция Федеральной налоговой службы по г. Санкт-Петербургу" />
-              </label>
-              <label class="field">
-                <span class="field-label">ФИО налогоплательщика</span>
-                <input type="text" id="doc-taxpayer-name" class="input" placeholder="Иванов Иван Иванович" />
-              </label>
-              <label class="field">
-                <span class="field-label">ИНН</span>
-                <input type="text" id="doc-inn" class="input" placeholder="780627415124" />
-              </label>
-              <label class="field">
-                <span class="field-label">Справка №</span>
-                <input type="text" id="doc-certificate-number" class="input" placeholder="96773089" />
-              </label>
-              <label class="checkbox-row access-admin-toggle">
-                <input type="checkbox" id="doc-certificate-random" />
-                <span>Рандомизировать номер справки</span>
-              </label>
-              <label class="field">
-                <span class="field-label">За год</span>
-                <input type="text" id="doc-year" class="input" placeholder="2024" />
-              </label>
-              <label class="field">
-                <span class="field-label">Серия и номер документа</span>
-                <input type="text" id="doc-id-series-number" class="input" placeholder="40 21 870290" />
-              </label>
-              <label class="field">
-                <span class="field-label">Общая сумма дохода за год (руб.)</span>
-                <input type="text" id="doc-amount" class="input" placeholder="2106276.00" />
-              </label>
-              <label class="field">
-                <span class="field-label">Ставка налога, %</span>
-                <input type="text" id="doc-tax-rate" class="input" placeholder="6" />
-              </label>
-              <label class="field">
-                <span class="field-label">Печать действительна с</span>
-                <input type="text" id="doc-valid-from" class="input" placeholder="05.03.2025" />
-              </label>
-              <label class="field">
-                <span class="field-label">Печать действительна по</span>
-                <input type="text" id="doc-valid-to" class="input" placeholder="29.05.2026" />
-              </label>
-            </div>
-          </section>
-
-          <section class="builder-step">
-            <div class="step-head">
-              <h3 class="section-heading step-title">Шаг 3. Рендер и экспорт</h3>
-            </div>
-            <div class="form-actions">
-              <button type="button" id="btn-doc-render" class="btn btn-primary">Сгенерировать документ PDF</button>
-              <button type="button" id="btn-doc-reset" class="btn btn-ghost">Сбросить поля</button>
-            </div>
-            <p id="doc-render-error" class="error hidden"></p>
-            <div id="doc-preview-wrap" class="preview-wrap hidden">
-              <iframe id="doc-preview-frame" class="doc-preview-frame" title="Предпросмотр PDF документа"></iframe>
-              <a id="doc-download-link" class="link-download" href="#" download="document.pdf">Скачать PDF</a>
-            </div>
-          </section>
-        </section>
-      </section>
-
-      <section id="panel-loading" class="card">
-        <p class="muted">Загрузка…</p>
       </section>
     </main>
   </div>

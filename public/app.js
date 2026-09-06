@@ -73,6 +73,45 @@ function hide(el) {
   el.classList.add('hidden');
 }
 
+const THEME_KEY = 'screen-ui-theme';
+
+function getTheme() {
+  const t = document.documentElement.getAttribute('data-theme');
+  return t === 'dark' ? 'dark' : 'light';
+}
+
+function syncThemeToggleLabels() {
+  const theme = getTheme();
+  const label = theme === 'dark' ? 'Светлая' : 'Тёмная';
+  document.querySelectorAll('.btn-theme-toggle').forEach((btn) => {
+    btn.textContent = label;
+    btn.setAttribute('aria-label', theme === 'dark' ? 'Включить светлую тему' : 'Включить тёмную тему');
+    btn.setAttribute('title', label);
+  });
+}
+
+function setTheme(theme) {
+  const next = theme === 'dark' ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', next);
+  try {
+    localStorage.setItem(THEME_KEY, next);
+  } catch (_) {
+    /* ignore */
+  }
+  syncThemeToggleLabels();
+}
+
+function toggleTheme() {
+  setTheme(getTheme() === 'dark' ? 'light' : 'dark');
+}
+
+function initThemeToggle() {
+  syncThemeToggleLabels();
+  document.querySelectorAll('.btn-theme-toggle').forEach((btn) => {
+    btn.addEventListener('click', toggleTheme);
+  });
+}
+
 function setActiveBuilderSection(section) {
   const isDocs = section === 'docs';
   sectionChatBuilder.classList.toggle('hidden', isDocs);
@@ -207,7 +246,7 @@ function renderAccessList(access) {
   const admins = new Set(Array.isArray(access?.adminIds) ? access.adminIds : []);
   accessSummary.textContent = `Доступов: ${allowed.length} · Админов: ${admins.size}`;
   if (!allowed.length) {
-    accessList.innerHTML = '<p class="hint hint-tight">Список пуст. Добавьте первый Telegram ID.</p>';
+    accessList.innerHTML = '<p class="hint hint-tight">Список пуст — добавьте первый Telegram ID.</p>';
     return;
   }
   accessList.innerHTML = allowed
@@ -428,7 +467,7 @@ function createMessageRow(preset) {
         <select class="select select-sm row-kind">
           <option value="message">Сообщение</option>
           <option value="image">Картинка</option>
-          <option value="date">Дата в ленте</option>
+          <option value="date">Дата</option>
         </select>
       </label>
       <button type="button" class="btn btn-ghost btn-sm btn-remove-row">Удалить</button>
@@ -438,7 +477,7 @@ function createMessageRow(preset) {
         <label class="field field-inline">
           <span class="field-label">Кто</span>
           <select class="select select-sm msg-from">
-            <option value="bank">Опонент</option>
+            <option value="bank">Оппонент</option>
             <option value="me">Я</option>
           </select>
         </label>
@@ -457,7 +496,7 @@ function createMessageRow(preset) {
         <label class="field field-inline">
           <span class="field-label">Кто</span>
           <select class="select select-sm msg-from-img">
-            <option value="bank">Опонент</option>
+            <option value="bank">Оппонент</option>
             <option value="me">Я</option>
           </select>
         </label>
@@ -467,7 +506,7 @@ function createMessageRow(preset) {
         </label>
       </div>
       <div class="field field-full">
-        <span class="field-label">Файл изображения</span>
+        <span class="field-label">Изображение</span>
         <div class="msg-img-file-row">
           <input type="file" class="msg-img-file" accept="image/*" />
           <button type="button" class="btn btn-ghost btn-sm btn-clear-img">Сбросить</button>
@@ -912,5 +951,6 @@ btnDocRender.addEventListener('click', async () => {
   }
 });
 
+initThemeToggle();
 initUi();
 initFormDefaults();
