@@ -1011,10 +1011,11 @@ body {
       background-repeat: no-repeat !important;
       color: #0a0a0a !important;
       border-radius: 999px !important;
-      padding: 4px 5px !important;
-      min-width: 0.97em !important;
-      min-height: 0.97em !important;
-      font-size: 12px !important;
+      padding: 2px 3px !important;
+      min-width: 0.78em !important;
+      min-height: calc(0.97em - 3px) !important;
+      height: calc(0.97em - 3px) !important;
+      font-size: 11px !important;
       font-weight: 400 !important;
       line-height: 1 !important;
       letter-spacing: 0 !important;
@@ -1024,15 +1025,15 @@ body {
     }
 
 .theme-ios.phone.composite-screen-on .ios-back.back-pill .ios-unread-pill--w2 {
-      padding: 4px 8px !important;
+      padding: 2px 5px !important;
     }
 
 .theme-ios.phone.composite-screen-on .ios-back.back-pill .ios-unread-pill--w3 {
-      padding: 4px 6px !important;
+      padding: 2px 4px !important;
     }
 
 .theme-ios.phone.composite-screen-on .ios-back.back-pill .ios-unread-pill--w4 {
-      padding: 4px 5px !important;
+      padding: 2px 3px !important;
     }
 
 .theme-ios.phone.composite-screen-on .ios-back.back-pill .ios-unread-pill .ios-unread-pill-inner {
@@ -1368,8 +1369,8 @@ body {
       justify-content: center;
       width: 1em;
       height: 1em;
-      /* чуть выше белой подложки (.ios-unread-pill min-height: 0.97em) */
-      font-size: 1.08em;
+      /* чуть выше белой подложки (.ios-unread-pill height: calc(0.97em - 3px)) */
+      font-size: calc(0.97em - 3px + 0.08em);
       line-height: 0;
       transform: none;
     }
@@ -1392,10 +1393,11 @@ body {
       background-repeat: no-repeat;
       color: #0a0a0a;
       border-radius: 999px;
-      padding: 4px 5px;
-      min-width: 0.97em;
-      min-height: 0.97em;
-      font-size: 12px;
+      padding: 2px 3px;
+      min-width: 0.78em;
+      min-height: calc(0.97em - 3px);
+      height: calc(0.97em - 3px);
+      font-size: 11px;
       font-weight: 400;
       line-height: 1;
       letter-spacing: 0;
@@ -1407,15 +1409,15 @@ body {
     }
 
 .theme-ios .ios-back.back-pill .ios-unread-pill--w2 {
-      padding: 4px 8px;
+      padding: 2px 5px;
     }
 
 .theme-ios .ios-back.back-pill .ios-unread-pill--w3 {
-      padding: 4px 6px;
+      padding: 2px 4px;
     }
 
 .theme-ios .ios-back.back-pill .ios-unread-pill--w4 {
-      padding: 4px 5px;
+      padding: 2px 3px;
     }
 
 .theme-ios .ios-back.back-pill .ios-unread-pill .ios-unread-pill-inner {

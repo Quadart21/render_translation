@@ -752,6 +752,10 @@ export function buildIosNativeCompositeCss({
   const pillTrimTop = 3;
   const pillVisualH = Math.max(1, pillH - pillTrimTop);
   const avatarOuterVisual = Math.max(1, avatarOuter - pillTrimTop);
+  const unreadH = Math.max(1, Math.round(pillH * 0.418) - 3);
+  const unreadMinW = Math.round(pillH * 0.34);
+  const unreadPadX = Math.round(pillH * 0.09);
+  const chevronSize = Math.round(unreadH * 1.1);
   return `<style id="native-composite-size">
 html, body {
   background: transparent !important;
@@ -890,10 +894,10 @@ ${themeSel} .ios-back.back-pill .ios-chevron {
   align-items:center !important;
   justify-content:center !important;
   color:#fff !important;
-  /* чуть выше белой подложки (height = pillH * 0.418) */
-  width:${Math.round(pillH * 0.418 * 1.1)}px !important;
-  height:${Math.round(pillH * 0.418 * 1.1)}px !important;
-  font-size:${Math.round(pillH * 0.418 * 1.1)}px !important;
+  /* чуть выше белой подложки */
+  width:${chevronSize}px !important;
+  height:${chevronSize}px !important;
+  font-size:${chevronSize}px !important;
   line-height:0 !important;
   transform:none !important;
   margin:0 !important;
@@ -907,16 +911,18 @@ ${themeSel} .ios-back.back-pill .ios-unread-pill {
   display:inline-flex !important;
   align-items:center !important;
   justify-content:center !important;
-  min-width:${Math.round(pillH * 0.418)}px !important;
-  height:${Math.round(pillH * 0.418)}px !important;
-  padding:0 ${Math.round(pillH * 0.13)}px !important;
+  min-width:${unreadMinW}px !important;
+  width:auto !important;
+  height:${unreadH}px !important;
+  max-height:${unreadH}px !important;
+  padding:0 ${unreadPadX}px !important;
   border-radius:999px !important;
   background-color:#fff !important;
   background-image:url("__IOS_UNREAD_PILL__") !important;
   background-size:100% 100% !important;
   background-repeat:no-repeat !important;
   color:#0a0a0a !important;
-  font-size:${Math.round(pillH * 0.245) + 1}px !important;
+  font-size:${Math.max(8, Math.round(unreadH * 0.62))}px !important;
   font-weight:500 !important;
 }
 ${themeSel} .ios-nav-mid {
