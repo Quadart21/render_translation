@@ -554,7 +554,7 @@
       grid-template-columns: max-content max-content !important;
       align-items: end !important;
       column-gap: 2px !important;
-      padding-right: 16px !important;
+      padding-right: 22px !important;
       width: fit-content !important;
       max-width: 100% !important;
     }
@@ -569,6 +569,19 @@
       position: static !important;
       margin: 0 !important;
       transform: none !important;
+    }
+    /* b–e: absolute meta — отступ только через right, не padding-right */
+    .theme-ios.phone #chat .row.out .bubble.bubble--ios-b:not(.message--media) .meta,
+    .theme-ios.phone #chat .row.out .bubble.bubble--ios-c:not(.message--media) .meta,
+    .theme-ios.phone #chat .row.out .bubble.bubble--ios-d:not(.message--media) .meta,
+    .theme-ios.phone #chat .row.out .bubble.bubble--ios-e:not(.message--media) .meta,
+    .theme-ios.phone #chat .row.out .bubble.meta-corner-tuck:not(.message--media) .meta,
+    .theme-ios.phone.composite-screen-on #chat .row.out .bubble.bubble--ios-b:not(.message--media) .meta,
+    .theme-ios.phone.composite-screen-on #chat .row.out .bubble.bubble--ios-c:not(.message--media) .meta,
+    .theme-ios.phone.composite-screen-on #chat .row.out .bubble.bubble--ios-d:not(.message--media) .meta,
+    .theme-ios.phone.composite-screen-on #chat .row.out .bubble.bubble--ios-e:not(.message--media) .meta,
+    .theme-ios.phone.composite-screen-on #chat .row.out .bubble.meta-corner-tuck:not(.message--media) .meta {
+      right: 22px !important;
     }
   </style>
 </body>

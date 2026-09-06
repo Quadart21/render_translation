@@ -1667,7 +1667,7 @@ body {
     }
 
 .theme-ios .row.out .bubble.bubble--ios-a:not(.message--media) {
-      padding-right: 16px !important;
+      padding-right: 22px !important;
 }
 
 .theme-ios .row.out .bubble.bubble--ios-a:not(.message--media) .bubble-text {
@@ -1965,13 +1965,13 @@ body {
   Входящие: время правее, ближе к краю.
 */
 .theme-ios .row.out .bubble.bubble--ios-b:not(.message--media) .meta {
-      right: 16px;
+      right: 22px;
       bottom: 6px;
       transform: none;
     }
 
 .theme-ios .row.out .bubble.bubble--ios-c:not(.message--media) .meta {
-      right: 16px;
+      right: 22px;
       bottom: 6px;
       transform: none;
       align-items: center;
@@ -1979,7 +1979,7 @@ body {
     }
 
 .theme-ios .row.out .bubble.bubble--ios-d:not(.message--media) .meta {
-      right: 16px;
+      right: 22px;
       bottom: 6px;
       transform: none;
       align-items: center;
@@ -1987,7 +1987,7 @@ body {
     }
 
 .theme-ios .row.out .bubble.bubble--ios-e:not(.message--media) .meta {
-      right: 16px;
+      right: 22px;
       bottom: 6px;
       transform: none;
       align-items: center;
@@ -2002,7 +2002,7 @@ body {
     }
 
 .theme-ios .row.out .bubble:not(.message--media) {
-      padding-right: 16px;
+      padding-right: 22px;
     }
 
 .theme-ios .row.in .bubble:not(.message--media) {

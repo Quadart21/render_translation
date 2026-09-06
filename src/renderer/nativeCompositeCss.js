@@ -537,7 +537,7 @@ ${themeSel} #chat .row.out .bubble.bubble--ios-a:not(.message--media) {
   align-items: end !important;
   column-gap: ${Math.round(4 * sx)}px !important;
   position: relative !important;
-  padding-right: ${Math.round(16 * sx)}px !important;
+  padding-right: ${Math.round(22 * sx)}px !important;
   width: fit-content !important;
   max-width: 100% !important;
   overflow: hidden !important;
@@ -1154,7 +1154,7 @@ ${themeSel} #chat .row.in .bubble:not(.message--media) {
   padding-right: ${Math.round(10 * s)}px !important;
 }
 ${themeSel} #chat .row.out .bubble:not(.message--media) {
-  padding-right: ${Math.round(16 * s)}px !important;
+  padding-right: ${Math.round(22 * s)}px !important;
 }
 ${themeSel} #chat .bubble:not(.message--media) .bubble-text {
   font-family: inherit !important;
@@ -1214,7 +1214,7 @@ ${themeSel} #chat .bubble.bubble--ios-a:not(.message--media) .meta {
   gap: ${Math.max(2, Math.round(2 * s))}px !important;
 }
 ${themeSel} #chat .row.out .bubble.bubble--ios-a:not(.message--media) {
-  padding-right: ${Math.round(16 * s)}px !important;
+  padding-right: ${Math.round(22 * s)}px !important;
 }
 ${themeSel} #chat .row.out .bubble.bubble--ios-a:not(.message--media) .bubble-text {
   padding-right: 0 !important;
@@ -1281,7 +1281,7 @@ ${themeSel} #chat .row.out .bubble.bubble--ios-c:not(.message--media) .meta,
 ${themeSel} #chat .row.out .bubble.bubble--ios-d:not(.message--media) .meta,
 ${themeSel} #chat .row.out .bubble.bubble--ios-e:not(.message--media) .meta,
 ${themeSel} #chat .row.out .bubble.meta-corner-tuck:not(.message--media) .meta {
-  right: ${Math.round(16 * s)}px !important;
+  right: ${Math.round(22 * s)}px !important;
 }
 ${themeSel} #chat .row.in .bubble.bubble--ios-b:not(.message--media) .meta,
 ${themeSel} #chat .row.in .bubble.bubble--ios-c:not(.message--media) .meta,
