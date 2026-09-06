@@ -1013,8 +1013,8 @@ body {
       border-radius: 999px !important;
       padding: 2px 3px !important;
       min-width: 0.78em !important;
-      min-height: calc(0.97em - 3px) !important;
-      height: calc(0.97em - 3px) !important;
+      min-height: calc(0.97em - 5px) !important;
+      height: calc(0.97em - 5px) !important;
       font-size: 11px !important;
       font-weight: 400 !important;
       line-height: 1 !important;
@@ -1022,6 +1022,7 @@ body {
       font-variant-numeric: lining-nums tabular-nums !important;
       font-feature-settings: 'tnum' 1, 'lnum' 1 !important;
       box-shadow: none !important;
+      transform: translateY(-1px) !important;
     }
 
 .theme-ios.phone.composite-screen-on .ios-back.back-pill .ios-unread-pill--w2 {
@@ -1337,7 +1338,7 @@ body {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 0.15em;
+      gap: 0.04em;
       box-sizing: border-box;
       min-width: 1.8em;
       width: max-content;
@@ -1369,7 +1370,7 @@ body {
       justify-content: center;
       width: 1em;
       height: 1em;
-      /* чуть выше белой подложки (.ios-unread-pill height: calc(0.97em - 3px)) */
+      /* чуть выше белой подложки (размер шеврона от прежней высоты, до −2px снизу) */
       font-size: calc(0.97em - 3px + 0.08em);
       line-height: 0;
       transform: none;
@@ -1395,8 +1396,9 @@ body {
       border-radius: 999px;
       padding: 2px 3px;
       min-width: 0.78em;
-      min-height: calc(0.97em - 3px);
-      height: calc(0.97em - 3px);
+      /* −2px снизу; translateY(-1px) держит верх при center-align */
+      min-height: calc(0.97em - 5px);
+      height: calc(0.97em - 5px);
       font-size: 11px;
       font-weight: 400;
       line-height: 1;
@@ -1406,6 +1408,7 @@ body {
       flex-shrink: 0;
       text-align: center;
       white-space: nowrap;
+      transform: translateY(-1px);
     }
 
 .theme-ios .ios-back.back-pill .ios-unread-pill--w2 {
