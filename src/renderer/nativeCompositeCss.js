@@ -1372,8 +1372,17 @@ ${themeSel} #chat .message__image-wrap--overlay .meta {
   right: ${Math.round(5 * s)}px !important;
   bottom: ${Math.round(4 * s)}px !important;
   font-size: ${mediaMetaFs}px !important;
-  gap: ${Math.round(4 * s)}px !important;
-  padding: ${Math.round(3 * s)}px ${Math.round(7 * s)}px !important;
+  gap: ${Math.round(2 * s)}px !important;
+  padding: ${Math.round(2 * s)}px ${Math.round(5 * s)}px !important;
+}
+${themeSel} #chat .row.out .message__image-wrap--overlay.message__image-wrap--light-bg .meta,
+${themeSel} #chat .row.out .message__image-wrap--overlay .meta {
+  padding: ${Math.round(2 * s)}px ${Math.round(3 * s)}px ${Math.round(2 * s)}px ${Math.round(5 * s)}px !important;
+  gap: ${Math.round(2 * s)}px !important;
+}
+${themeSel} #chat .row.out .message__image-wrap--overlay .meta .checks,
+${themeSel} #chat .row.out .message__image-wrap--overlay .meta .checks-img {
+  margin: 0 !important;
 }
 ${themeSel} #chat .message__image-placeholder {
   min-height: ${Math.round(79 * s)}px !important;

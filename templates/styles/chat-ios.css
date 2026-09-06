@@ -604,7 +604,7 @@ body {
       clear: none !important;
       display: inline-flex;
       align-items: center;
-      gap: 4px;
+      gap: 2px;
       justify-content: flex-end;
       font-size: 8.25px;
       font-weight: 400;
@@ -618,7 +618,7 @@ body {
     .message__image-wrap--overlay.message__image-wrap--light-bg .meta {
       background: rgba(118, 118, 125, 0.72);
       border-radius: 999px;
-      padding: 3px 7px;
+      padding: 2px 5px;
       box-sizing: border-box;
       color: #ffffff !important;
       opacity: 1;
@@ -627,6 +627,22 @@ body {
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
       -webkit-font-smoothing: antialiased;
+    }
+
+    /* исходящие: справа у галочек визуально больше воздуха — чуть меньше padding-right */
+    .row.out .message__image-wrap--overlay.message__image-wrap--light-bg .meta {
+      padding: 2px 3px 2px 5px;
+      gap: 2px;
+    }
+
+    .row.out .message__image-wrap--overlay.message__image-wrap--light-bg .meta .checks {
+      margin-left: 0;
+      margin-right: 0;
+    }
+
+    .row.out .message__image-wrap--overlay.message__image-wrap--light-bg .meta .checks-img {
+      margin: 0;
+      display: block;
     }
 
     .message__image-wrap--overlay.message__image-wrap--light-bg .meta .checks-img {
@@ -2039,6 +2055,16 @@ body {
 
 .theme-ios .bubble.message--media .meta {
       font-size: 8.25px;
+    }
+
+.theme-ios .row.out .message__image-wrap--overlay.message__image-wrap--light-bg .meta {
+      padding: 2px 3px 2px 5px !important;
+      gap: 2px !important;
+    }
+
+.theme-ios .row.out .message__image-wrap--overlay .meta .checks {
+      margin-left: 0 !important;
+      margin-right: 0 !important;
     }
 
 .theme-ios .img-placeholder {
