@@ -1878,7 +1878,7 @@ body {
     }
 
 .theme-ios .row.out .bubble.meta-corner-tuck:not(.message--media) .meta {
-      right: 12px !important;
+      right: 22px !important;
       bottom: 5px !important;
     }
 
