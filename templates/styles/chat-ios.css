@@ -1007,7 +1007,7 @@ body {
       background-repeat: no-repeat !important;
       backdrop-filter: none !important;
       -webkit-backdrop-filter: none !important;
-      border: 1px solid #272320 !important;
+      border: 1px solid #3C3D42 !important;
       box-shadow: none !important;
     }
 
@@ -1066,12 +1066,12 @@ body {
       background-repeat: no-repeat !important;
       backdrop-filter: none !important;
       -webkit-backdrop-filter: none !important;
-      border: 1px solid #272320 !important;
+      border: 1px solid #3C3D42 !important;
       box-shadow: none !important;
     }
 
 .theme-ios.phone.composite-screen-on .ios-nav-right {
-      border: 1px solid #9a9a9a !important;
+      border: 1px solid #3C3D42 !important;
       background: transparent !important;
     }
 
@@ -1178,9 +1178,9 @@ body {
       /* обводка аватара = высота средней пилюли + 4px */
       --ios-nav-avatar-outer: calc(var(--ios-nav-row-height) + 4px);
       --ios-nav-avatar-gap: 0.14em;
-      --ios-nav-avatar-outline: #9a9a9a;
-      --ios-nav-chrome-outline: #272320;
-      --ios-nav-pill-outline: #272320;
+      --ios-nav-avatar-outline: #3C3D42;
+      --ios-nav-chrome-outline: #3C3D42;
+      --ios-nav-pill-outline: #3C3D42;
       --ios-nav-chrome-outline-w: 1px;
       display: grid;
       grid-template-columns: auto minmax(0, 1fr) var(--ios-nav-avatar-outer);

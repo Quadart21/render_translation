@@ -878,7 +878,7 @@ ${themeSel} .ios-back.back-pill {
   max-width:none !important;
   padding:0 ${Math.round(0.55 * g.u)}px 0 ${Math.round(0.45 * g.u)}px !important;
   border-radius:999px !important;
-  border:${outlineW}px solid #272320 !important;
+  border:${outlineW}px solid #3C3D42 !important;
   box-shadow:none !important;
   background-color:#1b1b1b !important;
   background-image:url("__IOS_BACK_PILL__") !important;
@@ -946,7 +946,7 @@ ${themeSel} .ios-title-pill.user-pill {
   min-height:${pillVisualH}px !important;
   padding:0 var(--ios-title-pill-hpad, ${Math.round(0.55 * g.u)}px) !important;
   border-radius:999px !important;
-  border:${outlineW}px solid #272320 !important;
+  border:${outlineW}px solid #3C3D42 !important;
   box-shadow:none !important;
   background-color:#1b1b1b !important;
   background-image:url("__IOS_TITLE_PILL__") !important;
