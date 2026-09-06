@@ -1667,7 +1667,7 @@ body {
     }
 
 .theme-ios .row.out .bubble.bubble--ios-a:not(.message--media) {
-      padding-right: 8px !important;
+      padding-right: 16px !important;
 }
 
 .theme-ios .row.out .bubble.bubble--ios-a:not(.message--media) .bubble-text {
@@ -1676,6 +1676,7 @@ body {
 
 .theme-ios .row.out .bubble.bubble--ios-a:not(.message--media) .meta {
       margin-right: 0;
+      padding-right: 0;
       transform: none !important;
       align-items: center;
       gap: 2px;
@@ -1964,13 +1965,13 @@ body {
   Входящие: время правее, ближе к краю.
 */
 .theme-ios .row.out .bubble.bubble--ios-b:not(.message--media) .meta {
-      right: 12px;
+      right: 16px;
       bottom: 6px;
       transform: none;
     }
 
 .theme-ios .row.out .bubble.bubble--ios-c:not(.message--media) .meta {
-      right: 12px;
+      right: 16px;
       bottom: 6px;
       transform: none;
       align-items: center;
@@ -1978,7 +1979,7 @@ body {
     }
 
 .theme-ios .row.out .bubble.bubble--ios-d:not(.message--media) .meta {
-      right: 12px;
+      right: 16px;
       bottom: 6px;
       transform: none;
       align-items: center;
@@ -1986,7 +1987,7 @@ body {
     }
 
 .theme-ios .row.out .bubble.bubble--ios-e:not(.message--media) .meta {
-      right: 12px;
+      right: 16px;
       bottom: 6px;
       transform: none;
       align-items: center;
@@ -2001,7 +2002,7 @@ body {
     }
 
 .theme-ios .row.out .bubble:not(.message--media) {
-      padding-right: 12px;
+      padding-right: 16px;
     }
 
 .theme-ios .row.in .bubble:not(.message--media) {
