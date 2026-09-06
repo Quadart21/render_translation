@@ -882,9 +882,10 @@ ${themeSel} .ios-back.back-pill .ios-chevron {
   align-items:center !important;
   justify-content:center !important;
   color:#fff !important;
-  width:${Math.round(pillH * 0.418 * 1.12 * 2)}px !important;
-  height:${Math.round(pillH * 0.418 * 1.12 * 2)}px !important;
-  font-size:${Math.round(pillH * 0.418 * 1.12 * 2)}px !important;
+  /* чуть выше белой подложки (height = pillH * 0.418) */
+  width:${Math.round(pillH * 0.418 * 1.1)}px !important;
+  height:${Math.round(pillH * 0.418 * 1.1)}px !important;
+  font-size:${Math.round(pillH * 0.418 * 1.1)}px !important;
   line-height:0 !important;
   transform:none !important;
   margin:0 !important;

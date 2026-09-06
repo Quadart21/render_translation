@@ -996,7 +996,7 @@ body {
     }
 
 .theme-ios.phone.composite-screen-on .ios-back.back-pill .ios-chevron {
-      display: inline-block !important;
+      display: inline-flex !important;
     }
 
 /* Composite: unread pill поверх слоя */
@@ -1368,7 +1368,8 @@ body {
       justify-content: center;
       width: 1em;
       height: 1em;
-      font-size: 2.18em;
+      /* чуть выше белой подложки (.ios-unread-pill min-height: 0.97em) */
+      font-size: 1.08em;
       line-height: 0;
       transform: none;
     }
