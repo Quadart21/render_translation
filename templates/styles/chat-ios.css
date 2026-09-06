@@ -1159,8 +1159,8 @@ body {
 .theme-ios .ios-nav.telegram-topbar {
       align-items: end;
       --ios-nav-row-height: calc(3.024em - 3px);
-      /* обводка аватара = высота средней пилюли */
-      --ios-nav-avatar-outer: var(--ios-nav-row-height);
+      /* обводка аватара = высота средней пилюли + 4px */
+      --ios-nav-avatar-outer: calc(var(--ios-nav-row-height) + 4px);
       --ios-nav-avatar-gap: 0.14em;
       --ios-nav-avatar-outline: #9a9a9a;
       --ios-nav-chrome-outline: #272320;

@@ -81,8 +81,8 @@ export function iosHeaderGeometry(nativeW, _nativeH) {
   const titleStatusFont = Math.round(0.6 * u) + 2; /* статус +2px */
   const statusFont = Math.round(0.9 * u);
   const statusIcon = Math.round(0.8 * u);
-  /* обводка аватара = высота средней пилюли; внутри — зазор до фото */
-  const avatarOuter = pillVisualH;
+  /* обводка аватара = высота средней пилюли + 4px; внутри — зазор до фото */
+  const avatarOuter = pillVisualH + 4;
   const avatarGap = Math.round(0.14 * u);
   const avatarOutlineW = 1; /* тонкая серая обводка */
   const avatar = Math.max(
