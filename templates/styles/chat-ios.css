@@ -1628,7 +1628,7 @@ body {
       grid-template-columns: max-content max-content;
       align-items: end;
       justify-content: start;
-      column-gap: 2px;
+      column-gap: 6px;
       width: fit-content;
       max-width: 100%;
       min-width: min-content;
