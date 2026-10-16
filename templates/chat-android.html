@@ -177,21 +177,18 @@
         stA.textContent = subA;
         stA.style.display = 'block';
         if (/^(в сети|онлайн|online)$/i.test(subA)) stA.classList.add('status-online');
-        else if (/^печатает/i.test(subA)) stA.classList.add('status-typing');
+        else if (/печатает/i.test(subA)) stA.classList.add('status-typing');
         else stA.classList.add('status-gray');
       } else {
         var roll = Math.random();
         var label;
         var cls;
-        if (roll < 0.34) {
+        if (roll < 0.5) {
           label = 'в сети';
           cls = 'status-online';
-        } else if (roll < 0.67) {
+        } else {
           label = 'был недавно';
           cls = 'status-gray';
-        } else {
-          label = 'печатает...';
-          cls = 'status-typing';
         }
         stA.textContent = label;
         stA.style.display = 'block';

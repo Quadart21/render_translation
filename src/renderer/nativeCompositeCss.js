@@ -317,9 +317,11 @@ ${themeSel} .header-title-pill #androidChatStatus {
   text-overflow:clip !important;
   max-width:100% !important;
 }
-${themeSel} .header-title-pill .chat-meta .status.status-online,
-${themeSel} .header-title-pill .chat-meta .status.status-typing {
+${themeSel} .header-title-pill .chat-meta .status.status-online {
   color:#8ec0ff !important;
+}
+${themeSel} .header-title-pill .chat-meta .status.status-typing {
+  visibility:hidden !important;
 }
 ${themeSel} .header-title-pill .chat-meta .status.status-gray {
   color:rgba(255,255,255,0.62) !important;

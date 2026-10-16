@@ -2524,9 +2524,14 @@ body {
       max-width: 100%;
 }
 
-.theme-android .header-title-pill .chat-meta .status.status-online,
-.theme-android .header-title-pill .chat-meta .status.status-typing {
+.theme-android .header-title-pill .chat-meta .status.status-online {
       color: #8ec0ff;
+}
+
+/* Скрыть «печатает…», сохранив высоту строки статуса */
+.theme-android .header-title-pill .chat-meta .status.status-typing,
+.theme-android .chat-meta .status.status-typing {
+      visibility: hidden;
 }
 
 .theme-android .header-title-pill .chat-meta .status.status-gray {
