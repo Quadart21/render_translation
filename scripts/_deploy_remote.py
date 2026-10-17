@@ -97,11 +97,25 @@ def stream_exec(client: paramiko.SSHClient, cmd: str, timeout: float = 560) -> i
     return code
 
 
+def resolve_key_path(env: dict[str, str]) -> Path | None:
+    raw = (env.get("DEPLOY_SSH_KEY") or "").strip()
+    candidates: list[Path] = []
+    if raw:
+        p = Path(raw).expanduser()
+        candidates.append(p if p.is_absolute() else ROOT / p)
+    candidates.append(Path.home() / ".ssh" / "render_screen_deploy")
+    for path in candidates:
+        if path.is_file():
+            return path
+    return None
+
+
 def main() -> int:
     env = load_env()
     host = env.get("DEPLOY_HOST", "144.31.218.222")
     user = env.get("DEPLOY_USER", "root")
     password = env.get("DEPLOY_SSH_PASSWORD")
+    key_path = resolve_key_path(env)
     path = env.get("DEPLOY_PATH", "/opt/render-screen")
     branch = env.get("DEPLOY_BRANCH")
     if not branch:
@@ -112,14 +126,26 @@ def main() -> int:
             cwd=ROOT,
             text=True,
         ).strip()
-    if not password:
-        safe_print("DEPLOY_SSH_PASSWORD missing in .env", err=True)
+    if not key_path and not password:
+        safe_print(
+            "Need DEPLOY_SSH_KEY (or ~/.ssh/render_screen_deploy) or DEPLOY_SSH_PASSWORD in .env",
+            err=True,
+        )
         return 2
 
     safe_print(f"[deploy] 1/4 connect {user}@{host}")
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    client.connect(host, username=user, password=password, timeout=30)
+    connect_kwargs: dict = {"hostname": host, "username": user, "timeout": 30}
+    if key_path:
+        connect_kwargs["key_filename"] = str(key_path)
+        connect_kwargs["look_for_keys"] = False
+        connect_kwargs["allow_agent"] = False
+        safe_print(f"[deploy] auth=key ({key_path.name})")
+    else:
+        connect_kwargs["password"] = password
+        safe_print("[deploy] auth=password")
+    client.connect(**connect_kwargs)
     safe_print(f"[deploy] connected — branch={branch}")
 
     cmd = f"""set -e
